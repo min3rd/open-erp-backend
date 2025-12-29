@@ -13,14 +13,41 @@ import {
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { DatabaseModule } from '@shared/database';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
+import { User, UserSchema } from './schemas/user.schema';
+import { VerificationToken, VerificationTokenSchema } from './schemas/verification-token.schema';
+import { UserRepository } from './repositories/user.repository';
+import { VerificationTokenRepository } from './repositories/verification-token.repository';
+import { EmailService } from './services/email.service';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    DatabaseModule,
     RabbitMQModule.forRoot(getRabbitMQConfig()),
+    MongooseModule.forFeature([
+      { name: User.name, schema: UserSchema },
+      { name: VerificationToken.name, schema: VerificationTokenSchema },
+    ]),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 minute
+      limit: 5, // 5 requests per minute
+    }]),
   ],
   controllers: [AuthController],
-  providers: [AuthService],
+  providers: [
+    AuthService,
+    UserRepository,
+    VerificationTokenRepository,
+    EmailService,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
+  ],
 })
 export class AuthModule implements OnModuleInit {
   constructor(
