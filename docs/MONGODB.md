@@ -206,7 +206,11 @@ docker compose down -v
 
 ### MongoDB Memory Server
 
-For integration tests, use `mongodb-memory-server` (installed as dev dependency):
+For integration tests, use `mongodb-memory-server` (installed as dev dependency). This creates an in-memory MongoDB instance for testing.
+
+**Note**: `mongodb-memory-server` requires downloading MongoDB binaries on first run. If you're in an environment with restricted internet access, you may need to use a real MongoDB instance for testing instead.
+
+### Test Example
 
 ```typescript
 import { MongoMemoryServer } from 'mongodb-memory-server';
@@ -224,24 +228,54 @@ afterAll(async () => {
 });
 ```
 
-### Test Example
+### Quick Connection Test
 
-```typescript
-describe('UserRepository', () => {
-  let repository: UserRepository;
-  
-  beforeEach(async () => {
-    // Setup test module with MongoDB memory server
-  });
+Use the provided test script to verify MongoDB connection and CRUD operations:
 
-  it('should create a user', async () => {
-    const user = await repository.create({
-      username: 'testuser',
-      email: 'test@example.com',
-    });
-    expect(user.username).toBe('testuser');
-  });
-});
+```bash
+# Test MongoDB connection and CRUD operations
+npm run db:test
+```
+
+This script will:
+1. Connect to MongoDB
+2. Create a test user
+3. Read the user
+4. Update the user
+5. Soft delete the user
+6. Clean up test data
+
+Sample output:
+```
+🔌 Connecting to MongoDB...
+✅ Connected successfully
+
+📝 Testing CREATE operation...
+✅ User created with ID: 6578f1a2b3c4d5e6f7g8h9i0
+
+📖 Testing READ operation...
+✅ User found
+
+✏️  Testing UPDATE operation...
+✅ Updated 1 user(s)
+
+✅ All MongoDB CRUD operations completed successfully!
+```
+
+### Full Integration Test Suite
+
+A complete integration test suite is available in `apps/user/test/user.repository.integration.spec.ts`. It tests:
+- User creation with validation
+- Duplicate email/username handling
+- Finding users by various criteria
+- Updating user information
+- Soft delete and restore functionality
+- Counting users
+
+To run the integration tests (requires MongoDB binaries or real MongoDB instance):
+
+```bash
+npm test -- apps/user/test/user.repository.integration.spec.ts
 ```
 
 ## Usage Examples

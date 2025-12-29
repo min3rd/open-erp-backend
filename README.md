@@ -1,13 +1,13 @@
 # Open ERP Backend - Microservices Architecture
 
-> **Note**: This is a microservices architecture template. For detailed documentation, see [MICROSERVICES.md](./MICROSERVICES.md).
+> **Note**: This is a microservices architecture template. For detailed documentation, see [MICROSERVICES.md](./docs/MICROSERVICES.md).
 
 ## 🏗️ Architecture
 
-This project implements a microservices architecture with three services communicating via RabbitMQ:
+This project implements a microservices architecture with three services communicating via RabbitMQ and MongoDB for data persistence:
 
 - **Auth Service** (Port 3001) - Authentication and authorization
-- **User Service** (Port 3002) - User management and profiles  
+- **User Service** (Port 3002) - User management and profiles with MongoDB
 - **Notification Service** (Port 3003) - Email and SMS notifications
 
 ## 🚀 Quick Start
@@ -15,7 +15,7 @@ This project implements a microservices architecture with three services communi
 ### Using Docker (Recommended)
 
 ```bash
-# Start all services with RabbitMQ
+# Start all services with RabbitMQ and MongoDB
 docker compose up --build
 
 # Or in detached mode
@@ -23,6 +23,13 @@ docker compose up -d
 
 # View logs
 docker compose logs -f
+
+# Run migrations and seed data
+npm run db:migrate
+npm run db:seed
+
+# Test MongoDB connection
+npm run db:test
 ```
 
 ### Local Development
@@ -36,6 +43,17 @@ docker run -d --name rabbitmq -p 5672:5672 -p 15672:15672 \
   -e RABBITMQ_DEFAULT_USER=admin -e RABBITMQ_DEFAULT_PASS=admin123 \
   rabbitmq:3.12-management-alpine
 
+# Start MongoDB
+docker run -d --name mongodb -p 27017:27017 \
+  -e MONGO_INITDB_ROOT_USERNAME=erp_user \
+  -e MONGO_INITDB_ROOT_PASSWORD=erp_password \
+  -e MONGO_INITDB_DATABASE=open_erp \
+  mongo:7.0
+
+# Run migrations and seed data
+npm run db:migrate
+npm run db:seed
+
 # Start services (in separate terminals)
 npm run start:auth:dev
 npm run start:user:dev
@@ -44,8 +62,9 @@ npm run start:notification:dev
 
 ## 📚 Documentation
 
-- **[MICROSERVICES.md](./MICROSERVICES.md)** - Complete architecture documentation
-- **[TESTING.md](./TESTING.md)** - Testing guide and scenarios
+- **[MICROSERVICES.md](./docs/MICROSERVICES.md)** - Complete architecture documentation
+- **[MONGODB.md](./docs/MONGODB.md)** - MongoDB setup and usage guide
+- **[TESTING.md](./docs/TESTING.md)** - Testing guide and scenarios
 - **[.env.example](./.env.example)** - Environment configuration template
 
 ## 🔗 Service URLs
@@ -56,6 +75,7 @@ After starting with Docker:
 - User Service: http://localhost:3002
 - Notification Service: http://localhost:3003
 - RabbitMQ Management: http://localhost:15672 (admin/admin123)
+- MongoDB: mongodb://localhost:27017 (erp_user/erp_password)
 
 ## 🧪 Health Checks
 
@@ -75,6 +95,10 @@ npm run start:notification:dev # Start notification service (dev mode)
 npm run docker:up              # Start all services with Docker
 npm run docker:down            # Stop all services
 npm run docker:logs            # View Docker logs
+npm run db:migrate             # Run database migrations
+npm run db:migrate:status      # Check migration status
+npm run db:seed                # Seed database with sample data
+npm run db:test                # Test MongoDB connection and CRUD
 npm run lint                   # Lint code
 npm run test                   # Run tests
 ```
@@ -83,6 +107,7 @@ npm run test                   # Run tests
 
 - **Framework**: NestJS
 - **Message Broker**: RabbitMQ
+- **Database**: MongoDB with Mongoose ODM
 - **Language**: TypeScript
 - **Container**: Docker
 - **Package Manager**: npm
@@ -92,6 +117,11 @@ npm run test                   # Run tests
 ✅ Microservices architecture with three services
 ✅ Event-driven communication (Publish/Subscribe)
 ✅ RPC communication (Request/Response)
+✅ MongoDB data persistence with Mongoose
+✅ Database migrations and seeding
+✅ Schema validation and indexing
+✅ Soft-delete functionality
+✅ Repository pattern for data access
 ✅ Retry mechanism with exponential backoff
 ✅ Dead Letter Queue for failed messages
 ✅ Docker Compose for easy deployment
