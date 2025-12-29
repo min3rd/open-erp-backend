@@ -33,7 +33,7 @@ export function softDeletePlugin(schema: Schema) {
 
   const setDeletedFalse = function (this: any, next: any) {
     const filter = this.getFilter();
-    if (!filter.hasOwnProperty('deletedAt')) {
+    if (!('deletedAt' in filter)) {
       this.where({ deletedAt: null });
     }
     next();
