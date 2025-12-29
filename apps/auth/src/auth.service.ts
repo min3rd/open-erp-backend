@@ -9,7 +9,14 @@ export class AuthService {
   ) {}
 
   async register(data: { username: string; email: string; password: string }) {
-    // TODO: Implement actual registration logic
+    // TODO: SECURITY WARNING - Implement actual registration logic
+    // This is a MOCK implementation for template purposes only
+    // In production:
+    // 1. Validate input (email format, password strength, etc.)
+    // 2. Check if email/username already exists
+    // 3. Hash password using bcrypt before storing
+    // 4. Store user in database
+    // 5. Send verification email
     const user = {
       id: Date.now().toString(),
       username: data.username,
@@ -37,7 +44,14 @@ export class AuthService {
   }
 
   async login(data: { email: string; password: string }) {
-    // TODO: Implement actual login logic
+    // TODO: SECURITY WARNING - Implement actual login logic with password verification
+    // This is a MOCK implementation for template purposes only
+    // In production:
+    // 1. Verify email exists in database
+    // 2. Compare password hash using bcrypt
+    // 3. Generate actual JWT token with proper signing
+    // 4. Set appropriate token expiration
+    // 5. Store session/refresh token if needed
     const session = {
       token: 'mock-jwt-token',
       userId: 'mock-user-id',

@@ -197,9 +197,12 @@ export class RabbitMQClient {
               `Error processing event: ${error.message}`,
               error.stack,
             );
-            // Reject and requeue if it hasn't been retried too many times
+            // Note: In this template, retry count tracking for consumers is simplified.
+            // For production, consider using a plugin like rabbitmq-delayed-message-exchange
+            // or implement a custom retry mechanism with separate retry queues.
             const retryCount = (msg.properties.headers?.['x-retry-count'] || 0) as number;
             if (retryCount < this.retryConfig.maxRetries) {
+              // Requeue the message for retry (will be redelivered immediately)
               channel.nack(msg, false, true);
             } else {
               channel.nack(msg, false, false); // Send to DLX

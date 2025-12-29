@@ -29,9 +29,4 @@ export class UserController {
   async delete(@Param('id') id: string) {
     return this.userService.delete(id);
   }
-
-  @Get('health')
-  health() {
-    return { status: 'ok', service: 'user' };
-  }
 }
