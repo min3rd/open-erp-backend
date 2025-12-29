@@ -17,11 +17,8 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseModule } from '@shared/database';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { User, UserSchema } from './schemas/user.schema';
 import { VerificationToken, VerificationTokenSchema } from './schemas/verification-token.schema';
-import { UserRepository } from './repositories/user.repository';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
-import { EmailService } from './services/email.service';
 
 @Module({
   imports: [
@@ -29,7 +26,6 @@ import { EmailService } from './services/email.service';
     DatabaseModule,
     RabbitMQModule.forRoot(getRabbitMQConfig()),
     MongooseModule.forFeature([
-      { name: User.name, schema: UserSchema },
       { name: VerificationToken.name, schema: VerificationTokenSchema },
     ]),
     ThrottlerModule.forRoot([{
@@ -40,9 +36,7 @@ import { EmailService } from './services/email.service';
   controllers: [AuthController],
   providers: [
     AuthService,
-    UserRepository,
     VerificationTokenRepository,
-    EmailService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

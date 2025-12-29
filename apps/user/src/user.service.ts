@@ -158,7 +158,23 @@ export class UserService {
         return await this.userRepository.findById(message.params.userId);
 
       case 'getUserByEmail':
+      case 'findUserByEmail':
         return await this.userRepository.findByEmail(message.params.email);
+
+      case 'createUser':
+        try {
+          const user = await this.userRepository.create(message.params);
+          await this.rabbitMQClient.publishEvent(
+            RABBITMQ_EXCHANGES.EVENTS,
+            RABBITMQ_ROUTING_KEYS.USER_CREATED,
+            'user.created',
+            user,
+          );
+          return user;
+        } catch (error) {
+          this.logger.error(`Error creating user via RPC: ${error.message}`, error.stack);
+          throw error;
+        }
 
       default:
         throw new Error(`Unknown RPC method: ${message.method}`);

@@ -2,6 +2,7 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
 import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import { EmailService } from './email.service';
 
 @Injectable()
 export class NotificationService {
@@ -9,11 +10,14 @@ export class NotificationService {
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    private readonly emailService: EmailService,
   ) {}
 
   async sendEmail(data: { to: string; subject: string; body: string }) {
-    // TODO: Implement actual email sending logic
     this.logger.log(`Sending email to ${data.to}: ${data.subject}`);
+
+    // Use actual email service implementation
+    await this.emailService.sendVerificationEmail(data.to, '', ''); // Will be customized based on data
 
     // Publish email sent event
     await this.rabbitMQClient.publishEvent(
@@ -31,6 +35,34 @@ export class NotificationService {
       success: true,
       message: 'Email sent successfully',
     };
+  }
+
+  async sendVerificationEmail(data: { to: string; fullName: string; verificationCode: string }) {
+    this.logger.log(`Sending verification email to ${data.to}`);
+
+    try {
+      await this.emailService.sendVerificationEmail(data.to, data.fullName, data.verificationCode);
+      
+      // Publish email sent event
+      await this.rabbitMQClient.publishEvent(
+        RABBITMQ_EXCHANGES.EVENTS,
+        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
+        'notification.email.sent',
+        {
+          to: data.to,
+          subject: 'Email Verification',
+          sentAt: new Date(),
+        },
+      );
+
+      return {
+        success: true,
+        message: 'Verification email sent successfully',
+      };
+    } catch (error) {
+      this.logger.error(`Failed to send verification email: ${error.message}`, error.stack);
+      throw error;
+    }
   }
 
   async sendSMS(data: { to: string; message: string }) {
@@ -62,13 +94,9 @@ export class NotificationService {
 
     switch (message.eventName) {
       case 'user.registered':
-        // Send welcome email when user registers
+        // Send welcome email when user registers (different from verification email)
         this.logger.log(`Sending welcome email to new user: ${message.data.email}`);
-        await this.sendEmail({
-          to: message.data.email,
-          subject: 'Welcome to Open ERP!',
-          body: `Hello ${message.data.username}, welcome to our platform!`,
-        });
+        // Note: This is different from verification email, can be implemented later
         break;
 
       case 'user.login':
@@ -108,6 +136,9 @@ export class NotificationService {
           return await this.sendSMS(data);
         }
         throw new Error(`Unknown notification type: ${type}`);
+
+      case 'sendVerificationEmail':
+        return await this.sendVerificationEmail(message.params);
 
       default:
         throw new Error(`Unknown RPC method: ${message.method}`);

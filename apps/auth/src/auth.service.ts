@@ -1,9 +1,7 @@
 import { Injectable, Inject, ConflictException, BadRequestException, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
-import { UserRepository } from './repositories/user.repository';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
-import { EmailService } from './services/email.service';
 import { RegisterDto } from './dto/register.dto';
 import { hashPassword } from './utils/password.util';
 import { generateVerificationCode, getTokenExpiration } from './utils/token.util';
@@ -17,9 +15,7 @@ export class AuthService {
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
-    private readonly userRepository: UserRepository,
     private readonly verificationTokenRepository: VerificationTokenRepository,
-    private readonly emailService: EmailService,
   ) {
     this.verificationTokenTTL = parseInt(process.env.VERIFICATION_TOKEN_TTL || '15');
     this.maxTokensPerHour = parseInt(process.env.VERIFICATION_MAX_ATTEMPTS || '3');
@@ -29,8 +25,13 @@ export class AuthService {
   async register(data: RegisterDto) {
     const { email, fullName, password } = data;
 
-    // Check if user already exists
-    const existingUser = await this.userRepository.findByEmail(email);
+    // Check if user already exists via RPC to user service
+    const existingUser = await this.rabbitMQClient.sendRPCRequest<{ email: string }, any>(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserByEmail',
+      { email },
+    );
     
     if (existingUser) {
       if (existingUser.status === 'active' || existingUser.verifiedAt) {
@@ -54,21 +55,26 @@ export class AuthService {
       // Allow resending verification code
       this.logger.log(`Resending verification code for pending user: ${email}`);
     } else {
-      // Create new user with pending status
+      // Create new user via RPC to user service
       const hashedPassword = await hashPassword(password);
       
       try {
-        await this.userRepository.create({
-          email,
-          fullName,
-          password: hashedPassword,
-          status: 'pending',
-        });
+        await this.rabbitMQClient.sendRPCRequest<any, any>(
+          RABBITMQ_EXCHANGES.RPC,
+          RABBITMQ_ROUTING_KEYS.RPC_USER,
+          'createUser',
+          {
+            email,
+            fullName,
+            password: hashedPassword,
+            status: 'pending',
+          },
+        );
         
         this.logger.log(`New user created: ${email}`);
       } catch (error) {
         this.logger.error(`Error creating user: ${error.message}`, error.stack);
-        if (error.code === 11000) {
+        if (error.code === 11000 || error.message?.includes('duplicate')) {
           throw new ConflictException('Email already registered');
         }
         throw error;
@@ -82,9 +88,18 @@ export class AuthService {
     // Save verification token
     await this.verificationTokenRepository.create(email, verificationCode, expiresAt);
 
-    // Send verification email
+    // Send verification email via RPC to notification service
     try {
-      await this.emailService.sendVerificationEmail(email, fullName, verificationCode);
+      await this.rabbitMQClient.sendRPCRequest<any, any>(
+        RABBITMQ_EXCHANGES.RPC,
+        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
+        'sendVerificationEmail',
+        {
+          to: email,
+          fullName,
+          verificationCode,
+        },
+      );
     } catch (error) {
       this.logger.error(`Failed to send verification email: ${error.message}`, error.stack);
       // NOTE: Email sending failure is logged but doesn't block registration.
