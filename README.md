@@ -63,6 +63,7 @@ npm run start:notification:dev
 ## 📚 Documentation
 
 - **[MICROSERVICES.md](./docs/MICROSERVICES.md)** - Complete architecture documentation
+- **[SWAGGER.md](./docs/SWAGGER.md)** - OpenAPI/Swagger documentation setup and usage
 - **[MONGODB.md](./docs/MONGODB.md)** - MongoDB setup and usage guide
 - **[TESTING.md](./docs/TESTING.md)** - Testing guide and scenarios
 - **[.env.example](./.env.example)** - Environment configuration template
@@ -71,9 +72,10 @@ npm run start:notification:dev
 
 After starting with Docker:
 
-- Auth Service: http://localhost:3001
-- User Service: http://localhost:3002
-- Notification Service: http://localhost:3003
+- **Docs Aggregator**: http://localhost:3000/docs (Unified API documentation)
+- Auth Service: http://localhost:3001 | [API Docs](http://localhost:3001/docs)
+- User Service: http://localhost:3002 | [API Docs](http://localhost:3002/docs)
+- Notification Service: http://localhost:3003 | [API Docs](http://localhost:3003/docs)
 - RabbitMQ Management: http://localhost:15672 (admin/admin123)
 - MongoDB: mongodb://localhost:27017 (erp_user/erp_password)
 
@@ -127,6 +129,8 @@ npm run test                   # Run tests
 ✅ Docker Compose for easy deployment
 ✅ Multi-stage Docker builds
 ✅ TypeScript with strict typing
+✅ OpenAPI/Swagger documentation for all services
+✅ Centralized API documentation aggregator
 ✅ Comprehensive documentation
 
 ## 🎯 Acceptance Criteria
