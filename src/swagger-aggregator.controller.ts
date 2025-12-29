@@ -1,7 +1,5 @@
 import { Controller, Get, Res, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
 import type { Response } from 'express';
-import * as path from 'path';
-import * as fs from 'fs';
 
 interface ServiceConfig {
   name: string;

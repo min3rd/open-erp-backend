@@ -123,7 +123,7 @@ export class UserRepository {
         return null;
       }
       // Manually restore to avoid type issues
-      user.deletedAt = undefined;
+      user.deletedAt = null as any;
       user.status = 'active';
       await user.save();
       return user;
