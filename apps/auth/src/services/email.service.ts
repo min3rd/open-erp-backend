@@ -100,13 +100,27 @@ export class EmailService {
    * Convert markdown-style text to basic HTML
    */
   private convertToHtml(text: string): string {
-    return text
-      .replace(/^# (.+)$/gm, '<h1>$1</h1>')
-      .replace(/^## (.+)$/gm, '<h2>$1</h2>')
-      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
-      .replace(/\*(.+?)\*/g, '<em>$1</em>')
-      .replace(/\n\n/g, '</p><p>')
-      .replace(/\n/g, '<br>')
-      .replace(/^(.+)$/, '<p>$1</p>');
+    const lines = text.split('\n');
+    const htmlLines = lines.map(line => {
+      // Headers
+      if (line.startsWith('## ')) {
+        return `<h2>${line.substring(3)}</h2>`;
+      } else if (line.startsWith('# ')) {
+        return `<h1>${line.substring(2)}</h1>`;
+      }
+      
+      // Bold and italic
+      line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      line = line.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      
+      // Empty lines become paragraph breaks
+      if (line.trim() === '') {
+        return '</p><p>';
+      }
+      
+      return line + '<br>';
+    });
+    
+    return '<p>' + htmlLines.join('\n') + '</p>';
   }
 }
