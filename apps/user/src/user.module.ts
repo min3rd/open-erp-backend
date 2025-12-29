@@ -2,11 +2,22 @@ import { Module, OnModuleInit, Inject } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { HealthController } from './health.controller';
 import { UserService } from './user.service';
-import { RabbitMQModule, RABBITMQ_CLIENT, RabbitMQClient } from '@shared/rabbitmq';
-import { getRabbitMQConfig, RABBITMQ_EXCHANGES, RABBITMQ_QUEUES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import {
+  RabbitMQModule,
+  RABBITMQ_CLIENT,
+  RabbitMQClient,
+} from '@shared/rabbitmq';
+import {
+  getRabbitMQConfig,
+  RABBITMQ_EXCHANGES,
+  RABBITMQ_QUEUES,
+  RABBITMQ_ROUTING_KEYS,
+} from '@shared/config/rabbitmq.config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     RabbitMQModule.forRoot(getRabbitMQConfig()),
   ],
   controllers: [UserController, HealthController],

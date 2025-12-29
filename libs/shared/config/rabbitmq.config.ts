@@ -6,10 +6,10 @@
 export const RABBITMQ_EXCHANGES = {
   // Event exchanges (Topic)
   EVENTS: 'erp.events',
-  
+
   // RPC exchanges (Direct)
   RPC: 'erp.rpc',
-  
+
   // Dead Letter Exchange
   DLX: 'erp.dlx',
 } as const;
@@ -19,12 +19,12 @@ export const RABBITMQ_QUEUES = {
   AUTH_EVENTS: 'auth.events',
   AUTH_RPC: 'auth.rpc',
   AUTH_DLX: 'auth.dlx',
-  
+
   // User service queues
   USER_EVENTS: 'user.events',
   USER_RPC: 'user.rpc',
   USER_DLX: 'user.dlx',
-  
+
   // Notification service queues
   NOTIFICATION_EVENTS: 'notification.events',
   NOTIFICATION_RPC: 'notification.rpc',
@@ -37,18 +37,18 @@ export const RABBITMQ_ROUTING_KEYS = {
   AUTH_USER_LOGIN: 'auth.user.login',
   AUTH_USER_LOGOUT: 'auth.user.logout',
   AUTH_PASSWORD_CHANGED: 'auth.password.changed',
-  
+
   // User events
   USER_CREATED: 'user.created',
   USER_UPDATED: 'user.updated',
   USER_DELETED: 'user.deleted',
   USER_PROFILE_UPDATED: 'user.profile.updated',
-  
+
   // Notification events
   NOTIFICATION_EMAIL_SENT: 'notification.email.sent',
   NOTIFICATION_SMS_SENT: 'notification.sms.sent',
   NOTIFICATION_PUSH_SENT: 'notification.push.sent',
-  
+
   // RPC routing keys
   RPC_AUTH: 'rpc.auth',
   RPC_USER: 'rpc.user',
@@ -60,7 +60,7 @@ export const RABBITMQ_DEFAULT_CONFIG = {
   prefetch: 10,
   connectionTimeout: 10000,
   vhost: '/',
-  
+
   // Retry configuration
   retry: {
     maxRetries: 3,
@@ -68,7 +68,7 @@ export const RABBITMQ_DEFAULT_CONFIG = {
     maxDelay: 30000,
     backoffMultiplier: 2,
   },
-  
+
   // Dead letter configuration
   deadLetter: {
     ttl: 60000, // 1 minute
@@ -84,11 +84,16 @@ export function getRabbitMQConfig() {
     user: process.env.RABBITMQ_USER || 'guest',
     password: process.env.RABBITMQ_PASS || 'guest',
     vhost: process.env.RABBITMQ_VHOST || RABBITMQ_DEFAULT_CONFIG.vhost,
-    heartbeat: parseInt(process.env.RABBITMQ_HEARTBEAT || String(RABBITMQ_DEFAULT_CONFIG.heartbeat)),
-    prefetch: parseInt(process.env.RABBITMQ_PREFETCH || String(RABBITMQ_DEFAULT_CONFIG.prefetch)),
+    heartbeat: parseInt(
+      process.env.RABBITMQ_HEARTBEAT ||
+        String(RABBITMQ_DEFAULT_CONFIG.heartbeat),
+    ),
+    prefetch: parseInt(
+      process.env.RABBITMQ_PREFETCH || String(RABBITMQ_DEFAULT_CONFIG.prefetch),
+    ),
     connectionTimeout: parseInt(
-      process.env.RABBITMQ_CONNECTION_TIMEOUT || 
-      String(RABBITMQ_DEFAULT_CONFIG.connectionTimeout)
+      process.env.RABBITMQ_CONNECTION_TIMEOUT ||
+        String(RABBITMQ_DEFAULT_CONFIG.connectionTimeout),
     ),
   };
 }

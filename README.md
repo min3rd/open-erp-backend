@@ -120,7 +120,7 @@ For detailed information about:
 - Deployment strategies
 - Testing procedures
 
-Please refer to [MICROSERVICES.md](./MICROSERVICES.md) and [TESTING.md](./TESTING.md).
+Please refer to [MICROSERVICES.md](./docs/MICROSERVICES.md) and [TESTING.md](./docs/TESTING.md).
 
 ## 🤝 Contributing
 
