@@ -1,0 +1,103 @@
+import { Module, OnModuleInit, Inject } from '@nestjs/common';
+import { UserController } from './user.controller';
+import { UserService } from './user.service';
+import { RabbitMQModule, RABBITMQ_CLIENT, RabbitMQClient } from '@shared/rabbitmq';
+import { getRabbitMQConfig, RABBITMQ_EXCHANGES, RABBITMQ_QUEUES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+
+@Module({
+  imports: [
+    RabbitMQModule.forRoot(getRabbitMQConfig()),
+  ],
+  controllers: [UserController],
+  providers: [UserService],
+})
+export class UserModule implements OnModuleInit {
+  constructor(
+    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    private readonly userService: UserService,
+  ) {}
+
+  async onModuleInit() {
+    // Setup exchanges
+    await this.rabbitMQClient.createExchange({
+      name: RABBITMQ_EXCHANGES.EVENTS,
+      type: 'topic',
+      durable: true,
+    });
+
+    await this.rabbitMQClient.createExchange({
+      name: RABBITMQ_EXCHANGES.RPC,
+      type: 'direct',
+      durable: true,
+    });
+
+    await this.rabbitMQClient.createExchange({
+      name: RABBITMQ_EXCHANGES.DLX,
+      type: 'topic',
+      durable: true,
+    });
+
+    // Setup queues with DLX
+    await this.rabbitMQClient.createQueue(
+      {
+        name: RABBITMQ_QUEUES.USER_EVENTS,
+        durable: true,
+      },
+      {
+        exchange: RABBITMQ_EXCHANGES.DLX,
+        routingKey: 'user.dlx',
+        ttl: 60000,
+      },
+    );
+
+    await this.rabbitMQClient.createQueue({
+      name: RABBITMQ_QUEUES.USER_RPC,
+      durable: true,
+    });
+
+    await this.rabbitMQClient.createQueue({
+      name: RABBITMQ_QUEUES.USER_DLX,
+      durable: true,
+    });
+
+    // Setup bindings
+    await this.rabbitMQClient.bindQueue({
+      queue: RABBITMQ_QUEUES.USER_EVENTS,
+      exchange: RABBITMQ_EXCHANGES.EVENTS,
+      routingKey: 'user.*',
+    });
+
+    // Also subscribe to auth events
+    await this.rabbitMQClient.bindQueue({
+      queue: RABBITMQ_QUEUES.USER_EVENTS,
+      exchange: RABBITMQ_EXCHANGES.EVENTS,
+      routingKey: 'auth.user.registered',
+    });
+
+    await this.rabbitMQClient.bindQueue({
+      queue: RABBITMQ_QUEUES.USER_RPC,
+      exchange: RABBITMQ_EXCHANGES.RPC,
+      routingKey: RABBITMQ_ROUTING_KEYS.RPC_USER,
+    });
+
+    await this.rabbitMQClient.bindQueue({
+      queue: RABBITMQ_QUEUES.USER_DLX,
+      exchange: RABBITMQ_EXCHANGES.DLX,
+      routingKey: 'user.dlx',
+    });
+
+    // Subscribe to events
+    await this.rabbitMQClient.subscribeToEvent(
+      RABBITMQ_QUEUES.USER_EVENTS,
+      this.userService.handleEvent.bind(this.userService),
+    );
+
+    // Handle RPC requests
+    await this.rabbitMQClient.handleRPCRequest(
+      RABBITMQ_QUEUES.USER_RPC,
+      this.userService.handleRPC.bind(this.userService),
+    );
+
+    console.log('User service RabbitMQ setup complete');
+  }
+}
