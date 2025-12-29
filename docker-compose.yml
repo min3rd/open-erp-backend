@@ -1,6 +1,29 @@
 version: '3.8'
 
 services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:7.0
+    container_name: erp-mongodb
+    hostname: mongodb
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGODB_USER:-erp_user}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASS:-erp_password}
+      MONGO_INITDB_DATABASE: ${MONGODB_DB:-open_erp}
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    networks:
+      - erp-network
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   # RabbitMQ Message Broker
   rabbitmq:
     image: rabbitmq:3.12-management-alpine
@@ -61,8 +84,15 @@ services:
       RABBITMQ_USER: ${RABBITMQ_USER:-admin}
       RABBITMQ_PASS: ${RABBITMQ_PASS:-admin123}
       RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_USER: ${MONGODB_USER:-erp_user}
+      MONGODB_PASS: ${MONGODB_PASS:-erp_password}
+      MONGODB_DB: ${MONGODB_DB:-open_erp}
+      MONGODB_AUTH_SOURCE: admin
     depends_on:
       rabbitmq:
+        condition: service_healthy
+      mongodb:
         condition: service_healthy
     networks:
       - erp-network
@@ -95,5 +125,7 @@ networks:
     driver: bridge
 
 volumes:
+  mongodb_data:
+  mongodb_config:
   rabbitmq_data:
   rabbitmq_logs:

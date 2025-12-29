@@ -14,14 +14,25 @@ import {
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
 import { ConfigModule } from '@nestjs/config';
+import { MongooseModule } from '@nestjs/mongoose';
+import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
+import { User, UserSchema } from './schemas/user.schema';
+import { UserRepository } from './repositories/user.repository';
 
 @Module({
   imports: [
     ConfigModule.forRoot(),
     RabbitMQModule.forRoot(getRabbitMQConfig()),
+    MongooseModule.forRootAsync({
+      useFactory: () => {
+        const config = getDatabaseConfig();
+        return getMongooseOptions(config);
+      },
+    }),
+    MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
   controllers: [UserController, HealthController],
-  providers: [UserService],
+  providers: [UserService, UserRepository],
 })
 export class UserModule implements OnModuleInit {
   constructor(

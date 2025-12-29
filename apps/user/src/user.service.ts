@@ -2,88 +2,110 @@ import { Injectable, Inject, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
 import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import { UserRepository } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
   private readonly logger = new Logger(UserService.name);
-  private users: Map<string, any> = new Map();
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    private readonly userRepository: UserRepository,
   ) {}
 
   async findAll() {
-    return {
-      success: true,
-      users: Array.from(this.users.values()),
-    };
+    try {
+      const users = await this.userRepository.findAll();
+      return {
+        success: true,
+        users,
+      };
+    } catch (error) {
+      this.logger.error(`Error finding all users: ${error.message}`, error.stack);
+      return {
+        success: false,
+        message: error.message,
+      };
+    }
   }
 
   async findOne(id: string) {
-    const user = this.users.get(id);
-    if (!user) {
-      return { success: false, message: 'User not found' };
+    try {
+      const user = await this.userRepository.findById(id);
+      if (!user) {
+        return { success: false, message: 'User not found' };
+      }
+      return { success: true, user };
+    } catch (error) {
+      this.logger.error(`Error finding user: ${error.message}`, error.stack);
+      return { success: false, message: error.message };
     }
-    return { success: true, user };
   }
 
   async create(data: { username: string; email: string }) {
-    const user = {
-      id: Date.now().toString(),
-      ...data,
-      createdAt: new Date(),
-    };
+    try {
+      const user = await this.userRepository.create({
+        username: data.username,
+        email: data.email,
+      });
 
-    this.users.set(user.id, user);
+      // Publish user created event
+      await this.rabbitMQClient.publishEvent(
+        RABBITMQ_EXCHANGES.EVENTS,
+        RABBITMQ_ROUTING_KEYS.USER_CREATED,
+        'user.created',
+        user,
+      );
 
-    // Publish user created event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.USER_CREATED,
-      'user.created',
-      user,
-    );
-
-    return { success: true, user };
+      return { success: true, user };
+    } catch (error) {
+      this.logger.error(`Error creating user: ${error.message}`, error.stack);
+      return { success: false, message: error.message };
+    }
   }
 
   async update(id: string, data: any) {
-    const user = this.users.get(id);
-    if (!user) {
-      return { success: false, message: 'User not found' };
+    try {
+      const user = await this.userRepository.update(id, data);
+      if (!user) {
+        return { success: false, message: 'User not found' };
+      }
+
+      // Publish user updated event
+      await this.rabbitMQClient.publishEvent(
+        RABBITMQ_EXCHANGES.EVENTS,
+        RABBITMQ_ROUTING_KEYS.USER_UPDATED,
+        'user.updated',
+        { userId: id, changes: data },
+      );
+
+      return { success: true, user };
+    } catch (error) {
+      this.logger.error(`Error updating user: ${error.message}`, error.stack);
+      return { success: false, message: error.message };
     }
-
-    const updatedUser = { ...user, ...data, updatedAt: new Date() };
-    this.users.set(id, updatedUser);
-
-    // Publish user updated event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-      'user.updated',
-      { userId: id, changes: data },
-    );
-
-    return { success: true, user: updatedUser };
   }
 
   async delete(id: string) {
-    const user = this.users.get(id);
-    if (!user) {
-      return { success: false, message: 'User not found' };
+    try {
+      const user = await this.userRepository.delete(id);
+      if (!user) {
+        return { success: false, message: 'User not found' };
+      }
+
+      // Publish user deleted event
+      await this.rabbitMQClient.publishEvent(
+        RABBITMQ_EXCHANGES.EVENTS,
+        RABBITMQ_ROUTING_KEYS.USER_DELETED,
+        'user.deleted',
+        { userId: id },
+      );
+
+      return { success: true, message: 'User deleted' };
+    } catch (error) {
+      this.logger.error(`Error deleting user: ${error.message}`, error.stack);
+      return { success: false, message: error.message };
     }
-
-    this.users.delete(id);
-
-    // Publish user deleted event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.USER_DELETED,
-      'user.deleted',
-      { userId: id },
-    );
-
-    return { success: true, message: 'User deleted' };
   }
 
   /**
@@ -97,18 +119,27 @@ export class UserService {
         // Handle user registration from auth service
         this.logger.log(`New user registered: ${JSON.stringify(message.data)}`);
         // Store user data
-        if (message.data.userId) {
-          this.users.set(message.data.userId, {
-            id: message.data.userId,
-            username: message.data.username,
-            email: message.data.email,
-            createdAt: new Date(),
-          });
+        if (message.data.username && message.data.email) {
+          try {
+            await this.userRepository.create({
+              username: message.data.username,
+              email: message.data.email,
+            });
+          } catch (error) {
+            this.logger.error(`Error creating user from event: ${error.message}`);
+          }
         }
         break;
 
       case 'user.login':
         this.logger.log(`User logged in: ${message.data.userId}`);
+        if (message.data.userId) {
+          try {
+            await this.userRepository.updateLastLogin(message.data.userId);
+          } catch (error) {
+            this.logger.error(`Error updating last login: ${error.message}`);
+          }
+        }
         break;
 
       default:
@@ -124,14 +155,10 @@ export class UserService {
 
     switch (message.method) {
       case 'getUser':
-        const user = this.users.get(message.params.userId);
-        return user || null;
+        return await this.userRepository.findById(message.params.userId);
 
       case 'getUserByEmail':
-        const userByEmail = Array.from(this.users.values()).find(
-          (u) => u.email === message.params.email,
-        );
-        return userByEmail || null;
+        return await this.userRepository.findByEmail(message.params.email);
 
       default:
         throw new Error(`Unknown RPC method: ${message.method}`);
