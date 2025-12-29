@@ -247,16 +247,16 @@ The easiest way to run the entire system is using Docker Compose:
 
 ```bash
 # Build and start all services
-docker-compose up --build
+docker compose up --build
 
 # Or run in detached mode
-docker-compose up -d
+docker compose up -d
 
 # View logs
-docker-compose logs -f
+docker compose logs -f
 
 # Stop all services
-docker-compose down
+docker compose down
 ```
 
 ### Using npm scripts:
@@ -494,12 +494,12 @@ RABBITMQ_URL=amqps://your-staging-rabbitmq:5671
 
 2. Build Docker images:
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.staging.yml build
+docker compose -f docker-compose.yml -f docker-compose.staging.yml build
 ```
 
 3. Deploy to staging:
 ```bash
-docker-compose -f docker-compose.yml -f docker-compose.staging.yml up -d
+docker compose -f docker-compose.yml -f docker-compose.staging.yml up -d
 ```
 
 ### Production Environment
