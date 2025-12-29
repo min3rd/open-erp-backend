@@ -109,6 +109,9 @@
     "testEnvironment": "node",
     "moduleNameMapper": {
       "^@shared/(.*)$": "<rootDir>/libs/shared/$1"
-    }
+    },
+    "transformIgnorePatterns": [
+      "node_modules/(?!uuid)"
+    ]
   }
 }
