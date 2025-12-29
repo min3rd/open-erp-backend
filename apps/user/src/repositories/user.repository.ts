@@ -89,8 +89,10 @@ export class UserRepository {
       if (!user) {
         return null;
       }
-      // Cast to any to access custom method
-      await (user as any).softDelete();
+      // Manually set deletion fields to avoid type issues
+      user.deletedAt = new Date();
+      user.status = 'inactive';
+      await user.save();
       return user;
     } catch (error) {
       this.logger.error(`Error soft deleting user: ${error.message}`, error.stack);
@@ -117,8 +119,10 @@ export class UserRepository {
       if (!user) {
         return null;
       }
-      // Cast to any to access custom method
-      await (user as any).restore();
+      // Manually restore to avoid type issues
+      user.deletedAt = null;
+      user.status = 'active';
+      await user.save();
       return user;
     } catch (error) {
       this.logger.error(`Error restoring user: ${error.message}`, error.stack);

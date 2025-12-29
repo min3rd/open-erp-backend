@@ -18,20 +18,25 @@ const { MongoClient } = require('mongodb');
 require('dotenv').config();
 
 async function testMongoDB() {
-  const uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
+  // Build connection string with credentials if provided
+  let uri = process.env.MONGODB_URI || 'mongodb://localhost:27017';
   const dbName = process.env.MONGODB_DB || 'open_erp';
+  const user = process.env.MONGODB_USER;
+  const pass = process.env.MONGODB_PASS;
+  const authSource = process.env.MONGODB_AUTH_SOURCE || 'admin';
+
+  // Build connection string with credentials
+  if (user && pass) {
+    const match = uri.match(/mongodb:\/\/(.+)/);
+    if (match) {
+      const hostPort = match[1];
+      uri = `mongodb://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${hostPort}/?authSource=${authSource}`;
+    }
+  }
   
   const options = {
     serverSelectionTimeoutMS: 5000,
   };
-
-  if (process.env.MONGODB_USER && process.env.MONGODB_PASS) {
-    options.auth = {
-      username: process.env.MONGODB_USER,
-      password: process.env.MONGODB_PASS,
-    };
-    options.authSource = process.env.MONGODB_AUTH_SOURCE || 'admin';
-  }
 
   const client = new MongoClient(uri, options);
 
