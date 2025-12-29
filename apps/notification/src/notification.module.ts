@@ -1,11 +1,22 @@
 import { Module, OnModuleInit, Inject } from '@nestjs/common';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
-import { RabbitMQModule, RABBITMQ_CLIENT, RabbitMQClient } from '@shared/rabbitmq';
-import { getRabbitMQConfig, RABBITMQ_EXCHANGES, RABBITMQ_QUEUES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import {
+  RabbitMQModule,
+  RABBITMQ_CLIENT,
+  RabbitMQClient,
+} from '@shared/rabbitmq';
+import {
+  getRabbitMQConfig,
+  RABBITMQ_EXCHANGES,
+  RABBITMQ_QUEUES,
+  RABBITMQ_ROUTING_KEYS,
+} from '@shared/config/rabbitmq.config';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
+    ConfigModule.forRoot(),
     RabbitMQModule.forRoot(getRabbitMQConfig()),
   ],
   controllers: [NotificationController],
