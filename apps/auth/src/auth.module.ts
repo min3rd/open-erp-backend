@@ -1,4 +1,4 @@
-import { Module, OnModuleInit, Inject } from '@nestjs/common';
+import { Module, OnModuleInit, Inject, Logger } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
 import {
@@ -17,7 +17,10 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseModule } from '@shared/database';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
-import { VerificationToken, VerificationTokenSchema } from './schemas/verification-token.schema';
+import {
+  VerificationToken,
+  VerificationTokenSchema,
+} from './schemas/verification-token.schema';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
 
 @Module({
@@ -28,10 +31,12 @@ import { VerificationTokenRepository } from './repositories/verification-token.r
     MongooseModule.forFeature([
       { name: VerificationToken.name, schema: VerificationTokenSchema },
     ]),
-    ThrottlerModule.forRoot([{
-      ttl: 60000, // 1 minute
-      limit: 5, // 5 requests per minute
-    }]),
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 1 minute
+        limit: 5, // 5 requests per minute
+      },
+    ]),
   ],
   controllers: [AuthController],
   providers: [
@@ -44,6 +49,7 @@ import { VerificationTokenRepository } from './repositories/verification-token.r
   ],
 })
 export class AuthModule implements OnModuleInit {
+  private _logger = new Logger(AuthModule.name);
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
   ) {}
@@ -110,6 +116,6 @@ export class AuthModule implements OnModuleInit {
       routingKey: 'auth.dlx',
     });
 
-    console.log('Auth service RabbitMQ setup complete');
+    this._logger.log('Auth service RabbitMQ setup complete');
   }
 }
