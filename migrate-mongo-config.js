@@ -2,17 +2,30 @@
 
 const config = {
   mongodb: {
-    url: process.env.MONGODB_URI || "mongodb://localhost:27017",
+    url: (() => {
+      const baseUri = process.env.MONGODB_URI || "mongodb://localhost:27017";
+      const user = process.env.MONGODB_USER;
+      const pass = process.env.MONGODB_PASS;
+      const dbName = process.env.MONGODB_DB || "open_erp";
+      const authSource = process.env.MONGODB_AUTH_SOURCE || 'admin';
+      
+      // If credentials are provided, build connection string with auth
+      if (user && pass) {
+        // Extract host and port from URI
+        const match = baseUri.match(/mongodb:\/\/(.+)/);
+        if (match) {
+          const hostPort = match[1];
+          return `mongodb://${encodeURIComponent(user)}:${encodeURIComponent(pass)}@${hostPort}/${dbName}?authSource=${authSource}`;
+        }
+      }
+      
+      return `${baseUri}/${dbName}`;
+    })(),
 
     databaseName: process.env.MONGODB_DB || "open_erp",
 
     options: {
-      auth: process.env.MONGODB_USER && process.env.MONGODB_PASS ? {
-        username: process.env.MONGODB_USER,
-        password: process.env.MONGODB_PASS,
-      } : undefined,
-      authSource: process.env.MONGODB_AUTH_SOURCE || 'admin',
-      serverSelectionTimeoutMS: 5000,
+      serverSelectionTimeoutMS: 10000,
       connectTimeoutMS: 10000,
     }
   },

@@ -117,6 +117,34 @@ The `UserRepository` (`apps/user/src/repositories/user.repository.ts`) provides:
 
 Migrations are managed using `migrate-mongo`. Configuration is in `migrate-mongo-config.js`.
 
+**Note**: There is a known issue with `migrate-mongo` and authentication. If you encounter authentication errors when running migrations, you can run migrations manually using Node.js:
+
+```bash
+# Run migration manually
+node -e "
+require('dotenv').config();
+const {MongoClient} = require('mongodb');
+const migration = require('./migrations/YOUR_MIGRATION_FILE.js');
+
+async function run() {
+  const uri = 'mongodb://\${process.env.MONGODB_USER}:\${process.env.MONGODB_PASS}@localhost:27017/\${process.env.MONGODB_DB}?authSource=admin';
+  const client = new MongoClient(uri);
+  
+  try {
+    await client.connect();
+    const db = client.db(process.env.MONGODB_DB);
+    await migration.up(db, client);
+    console.log('Migration completed');
+  } finally {
+    await client.close();
+  }
+}
+run();
+"
+```
+
+Or start MongoDB without authentication for development (not recommended for production).
+
 ### Commands
 
 ```bash
@@ -132,6 +160,8 @@ npm run db:migrate:down
 # Create new migration
 npx migrate-mongo create <migration-name>
 ```
+
+If migrate-mongo fails with authentication errors, use the manual script approach above.
 
 ### Example Migration
 
