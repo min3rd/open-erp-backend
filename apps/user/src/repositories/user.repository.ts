@@ -4,11 +4,14 @@ import { Model } from 'mongoose';
 import { User, UserDocument } from '../schemas/user.schema';
 
 export interface CreateUserDto {
-  username: string;
+  username?: string;
   email: string;
   firstName?: string;
   lastName?: string;
+  fullName?: string;
+  password?: string;
   status?: string;
+  verifiedAt?: Date;
 }
 
 export interface UpdateUserDto {

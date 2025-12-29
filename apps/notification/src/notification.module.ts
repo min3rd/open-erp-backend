@@ -1,6 +1,7 @@
 import { Module, OnModuleInit, Inject } from '@nestjs/common';
 import { NotificationController } from './notification.controller';
 import { NotificationService } from './notification.service';
+import { EmailService } from './email.service';
 import {
   RabbitMQModule,
   RABBITMQ_CLIENT,
@@ -20,7 +21,7 @@ import { ConfigModule } from '@nestjs/config';
     RabbitMQModule.forRoot(getRabbitMQConfig()),
   ],
   controllers: [NotificationController],
-  providers: [NotificationService],
+  providers: [NotificationService, EmailService],
 })
 export class NotificationModule implements OnModuleInit {
   constructor(
