@@ -208,7 +208,7 @@ docker compose up --build
 ```bash
 # Check service health
 curl http://localhost:3001/auth/health
-curl http://localhost:3002/users/health
+curl http://localhost:3002/health
 curl http://localhost:3003/notifications/health
 
 # Access RabbitMQ Management
