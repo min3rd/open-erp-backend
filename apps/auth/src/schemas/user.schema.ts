@@ -59,9 +59,8 @@ export const UserSchema = SchemaFactory.createForClass(User);
 UserSchema.index({ email: 1, status: 1 });
 
 // Middleware to exclude soft-deleted documents by default
-UserSchema.pre(/^find/, function (this: any, next: any) {
+UserSchema.pre(/^find/, function (this: any) {
   if (!this.getOptions().includeDeleted) {
     this.where({ deletedAt: null });
   }
-  next();
 });

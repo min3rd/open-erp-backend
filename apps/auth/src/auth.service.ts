@@ -12,7 +12,8 @@ import { generateVerificationCode, getTokenExpiration } from './utils/token.util
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
   private readonly verificationTokenTTL: number;
-  private readonly maxTokensPerHour: number = 3;
+  private readonly maxTokensPerHour: number;
+  private readonly rateLimitWindow: number; // in milliseconds
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
@@ -21,6 +22,8 @@ export class AuthService {
     private readonly emailService: EmailService,
   ) {
     this.verificationTokenTTL = parseInt(process.env.VERIFICATION_TOKEN_TTL || '15');
+    this.maxTokensPerHour = parseInt(process.env.VERIFICATION_MAX_ATTEMPTS || '3');
+    this.rateLimitWindow = parseInt(process.env.VERIFICATION_RATE_LIMIT_WINDOW || '3600000'); // 1 hour default
   }
 
   async register(data: RegisterDto) {
@@ -36,10 +39,10 @@ export class AuthService {
       }
 
       // User exists but not verified - check rate limiting
-      const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
+      const rateLimitStart = new Date(Date.now() - this.rateLimitWindow);
       const recentTokenCount = await this.verificationTokenRepository.countRecentTokens(
         email,
-        oneHourAgo,
+        rateLimitStart,
       );
 
       if (recentTokenCount >= this.maxTokensPerHour) {
@@ -84,7 +87,12 @@ export class AuthService {
       await this.emailService.sendVerificationEmail(email, fullName, verificationCode);
     } catch (error) {
       this.logger.error(`Failed to send verification email: ${error.message}`, error.stack);
-      // Don't throw error - user is created, they can request new code
+      // NOTE: Email sending failure is logged but doesn't block registration.
+      // User record is created and can request a new verification code.
+      // In production, consider:
+      // - Implementing retry queue for failed emails
+      // - Setting up alerts for email service failures
+      // - Allowing users to resend verification code through separate endpoint
     }
 
     // Publish user registered event

@@ -26,7 +26,6 @@ export class VerificationToken extends Document {
   @Prop({
     required: true,
     type: Date,
-    index: true,
   })
   expiresAt: Date;
 
@@ -48,3 +47,4 @@ export const VerificationTokenSchema = SchemaFactory.createForClass(Verification
 // Indexes
 VerificationTokenSchema.index({ email: 1, token: 1 }, { unique: true });
 VerificationTokenSchema.index({ expiresAt: 1 }, { expireAfterSeconds: 0 }); // TTL index for automatic cleanup
+VerificationTokenSchema.index({ email: 1, createdAt: 1 }); // For counting recent tokens
