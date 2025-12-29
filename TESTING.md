@@ -37,7 +37,7 @@ curl http://localhost:3001/auth/health
 # Expected: {"status":"ok","service":"auth"}
 
 # User Service
-curl http://localhost:3002/users/health
+curl http://localhost:3002/health
 # Expected: {"status":"ok","service":"user"}
 
 # Notification Service
