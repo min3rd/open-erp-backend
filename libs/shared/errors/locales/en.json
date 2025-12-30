@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "email_already_registered": "This email is already registered. Please log in or use a different email.",
+    "invalid_credentials": "Invalid email or password. Please check your credentials and try again.",
+    "token_expired": "Your session has expired. Please log in again.",
+    "token_invalid": "Invalid authentication token. Please log in again.",
+    "unauthorized": "You are not authorized to access this resource.",
+    "verification_rate_limit": "Too many verification attempts. Please wait before requesting another code.",
+    "verification_code_expired": "Your verification code has expired. Please request a new one.",
+    "verification_code_invalid": "The verification code you entered is invalid. Please check and try again."
+  },
+  "user": {
+    "not_found": "User not found.",
+    "already_exists": "A user with this information already exists.",
+    "invalid_status": "Cannot perform this action due to invalid user status.",
+    "profile_incomplete": "Please complete your profile before proceeding."
+  },
+  "validation": {
+    "failed": "The information you provided is invalid. Please check and try again.",
+    "email_invalid": "Please provide a valid email address.",
+    "password_weak": "Your password must be at least 8 characters and contain both letters and numbers."
+  },
+  "database": {
+    "connection_failed": "Unable to connect to the database. Please try again later.",
+    "query_failed": "A database error occurred. Please try again.",
+    "duplicate_key": "This information already exists in our system.",
+    "transaction_failed": "Unable to complete the operation. Please try again."
+  },
+  "system": {
+    "internal_error": "An unexpected error occurred. Our team has been notified.",
+    "service_unavailable": "Service is temporarily unavailable. Please try again later.",
+    "timeout": "The request took too long to process. Please try again.",
+    "configuration_error": "A system configuration error occurred. Please contact support."
+  },
+  "resource": {
+    "not_found": "The requested resource was not found.",
+    "conflict": "The resource is in conflict with existing data.",
+    "forbidden": "You do not have permission to access this resource."
+  },
+  "rate_limit": {
+    "exceeded": "You have made too many requests. Please wait before trying again."
+  }
+}
