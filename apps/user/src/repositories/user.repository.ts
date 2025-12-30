@@ -21,6 +21,7 @@ export interface UpdateUserDto {
   lastName?: string;
   status?: string;
   lastLoginAt?: Date;
+  verifiedAt?: Date;
 }
 
 @Injectable()

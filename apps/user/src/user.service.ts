@@ -187,6 +187,62 @@ export class UserService {
           throw error;
         }
 
+      case 'updateUserStatus':
+        try {
+          const { email, status, verifiedAt } = message.params;
+          const user = await this.userRepository.findByEmail(email);
+          if (!user) {
+            throw new Error(`User not found with email: ${email}`);
+          }
+          
+          const updateData: any = { status };
+          if (verifiedAt) {
+            updateData.verifiedAt = verifiedAt;
+          }
+          
+          const updatedUser = await this.userRepository.update(
+            user._id.toString(),
+            updateData,
+          );
+          
+          // Publish user updated event
+          await this.rabbitMQClient.publishEvent(
+            RABBITMQ_EXCHANGES.EVENTS,
+            RABBITMQ_ROUTING_KEYS.USER_UPDATED,
+            'user.updated',
+            {
+              userId: user._id.toString(),
+              email,
+              status,
+              verifiedAt,
+            },
+          );
+          
+          return updatedUser;
+        } catch (error) {
+          this.logger.error(
+            `Error updating user status via RPC: ${error.message}`,
+            error.stack,
+          );
+          throw error;
+        }
+
+      case 'updateLastLogin':
+        try {
+          const { userId } = message.params;
+          const user = await this.userRepository.updateLastLogin(userId);
+          if (!user) {
+            throw new Error(`User not found with id: ${userId}`);
+          }
+          return user;
+        } catch (error) {
+          this.logger.error(
+            `Error updating last login via RPC: ${error.message}`,
+            error.stack,
+          );
+          throw error;
+        }
+
       default:
         throw new Error(`Unknown RPC method: ${message.method}`);
     }
