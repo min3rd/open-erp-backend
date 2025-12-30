@@ -45,7 +45,10 @@ export class AuthController {
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Verify email with verification code' })
   @ApiResponse({ status: 200, description: 'Email verified successfully' })
-  @ApiResponse({ status: 400, description: 'Invalid or expired verification code' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid or expired verification code',
+  })
   @ApiResponse({ status: 404, description: 'User not found' })
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
     return this.authService.verifyEmail(verifyEmailDto);
@@ -55,9 +58,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Resend verification code to email' })
-  @ApiResponse({ status: 200, description: 'Verification code sent successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Verification code sent successfully',
+  })
   @ApiResponse({ status: 429, description: 'Too many verification attempts' })
-  async resendVerification(@Body() resendVerificationDto: ResendVerificationDto) {
+  async resendVerification(
+    @Body() resendVerificationDto: ResendVerificationDto,
+  ) {
     return this.authService.resendVerification(resendVerificationDto);
   }
 
