@@ -77,10 +77,7 @@ export class VerificationTokenRepository {
         })
         .exec();
     } catch (error) {
-      this.logger.error(
-        `Error finding token: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error finding token: ${error.message}`, error.stack);
       throw error;
     }
   }

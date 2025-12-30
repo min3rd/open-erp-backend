@@ -55,10 +55,12 @@ export class AuthService {
     this.rateLimitWindow = parseInt(
       process.env.VERIFICATION_RATE_LIMIT_WINDOW || '3600000',
     ); // 1 hour default
-    
+
     // JWT configuration - fail fast if not set in production
     if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
-      throw new Error('JWT_SECRET environment variable must be set in production');
+      throw new Error(
+        'JWT_SECRET environment variable must be set in production',
+      );
     }
     this.jwtSecret =
       process.env.JWT_SECRET || 'your-secret-key-change-in-production';
@@ -339,13 +341,13 @@ export class AuthService {
 
     if (!verificationToken) {
       this.logger.warn(`Invalid or expired verification code for: ${email}`);
-      
+
       // Check if there's any token (to differentiate between invalid and expired)
       const anyToken = await this.verificationTokenRepository.findToken(
         email,
         code,
       );
-      
+
       throw ErrorFactory.createError({
         code: anyToken
           ? AUTH_VERIFICATION_CODE_EXPIRED
@@ -506,3 +508,4 @@ export class AuthService {
       },
     };
   }
+}
