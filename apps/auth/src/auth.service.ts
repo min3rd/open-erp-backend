@@ -5,12 +5,23 @@ import {
   ErrorFactory,
   AUTH_EMAIL_ALREADY_REGISTERED,
   AUTH_VERIFICATION_RATE_LIMIT,
+  AUTH_INVALID_CREDENTIALS,
+  USER_NOT_FOUND,
   DB_DUPLICATE_KEY,
 } from '@shared/errors';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
+import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { RegisterDto } from './dto/register.dto';
-import { hashPassword } from './utils/password.util';
-import { generateVerificationCode, getTokenExpiration } from './utils/token.util';
+import { LoginDto } from './dto/login.dto';
+import { hashPassword, comparePassword } from './utils/password.util';
+import {
+  generateVerificationCode,
+  getTokenExpiration,
+  generateAccessToken,
+  generateRefreshToken,
+  calculateExpirationDate,
+} from './utils/token.util';
+import { Types } from 'mongoose';
 
 @Injectable()
 export class AuthService {
@@ -18,14 +29,21 @@ export class AuthService {
   private readonly verificationTokenTTL: number;
   private readonly maxTokensPerHour: number;
   private readonly rateLimitWindow: number; // in milliseconds
+  private readonly jwtSecret: string;
+  private readonly jwtAccessExpiresIn: string;
+  private readonly jwtRefreshExpiresIn: string;
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     private readonly verificationTokenRepository: VerificationTokenRepository,
+    private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {
     this.verificationTokenTTL = parseInt(process.env.VERIFICATION_TOKEN_TTL || '15');
     this.maxTokensPerHour = parseInt(process.env.VERIFICATION_MAX_ATTEMPTS || '3');
     this.rateLimitWindow = parseInt(process.env.VERIFICATION_RATE_LIMIT_WINDOW || '3600000'); // 1 hour default
+    this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    this.jwtAccessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
+    this.jwtRefreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
   }
 
   async register(data: RegisterDto) {
@@ -155,20 +173,66 @@ export class AuthService {
     };
   }
 
-  async login(data: { email: string; password: string }) {
-    // TODO: SECURITY WARNING - Implement actual login logic with password verification
-    // This is a MOCK implementation for template purposes only
-    // In production:
-    // 1. Verify email exists in database
-    // 2. Compare password hash using bcrypt
-    // 3. Generate actual JWT token with proper signing
-    // 4. Set appropriate token expiration
-    // 5. Store session/refresh token if needed
-    const session = {
-      token: 'mock-jwt-token',
-      userId: 'mock-user-id',
-      expiresIn: 3600,
-    };
+  async login(data: LoginDto) {
+    const { email, password } = data;
+
+    // Get user via RPC to user service (include password field)
+    const user = await this.rabbitMQClient.sendRPCRequest<{ email: string; includePassword: boolean }, any>(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserByEmail',
+      { email, includePassword: true },
+    );
+
+    // Check if user exists
+    if (!user) {
+      throw ErrorFactory.createError({
+        code: USER_NOT_FOUND,
+        details: { email },
+      });
+    }
+
+    // Check if user account is active
+    if (user.status !== 'active') {
+      throw ErrorFactory.createError({
+        code: AUTH_INVALID_CREDENTIALS,
+        details: { reason: 'Account not active. Please verify your email first.' },
+      });
+    }
+
+    // Verify password
+    const isPasswordValid = await comparePassword(password, user.password);
+    if (!isPasswordValid) {
+      throw ErrorFactory.createError({
+        code: AUTH_INVALID_CREDENTIALS,
+      });
+    }
+
+    // Generate tokens
+    const accessToken = generateAccessToken(
+      user._id.toString(),
+      user.email,
+      this.jwtSecret,
+      this.jwtAccessExpiresIn,
+    );
+
+    const refreshTokenValue = generateRefreshToken();
+    const refreshTokenExpiresAt = calculateExpirationDate(this.jwtRefreshExpiresIn);
+
+    // Save refresh token to database
+    await this.refreshTokenRepository.create(
+      new Types.ObjectId(user._id),
+      refreshTokenValue,
+      refreshTokenExpiresAt,
+    );
+
+    // Update last login timestamp via RPC
+    await this.rabbitMQClient.sendRPCRequest<any, any>(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'updateLastLogin',
+      { userId: user._id.toString() },
+    );
 
     // Publish user login event
     await this.rabbitMQClient.publishEvent(
@@ -176,15 +240,28 @@ export class AuthService {
       RABBITMQ_ROUTING_KEYS.AUTH_USER_LOGIN,
       'user.login',
       {
-        userId: session.userId,
+        userId: user._id.toString(),
+        email: user.email,
         timestamp: new Date(),
       },
     );
 
+    // Log structured event
+    this.logger.log({
+      event: 'user.login',
+      userId: user._id.toString(),
+      email: user.email,
+      timestamp: new Date().toISOString(),
+    });
+
     return {
-      success: true,
-      message: 'Login successful',
-      session,
+      accessToken,
+      refreshToken: refreshTokenValue,
+      user: {
+        email: user.email,
+        fullName: user.fullName || user.username,
+        avatarUrl: user.avatarUrl || null,
+      },
     };
   }
 }
