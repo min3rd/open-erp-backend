@@ -179,7 +179,9 @@ describe('PermissionService', () => {
     });
 
     it('should return false for non-existent user', async () => {
-      const fakeId = new MongooseSchema.Types.ObjectId('507f1f77bcf86cd799439011');
+      const fakeId = new MongooseSchema.Types.ObjectId(
+        '507f1f77bcf86cd799439011',
+      );
       const result = await service.hasPermission(
         fakeId.toString(),
         Permission.USER_CREATE,
@@ -411,7 +413,9 @@ describe('PermissionService', () => {
 
   describe('getUserRolesWithDetails', () => {
     it('should return empty array when user has no roles', async () => {
-      const roles = await service.getUserRolesWithDetails(testUser._id.toString());
+      const roles = await service.getUserRolesWithDetails(
+        testUser._id.toString(),
+      );
       expect(roles).toEqual([]);
     });
 
@@ -425,7 +429,9 @@ describe('PermissionService', () => {
       ];
       await testUser.save();
 
-      const roles = await service.getUserRolesWithDetails(testUser._id.toString());
+      const roles = await service.getUserRolesWithDetails(
+        testUser._id.toString(),
+      );
 
       expect(roles).toHaveLength(1);
       expect(roles[0].role.name).toBe('Tenant Admin');
@@ -433,7 +439,9 @@ describe('PermissionService', () => {
     });
 
     it('should include department info when present', async () => {
-      const departmentId = new MongooseSchema.Types.ObjectId('507f1f77bcf86cd799439011');
+      const departmentId = new MongooseSchema.Types.ObjectId(
+        '507f1f77bcf86cd799439011',
+      );
       testUser.roleAssignments = [
         {
           roleId: managerRole._id as any,
@@ -443,7 +451,9 @@ describe('PermissionService', () => {
       ];
       await testUser.save();
 
-      const roles = await service.getUserRolesWithDetails(testUser._id.toString());
+      const roles = await service.getUserRolesWithDetails(
+        testUser._id.toString(),
+      );
 
       expect(roles).toHaveLength(1);
       expect(roles[0].departmentId).toEqual(departmentId);

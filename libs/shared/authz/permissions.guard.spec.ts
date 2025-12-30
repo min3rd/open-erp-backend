@@ -3,13 +3,7 @@ import { ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { PermissionsGuard, UserContext } from './permissions.guard';
 import { AuthorizationService } from './authorization.service';
-import {
-  IS_PUBLIC_KEY,
-  REQUIRED_PERMISSIONS_KEY,
-  REQUIRED_ROLES_KEY,
-  PERMISSION_SCOPE_KEY,
-  PERMISSION_MODE_KEY,
-} from './decorators';
+import { IS_PUBLIC_KEY } from './decorators';
 import {
   AUTH_INSUFFICIENT_PERMISSIONS,
   AUTH_UNAUTHORIZED,
@@ -51,10 +45,8 @@ describe('PermissionsGuard', () => {
     }).compile();
 
     guard = module.get<PermissionsGuard>(PermissionsGuard);
-    authorizationService = module.get(
-      AuthorizationService,
-    ) as jest.Mocked<AuthorizationService>;
-    reflector = module.get(Reflector) as jest.Mocked<Reflector>;
+    authorizationService = module.get(AuthorizationService);
+    reflector = module.get(Reflector);
   });
 
   function createMockExecutionContext(
@@ -134,10 +126,9 @@ describe('PermissionsGuard', () => {
       const result = await guard.canActivate(context);
 
       expect(result).toBe(true);
-      expect(authorizationService.hasAnyRole).toHaveBeenCalledWith(
-        'user123',
-        ['SYSTEM_ADMIN'],
-      );
+      expect(authorizationService.hasAnyRole).toHaveBeenCalledWith('user123', [
+        'SYSTEM_ADMIN',
+      ]);
     });
 
     it('should deny access when user lacks required role', async () => {
