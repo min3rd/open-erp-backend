@@ -7,7 +7,8 @@
     "unauthorized": "You are not authorized to access this resource.",
     "verification_rate_limit": "Too many verification attempts. Please wait before requesting another code.",
     "verification_code_expired": "Your verification code has expired. Please request a new one.",
-    "verification_code_invalid": "The verification code you entered is invalid. Please check and try again."
+    "verification_code_invalid": "The verification code you entered is invalid. Please check and try again.",
+    "user_already_verified": "Your email is already verified."
   },
   "user": {
     "not_found": "User not found.",

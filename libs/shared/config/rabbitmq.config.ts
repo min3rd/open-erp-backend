@@ -37,6 +37,7 @@ export const RABBITMQ_ROUTING_KEYS = {
   AUTH_USER_LOGIN: 'auth.user.login',
   AUTH_USER_LOGOUT: 'auth.user.logout',
   AUTH_PASSWORD_CHANGED: 'auth.password.changed',
+  AUTH_USER_VERIFIED: 'auth.user.verified',
 
   // User events
   USER_CREATED: 'user.created',
