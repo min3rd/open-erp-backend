@@ -131,7 +131,8 @@ export class User extends Document {
           (p) => typeof p === 'string' && p.length > 0 && p.includes('.'),
         );
       },
-      message: 'Special permissions must be valid strings in format: resource.action',
+      message:
+        'Special permissions must be valid strings in format: resource.action',
     },
   })
   specialPermissions: string[];

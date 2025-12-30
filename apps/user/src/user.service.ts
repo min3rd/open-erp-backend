@@ -194,17 +194,17 @@ export class UserService {
           if (!user) {
             throw new Error(`User not found with email: ${email}`);
           }
-          
+
           const updateData: Partial<UpdateUserDto> = {
             status,
             ...(verifiedAt && { verifiedAt }),
           };
-          
+
           const updatedUser = await this.userRepository.update(
             user._id.toString(),
             updateData,
           );
-          
+
           // Publish user updated event
           await this.rabbitMQClient.publishEvent(
             RABBITMQ_EXCHANGES.EVENTS,
@@ -217,7 +217,7 @@ export class UserService {
               verifiedAt,
             },
           );
-          
+
           return updatedUser;
         } catch (error) {
           this.logger.error(
