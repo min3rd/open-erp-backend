@@ -7,7 +7,8 @@
     "unauthorized": "Bạn không có quyền truy cập tài nguyên này.",
     "verification_rate_limit": "Quá nhiều lần yêu cầu mã xác thực. Vui lòng thử lại sau.",
     "verification_code_expired": "Mã xác thực của bạn đã hết hạn. Vui lòng yêu cầu mã mới.",
-    "verification_code_invalid": "Mã xác thực bạn nhập không đúng. Vui lòng kiểm tra và thử lại."
+    "verification_code_invalid": "Mã xác thực bạn nhập không đúng. Vui lòng kiểm tra và thử lại.",
+    "user_already_verified": "Email của bạn đã được xác thực."
   },
   "user": {
     "not_found": "Không tìm thấy người dùng.",
