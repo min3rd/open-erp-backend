@@ -203,8 +203,7 @@ export class PermissionsGuard implements CanActivate {
           AuthzMetrics.incrementDeny();
           throw new ForbiddenException({
             errorCode: AUTH_FORBIDDEN_CROSS_TENANT,
-            message:
-              'Tenant context required for this operation',
+            message: 'Tenant context required for this operation',
             correlationId,
           });
         }
@@ -218,8 +217,9 @@ export class PermissionsGuard implements CanActivate {
             request.params?.tenantId || request.headers['x-tenant-id'];
           if (user.tenantId !== requestedTenantId) {
             // Allow if user is system admin (cross-tenant access)
-            const isSystemAdmin =
-              await this.authorizationService.isSystemAdmin(user.userId);
+            const isSystemAdmin = await this.authorizationService.isSystemAdmin(
+              user.userId,
+            );
             if (!isSystemAdmin) {
               this.logDenyDecision({
                 correlationId,

@@ -1,15 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Model, Schema as MongooseSchema } from 'mongoose';
+import { Model } from 'mongoose';
 import { AuthorizationService } from './authorization.service';
 import { User, UserSchema, UserDocument } from '../schemas/user.schema';
 import { Role, RoleSchema, RoleDocument } from '../schemas/role.schema';
-import {
-  Tenant,
-  TenantSchema,
-  TenantDocument,
-} from '../schemas/tenant.schema';
+import { Tenant, TenantSchema, TenantDocument } from '../schemas/tenant.schema';
 import { Permission } from '../types/permission.enum';
 
 describe('AuthorizationService', () => {
