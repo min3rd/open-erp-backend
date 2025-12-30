@@ -10,37 +10,14 @@ module.exports = {
   async up(db, client) {
     console.log('Starting migration: Add multi-tenant and RBAC fields to users...');
 
-    // First, check if we need to create a default tenant for existing users
-    const existingUsersCount = await db.collection('users').countDocuments();
-    let defaultTenantId = null;
-
-    if (existingUsersCount > 0) {
-      console.log(`Found ${existingUsersCount} existing users. Creating default tenant...`);
-
-      // Create default tenant for existing users
-      const defaultTenant = await db.collection('tenants').insertOne({
-        name: 'Default Organization',
-        slug: 'default',
-        description: 'Default tenant for existing users',
-        status: 'active',
-        settings: {},
-        deletedAt: null,
-        trialExpiresAt: null,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      });
-
-      defaultTenantId = defaultTenant.insertedId;
-      console.log(`Created default tenant with ID: ${defaultTenantId}`);
-    }
-
     // Update collection validator to include new fields
+    // Note: tenantId is optional - users can create their own tenant or be invited to one
     await db.command({
       collMod: 'users',
       validator: {
         $jsonSchema: {
           bsonType: 'object',
-          required: ['username', 'email', 'status', 'tenantId'],
+          required: ['username', 'email', 'status'],
           properties: {
             username: {
               bsonType: 'string',
@@ -69,8 +46,8 @@ module.exports = {
               description: 'Status must be one of: pending, active, inactive, suspended',
             },
             tenantId: {
-              bsonType: 'objectId',
-              description: 'Tenant ID is required for multi-tenancy',
+              bsonType: ['objectId', 'null'],
+              description: 'Tenant ID for multi-tenancy (optional until user creates/joins a tenant)',
             },
             roleAssignments: {
               bsonType: 'array',
@@ -134,21 +111,26 @@ module.exports = {
 
     console.log('Updated users collection validator');
 
-    // Update existing users to add new fields if they don't have them
-    if (defaultTenantId) {
-      await db.collection('users').updateMany(
-        { tenantId: { $exists: false } },
-        {
-          $set: {
-            tenantId: defaultTenantId,
-            roleAssignments: [],
-            specialPermissions: [],
-          },
+    // Initialize new fields for existing users (tenantId remains null)
+    await db.collection('users').updateMany(
+      { 
+        $or: [
+          { roleAssignments: { $exists: false } },
+          { specialPermissions: { $exists: false } }
+        ]
+      },
+      {
+        $set: {
+          roleAssignments: [],
+          specialPermissions: [],
+        },
+        $setOnInsert: {
+          tenantId: null,
         }
-      );
+      }
+    );
 
-      console.log('Updated existing users with default tenant and empty role assignments');
-    }
+    console.log('Initialized roleAssignments and specialPermissions for existing users');
 
     // Add new indexes for tenant-based queries
     await db.collection('users').createIndex({ tenantId: 1, status: 1 });

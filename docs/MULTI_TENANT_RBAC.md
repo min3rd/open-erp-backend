@@ -2,14 +2,17 @@
 
 ## Overview
 
-This system implements a comprehensive multi-tenant architecture with Role-Based Access Control (RBAC) for the Open ERP backend. Each user belongs to a single tenant, and permissions are managed through roles that can be either global (system-wide) or tenant-scoped.
+This system implements a comprehensive multi-tenant architecture with Role-Based Access Control (RBAC) for the Open ERP backend. Users can belong to a tenant, and permissions are managed through roles that can be either global (system-wide) or tenant-scoped.
 
 ## Core Concepts
 
 ### 1. Multi-Tenancy
 
 - **Tenant**: Represents an organization or company using the system
-- Each user belongs to exactly one tenant via the `tenantId` field
+- Users can optionally belong to a tenant via the `tenantId` field
+- Users without a tenant can either:
+  1. Create their own tenant
+  2. Be invited to join an existing tenant by another user
 - Data isolation is enforced at the query level through `tenantId` filtering
 - Tenants can be in different states: `active`, `inactive`, `suspended`, or `trial`
 
@@ -111,7 +114,7 @@ Users can have multiple role assignments, each with:
   status: 'pending' | 'active' | 'inactive' | 'suspended';
   
   // Multi-tenant & RBAC fields
-  tenantId: ObjectId;                    // Required: user's tenant
+  tenantId?: ObjectId;                   // Optional: user's tenant (null until they create/join one)
   roleAssignments: RoleAssignment[];     // Array of role assignments
   specialPermissions: string[];          // Direct permissions
   
@@ -350,9 +353,8 @@ node scripts/seed-roles.js
 2. **20251230080100**: Creates roles collection
 3. **20251230080200**: Creates departments collection
 4. **20251230080300**: Adds multi-tenant and RBAC fields to users
-   - Creates default tenant if users exist
-   - Updates existing users with `tenantId`
-   - Initializes empty `roleAssignments` and `specialPermissions`
+   - Makes `tenantId` optional (users without tenant can create one or be invited)
+   - Initializes empty `roleAssignments` and `specialPermissions` for existing users
 
 ## Querying with Tenant Isolation
 
