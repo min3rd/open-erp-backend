@@ -1,7 +1,10 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { VerificationToken, VerificationTokenDocument } from '../schemas/verification-token.schema';
+import {
+  VerificationToken,
+  VerificationTokenDocument,
+} from '../schemas/verification-token.schema';
 
 @Injectable()
 export class VerificationTokenRepository {
@@ -12,11 +15,17 @@ export class VerificationTokenRepository {
     private tokenModel: Model<VerificationTokenDocument>,
   ) {}
 
-  async create(email: string, token: string, expiresAt: Date): Promise<VerificationToken> {
+  async create(
+    email: string,
+    token: string,
+    expiresAt: Date,
+  ): Promise<VerificationToken> {
     try {
       // Delete any existing unused tokens for this email
-      await this.tokenModel.deleteMany({ email: email.toLowerCase(), usedAt: null }).exec();
-      
+      await this.tokenModel
+        .deleteMany({ email: email.toLowerCase(), usedAt: null })
+        .exec();
+
       const verificationToken = new this.tokenModel({
         email: email.toLowerCase(),
         token,
@@ -25,12 +34,18 @@ export class VerificationTokenRepository {
       });
       return await verificationToken.save();
     } catch (error) {
-      this.logger.error(`Error creating verification token: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating verification token: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
-  async findValidToken(email: string, token: string): Promise<VerificationToken | null> {
+  async findValidToken(
+    email: string,
+    token: string,
+  ): Promise<VerificationToken | null> {
     try {
       return await this.tokenModel
         .findOne({
@@ -41,7 +56,10 @@ export class VerificationTokenRepository {
         })
         .exec();
     } catch (error) {
-      this.logger.error(`Error finding valid token: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding valid token: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -49,14 +67,13 @@ export class VerificationTokenRepository {
   async markAsUsed(id: string): Promise<VerificationToken | null> {
     try {
       return await this.tokenModel
-        .findByIdAndUpdate(
-          id,
-          { usedAt: new Date() },
-          { new: true }
-        )
+        .findByIdAndUpdate(id, { usedAt: new Date() }, { new: true })
         .exec();
     } catch (error) {
-      this.logger.error(`Error marking token as used: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error marking token as used: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -64,14 +81,13 @@ export class VerificationTokenRepository {
   async incrementAttempts(id: string): Promise<VerificationToken | null> {
     try {
       return await this.tokenModel
-        .findByIdAndUpdate(
-          id,
-          { $inc: { attempts: 1 } },
-          { new: true }
-        )
+        .findByIdAndUpdate(id, { $inc: { attempts: 1 } }, { new: true })
         .exec();
     } catch (error) {
-      this.logger.error(`Error incrementing attempts: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error incrementing attempts: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -85,7 +101,10 @@ export class VerificationTokenRepository {
         })
         .exec();
     } catch (error) {
-      this.logger.error(`Error counting recent tokens: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error counting recent tokens: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

@@ -1,5 +1,9 @@
 import { HttpException, HttpStatus } from '@nestjs/common';
-import { ErrorResponse, CreateErrorOptions, ErrorRegistryEntry } from './error.interface';
+import {
+  ErrorResponse,
+  CreateErrorOptions,
+  ErrorRegistryEntry,
+} from './error.interface';
 import { generateCorrelationId } from './correlation-id.util';
 import * as errorRegistry from './error-registry.json';
 
@@ -47,7 +51,8 @@ export class StandardizedException extends HttpException {
  */
 export class ErrorFactory {
   private static registry: Map<string, ErrorRegistryEntry> = new Map();
-  private static supportBaseUrl: string = process.env.ERROR_SUPPORT_BASE_URL || '';
+  private static supportBaseUrl: string =
+    process.env.ERROR_SUPPORT_BASE_URL || '';
 
   /**
    * Initialize the error registry

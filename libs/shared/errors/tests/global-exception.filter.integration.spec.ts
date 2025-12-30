@@ -12,7 +12,11 @@ import { IsEmail, IsString, MinLength } from 'class-validator';
 import request from 'supertest';
 import { GlobalExceptionFilter } from '../global-exception.filter';
 import { ErrorFactory } from '../error.factory';
-import { AUTH_EMAIL_ALREADY_REGISTERED, VALIDATION_FAILED, SYS_INTERNAL_ERROR } from '../error-codes';
+import {
+  AUTH_EMAIL_ALREADY_REGISTERED,
+  VALIDATION_FAILED,
+  SYS_INTERNAL_ERROR,
+} from '../error-codes';
 
 // Test DTO with validation
 class TestDto {
@@ -60,10 +64,10 @@ describe('GlobalExceptionFilter Integration Tests', () => {
     }).compile();
 
     app = moduleRef.createNestApplication();
-    
+
     // Apply global exception filter
     app.useGlobalFilters(new GlobalExceptionFilter());
-    
+
     // Apply validation pipe
     app.useGlobalPipes(
       new ValidationPipe({
@@ -109,11 +113,11 @@ describe('GlobalExceptionFilter Integration Tests', () => {
       expect(response.body.errorCode).toBe('AUTH_0001');
       expect(response.body.message).toBe('auth.email_already_registered');
       expect(response.body.details).toEqual({ email: 'test@example.com' });
-      
+
       // Verify timestamp is valid ISO 8601
       const timestamp = new Date(response.body.timestamp);
       expect(timestamp.toISOString()).toBe(response.body.timestamp);
-      
+
       // Verify correlation ID is present
       expect(response.body.correlationId).toBeDefined();
       expect(typeof response.body.correlationId).toBe('string');
@@ -158,7 +162,7 @@ describe('GlobalExceptionFilter Integration Tests', () => {
       expect(response.body.status).toBe(HttpStatus.BAD_REQUEST);
       expect(response.body.errorCode).toBe('VALIDATION_0001');
       expect(response.body.message).toBe('validation.failed');
-      
+
       // Verify details contain validation errors
       expect(response.body.details).toHaveProperty('validationErrors');
       expect(Array.isArray(response.body.details.validationErrors)).toBe(true);
@@ -178,7 +182,7 @@ describe('GlobalExceptionFilter Integration Tests', () => {
   describe('Correlation ID', () => {
     it('should use correlation ID from request header', async () => {
       const correlationId = 'test-correlation-id-123';
-      
+
       const response = await request(app.getHttpServer())
         .get('/test/standard-error')
         .set('x-correlation-id', correlationId)
@@ -193,9 +197,10 @@ describe('GlobalExceptionFilter Integration Tests', () => {
         .expect(HttpStatus.CONFLICT);
 
       expect(response.body.correlationId).toBeDefined();
-      
+
       // Should be a UUID v4
-      const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+      const uuidV4Pattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       expect(response.body.correlationId).toMatch(uuidV4Pattern);
     });
   });

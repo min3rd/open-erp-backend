@@ -29,7 +29,7 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Create standardized error response
     let errorResponse: ErrorResponse;
-    
+
     // If the exception already has a correlation ID from StandardizedException, preserve it
     // Otherwise use the one from the request
     if (exception instanceof Error && 'toErrorResponse' in exception) {
@@ -39,7 +39,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         errorResponse.correlationId = request.headers['x-correlation-id'];
       }
     } else {
-      errorResponse = ErrorFactory.createErrorResponse(exception, correlationId);
+      errorResponse = ErrorFactory.createErrorResponse(
+        exception,
+        correlationId,
+      );
     }
 
     // Log the error with correlation ID for tracing
@@ -71,25 +74,16 @@ export class GlobalExceptionFilter implements ExceptionFilter {
 
     // Log at appropriate level based on status code
     if (errorResponse.status >= 500) {
-      this.logger.error(
-        `Server Error: ${errorResponse.errorCode}`,
-        {
-          ...logData,
-          stack: exception.stack,
-          exceptionName: exception.name,
-          exceptionMessage: exception.message,
-        },
-      );
+      this.logger.error(`Server Error: ${errorResponse.errorCode}`, {
+        ...logData,
+        stack: exception.stack,
+        exceptionName: exception.name,
+        exceptionMessage: exception.message,
+      });
     } else if (errorResponse.status >= 400) {
-      this.logger.warn(
-        `Client Error: ${errorResponse.errorCode}`,
-        logData,
-      );
+      this.logger.warn(`Client Error: ${errorResponse.errorCode}`, logData);
     } else {
-      this.logger.log(
-        `Error: ${errorResponse.errorCode}`,
-        logData,
-      );
+      this.logger.log(`Error: ${errorResponse.errorCode}`, logData);
     }
 
     // Emit metrics for monitoring (can be extended with actual metrics service)

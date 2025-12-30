@@ -1,4 +1,12 @@
-import { Controller, Get, Res, Query, HttpException, HttpStatus, Logger } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Res,
+  Query,
+  HttpException,
+  HttpStatus,
+  Logger,
+} from '@nestjs/common';
 import type { Response } from 'express';
 
 interface ServiceConfig {
@@ -26,7 +34,9 @@ export class SwaggerAggregatorController {
     if (servicesEnv) {
       try {
         this.services = JSON.parse(servicesEnv);
-        this.logger.log(`Loaded ${this.services.length} service(s) from configuration`);
+        this.logger.log(
+          `Loaded ${this.services.length} service(s) from configuration`,
+        );
       } catch (error) {
         this.logger.error('Failed to parse SWAGGER_AGGREGATOR_SERVICES', error);
       }
@@ -35,7 +45,10 @@ export class SwaggerAggregatorController {
       this.services = [
         { name: 'Auth Service', url: 'http://localhost:3001/api-docs.json' },
         { name: 'User Service', url: 'http://localhost:3002/api-docs.json' },
-        { name: 'Notification Service', url: 'http://localhost:3003/api-docs.json' },
+        {
+          name: 'Notification Service',
+          url: 'http://localhost:3003/api-docs.json',
+        },
       ];
       this.logger.log('Using default service configuration');
     }
@@ -57,9 +70,15 @@ export class SwaggerAggregatorController {
   }
 
   @Get('api/spec')
-  async fetchSpec(@Query('url') url: string, @Query('refresh') refresh: string) {
+  async fetchSpec(
+    @Query('url') url: string,
+    @Query('refresh') refresh: string,
+  ) {
     if (!url) {
-      throw new HttpException('URL parameter is required', HttpStatus.BAD_REQUEST);
+      throw new HttpException(
+        'URL parameter is required',
+        HttpStatus.BAD_REQUEST,
+      );
     }
 
     // Check cache
@@ -77,7 +96,7 @@ export class SwaggerAggregatorController {
 
     try {
       const headers: Record<string, string> = {
-        'Accept': 'application/json',
+        Accept: 'application/json',
       };
 
       // Add authentication if configured
@@ -116,8 +135,10 @@ export class SwaggerAggregatorController {
   }
 
   private generateSwaggerUI(): string {
-    const services = JSON.stringify(this.services.map((s) => ({ name: s.name, url: s.url })));
-    
+    const services = JSON.stringify(
+      this.services.map((s) => ({ name: s.name, url: s.url })),
+    );
+
     return `<!DOCTYPE html>
 <html lang="en">
 <head>

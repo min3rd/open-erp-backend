@@ -51,28 +51,30 @@ describe('AuthService - Register Integration Tests', () => {
     }).compile();
 
     service = moduleRef.get<AuthService>(AuthService);
-    
+
     // Reset mocks before each test
     jest.clearAllMocks();
-    
+
     // Default: no existing user
-    mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-      if (method === 'findUserByEmail') {
+    mockRabbitMQClient.sendRPCRequest.mockImplementation(
+      (exchange, routingKey, method, params) => {
+        if (method === 'findUserByEmail') {
+          return Promise.resolve(null);
+        }
+        if (method === 'createUser') {
+          return Promise.resolve({
+            email: params.email,
+            fullName: params.fullName,
+            status: 'pending',
+          });
+        }
+        if (method === 'sendVerificationEmail') {
+          return Promise.resolve({ success: true });
+        }
         return Promise.resolve(null);
-      }
-      if (method === 'createUser') {
-        return Promise.resolve({
-          email: params.email,
-          fullName: params.fullName,
-          status: 'pending',
-        });
-      }
-      if (method === 'sendVerificationEmail') {
-        return Promise.resolve({ success: true });
-      }
-      return Promise.resolve(null);
-    });
-    
+      },
+    );
+
     mockVerificationTokenRepository.countRecentTokens.mockResolvedValue(0);
   });
 
@@ -107,10 +109,10 @@ describe('AuthService - Register Integration Tests', () => {
           status: 'pending',
         }),
       );
-      
+
       // Verify password was hashed (not the same as input)
       const createUserCall = mockRabbitMQClient.sendRPCRequest.mock.calls.find(
-        call => call[2] === 'createUser'
+        (call) => call[2] === 'createUser',
       );
       expect(createUserCall).toBeDefined();
       const createParams = createUserCall[3];
@@ -132,7 +134,7 @@ describe('AuthService - Register Integration Tests', () => {
 
       // Verify createUser was called with hashed password
       const createUserCall = mockRabbitMQClient.sendRPCRequest.mock.calls.find(
-        call => call[2] === 'createUser'
+        (call) => call[2] === 'createUser',
       );
       expect(createUserCall).toBeDefined();
       const createParams = createUserCall[3];
@@ -168,7 +170,7 @@ describe('AuthService - Register Integration Tests', () => {
 
       // Verify sendVerificationEmail RPC was called
       const emailCall = mockRabbitMQClient.sendRPCRequest.mock.calls.find(
-        call => call[2] === 'sendVerificationEmail'
+        (call) => call[2] === 'sendVerificationEmail',
       );
       expect(emailCall).toBeDefined();
       expect(emailCall[3]).toEqual(
@@ -205,17 +207,19 @@ describe('AuthService - Register Integration Tests', () => {
   describe('register - duplicate email', () => {
     it('should throw ConflictException if email already verified', async () => {
       // Mock RPC to return existing verified user
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            email: 'verified@example.com',
-            fullName: 'Verified User',
-            status: 'active',
-            verifiedAt: new Date(),
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              email: 'verified@example.com',
+              fullName: 'Verified User',
+              status: 'active',
+              verifiedAt: new Date(),
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const registerDto: RegisterDto = {
         email: 'verified@example.com',
@@ -223,7 +227,9 @@ describe('AuthService - Register Integration Tests', () => {
         password: 'Password123',
       };
 
-      await expect(service.register(registerDto)).rejects.toThrow(StandardizedException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        StandardizedException,
+      );
       await expect(service.register(registerDto)).rejects.toThrow(
         expect.objectContaining({
           errorCode: 'AUTH_0001',
@@ -234,20 +240,22 @@ describe('AuthService - Register Integration Tests', () => {
 
     it('should allow resending verification code for pending user', async () => {
       // Mock RPC to return existing pending user
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            email: 'pending@example.com',
-            fullName: 'Pending User',
-            status: 'pending',
-            verifiedAt: null,
-          });
-        }
-        if (method === 'sendVerificationEmail') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              email: 'pending@example.com',
+              fullName: 'Pending User',
+              status: 'pending',
+              verifiedAt: null,
+            });
+          }
+          if (method === 'sendVerificationEmail') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const registerDto: RegisterDto = {
         email: 'pending@example.com',
@@ -259,34 +267,37 @@ describe('AuthService - Register Integration Tests', () => {
       expect(result.success).toBe(true);
 
       // Should not create new user (user already exists)
-      const createUserCalls = mockRabbitMQClient.sendRPCRequest.mock.calls.filter(
-        call => call[2] === 'createUser'
-      );
+      const createUserCalls =
+        mockRabbitMQClient.sendRPCRequest.mock.calls.filter(
+          (call) => call[2] === 'createUser',
+        );
       expect(createUserCalls.length).toBe(0);
-      
+
       // Should create new token
       expect(mockVerificationTokenRepository.create).toHaveBeenCalled();
-      
+
       // Should send email via RPC
       const emailCalls = mockRabbitMQClient.sendRPCRequest.mock.calls.filter(
-        call => call[2] === 'sendVerificationEmail'
+        (call) => call[2] === 'sendVerificationEmail',
       );
       expect(emailCalls.length).toBeGreaterThan(0);
     });
 
     it('should enforce rate limiting on verification resends', async () => {
       // Mock RPC to return existing pending user
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            email: 'ratelimit@example.com',
-            fullName: 'Rate Limited User',
-            status: 'pending',
-            verifiedAt: null,
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              email: 'ratelimit@example.com',
+              fullName: 'Rate Limited User',
+              status: 'pending',
+              verifiedAt: null,
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       // Mock 3 recent tokens (rate limit reached)
       mockVerificationTokenRepository.countRecentTokens.mockResolvedValue(3);
@@ -297,7 +308,9 @@ describe('AuthService - Register Integration Tests', () => {
         password: 'Password123',
       };
 
-      await expect(service.register(registerDto)).rejects.toThrow(StandardizedException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        StandardizedException,
+      );
       await expect(service.register(registerDto)).rejects.toThrow(
         expect.objectContaining({
           errorCode: 'AUTH_0006',
@@ -330,7 +343,7 @@ describe('AuthService - Register Integration Tests', () => {
 
       // Verify findUserByEmail was called with the provided email
       const findCalls = mockRabbitMQClient.sendRPCRequest.mock.calls.filter(
-        call => call[2] === 'findUserByEmail'
+        (call) => call[2] === 'findUserByEmail',
       );
       expect(findCalls.length).toBeGreaterThan(0);
       expect(findCalls[0][3].email).toBe('TEST@EXAMPLE.COM');

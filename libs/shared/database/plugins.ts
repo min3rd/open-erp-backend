@@ -65,4 +65,3 @@ export function softDeletePlugin(schema: Schema) {
     return this.find(conditions);
   };
 }
-

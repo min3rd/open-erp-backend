@@ -101,7 +101,13 @@ UserSchema.index({ email: 1, status: 1 });
 UserSchema.index({ username: 1, status: 1 });
 
 // Add text index for search
-UserSchema.index({ username: 'text', email: 'text', firstName: 'text', lastName: 'text', fullName: 'text' });
+UserSchema.index({
+  username: 'text',
+  email: 'text',
+  firstName: 'text',
+  lastName: 'text',
+  fullName: 'text',
+});
 
 // Add TTL index for soft-deleted users (optional: auto-delete after 90 days)
 UserSchema.index({ deletedAt: 1 }, { expireAfterSeconds: 7776000 }); // 90 days

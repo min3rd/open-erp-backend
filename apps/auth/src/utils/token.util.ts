@@ -32,14 +32,14 @@ export function generateAccessToken(
   userId: string,
   email: string,
   secret: string,
-  expiresIn: string = '15m',
+  expiresIn: string | number = '15m',
 ): string {
   const payload = {
     sub: userId,
     email,
     type: 'access',
   };
-  return jwt.sign(payload, secret, { expiresIn });
+  return jwt.sign(payload, secret, { expiresIn: expiresIn as any });
 }
 
 /**
@@ -58,7 +58,9 @@ export function generateRefreshToken(): string {
 export function calculateExpirationDate(duration: string): Date {
   const match = duration.match(/^(\d+)([smhd])$/);
   if (!match) {
-    throw new Error('Invalid duration format. Use format like "15m", "1h", "7d"');
+    throw new Error(
+      'Invalid duration format. Use format like "15m", "1h", "7d"',
+    );
   }
 
   const value = parseInt(match[1], 10);
@@ -92,7 +94,7 @@ export function calculateExpirationDate(duration: string): Date {
 export function verifyToken(token: string, secret: string): any {
   try {
     return jwt.verify(token, secret);
-  } catch (error) {
+  } catch {
     return null;
   }
 }

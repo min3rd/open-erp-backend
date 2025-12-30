@@ -24,7 +24,8 @@ describe('Token Utility', () => {
       const code3 = generateVerificationCode();
 
       // At least one should be different (very high probability)
-      const allDifferent = code1 !== code2 || code2 !== code3 || code1 !== code3;
+      const allDifferent =
+        code1 !== code2 || code2 !== code3 || code1 !== code3;
       expect(allDifferent).toBe(true);
     });
 
@@ -45,7 +46,7 @@ describe('Token Utility', () => {
 
       expect(expiration).toBeInstanceOf(Date);
       expect(expiration.getTime()).toBeGreaterThan(now.getTime());
-      
+
       // Should be approximately 15 minutes in the future (within 1 second tolerance)
       const diff = expiration.getTime() - now.getTime();
       const expectedDiff = 15 * 60 * 1000; // 15 minutes in milliseconds
@@ -59,7 +60,7 @@ describe('Token Utility', () => {
 
       expect(expiration).toBeInstanceOf(Date);
       expect(expiration.getTime()).toBeGreaterThan(now.getTime());
-      
+
       // Should be approximately 30 minutes in the future
       const diff = expiration.getTime() - now.getTime();
       const expectedDiff = minutes * 60 * 1000;
@@ -83,7 +84,7 @@ describe('Token Utility', () => {
 
       expect(expiration).toBeInstanceOf(Date);
       expect(expiration.getTime()).toBeGreaterThan(now.getTime());
-      
+
       const diff = expiration.getTime() - now.getTime();
       const expectedDiff = minutes * 60 * 1000;
       expect(Math.abs(diff - expectedDiff)).toBeLessThan(1000);
@@ -115,7 +116,12 @@ describe('Token Utility', () => {
     });
 
     it('should respect custom expiration time', () => {
-      const token = generateAccessToken(testUserId, testEmail, testSecret, '1h');
+      const token = generateAccessToken(
+        testUserId,
+        testEmail,
+        testSecret,
+        '1h',
+      );
       const decoded: any = jwt.verify(token, testSecret);
 
       const expectedExp = Math.floor(Date.now() / 1000) + 3600; // 1 hour from now
@@ -123,8 +129,16 @@ describe('Token Utility', () => {
     });
 
     it('should generate different tokens for different users', () => {
-      const token1 = generateAccessToken('user1', 'user1@example.com', testSecret);
-      const token2 = generateAccessToken('user2', 'user2@example.com', testSecret);
+      const token1 = generateAccessToken(
+        'user1',
+        'user1@example.com',
+        testSecret,
+      );
+      const token2 = generateAccessToken(
+        'user2',
+        'user2@example.com',
+        testSecret,
+      );
 
       expect(token1).not.toBe(token2);
     });
@@ -137,7 +151,9 @@ describe('Token Utility', () => {
       expect(token).toBeDefined();
       expect(typeof token).toBe('string');
       // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-      expect(token).toMatch(/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+      expect(token).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
+      );
     });
 
     it('should generate unique tokens', () => {
@@ -189,9 +205,15 @@ describe('Token Utility', () => {
     });
 
     it('should throw error for invalid duration format', () => {
-      expect(() => calculateExpirationDate('invalid')).toThrow('Invalid duration format');
-      expect(() => calculateExpirationDate('15')).toThrow('Invalid duration format');
-      expect(() => calculateExpirationDate('15x')).toThrow('Invalid duration format');
+      expect(() => calculateExpirationDate('invalid')).toThrow(
+        'Invalid duration format',
+      );
+      expect(() => calculateExpirationDate('15')).toThrow(
+        'Invalid duration format',
+      );
+      expect(() => calculateExpirationDate('15x')).toThrow(
+        'Invalid duration format',
+      );
     });
   });
 
@@ -225,8 +247,13 @@ describe('Token Utility', () => {
 
     it('should return null for expired token', () => {
       // Create token with very short expiration
-      const token = generateAccessToken(testUserId, testEmail, testSecret, '1ms');
-      
+      const token = generateAccessToken(
+        testUserId,
+        testEmail,
+        testSecret,
+        '1ms',
+      );
+
       // Wait for token to expire
       return new Promise((resolve) => {
         setTimeout(() => {

@@ -1,7 +1,10 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
-import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import {
+  RABBITMQ_EXCHANGES,
+  RABBITMQ_ROUTING_KEYS,
+} from '@shared/config/rabbitmq.config';
 import { UserRepository } from './repositories/user.repository';
 
 @Injectable()
@@ -21,7 +24,10 @@ export class UserService {
         users,
       };
     } catch (error) {
-      this.logger.error(`Error finding all users: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding all users: ${error.message}`,
+        error.stack,
+      );
       return {
         success: false,
         message: error.message,
@@ -126,7 +132,9 @@ export class UserService {
               email: message.data.email,
             });
           } catch (error) {
-            this.logger.error(`Error creating user from event: ${error.message}`);
+            this.logger.error(
+              `Error creating user from event: ${error.message}`,
+            );
           }
         }
         break;
@@ -172,7 +180,10 @@ export class UserService {
           );
           return user;
         } catch (error) {
-          this.logger.error(`Error creating user via RPC: ${error.message}`, error.stack);
+          this.logger.error(
+            `Error creating user via RPC: ${error.message}`,
+            error.stack,
+          );
           throw error;
         }
 

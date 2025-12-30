@@ -23,7 +23,9 @@ export class EmailService {
         },
       });
     } else {
-      this.logger.warn('Email sending is BYPASSED - emails will be logged but not sent');
+      this.logger.warn(
+        'Email sending is BYPASSED - emails will be logged but not sent',
+      );
     }
   }
 
@@ -39,7 +41,10 @@ export class EmailService {
     verificationCode: string,
   ): Promise<void> {
     try {
-      const { subject, body } = await this.loadEmailTemplate(fullName, verificationCode);
+      const { subject, body } = await this.loadEmailTemplate(
+        fullName,
+        verificationCode,
+      );
 
       if (this.bypassEmail) {
         this.logger.log(`[BYPASS] Verification email for ${to}:`);
@@ -49,16 +54,22 @@ export class EmailService {
       }
 
       const info = await this.transporter.sendMail({
-        from: process.env.AUTH_EMAIL_FROM || '"Open ERP" <noreply@open-erp.com>',
+        from:
+          process.env.AUTH_EMAIL_FROM || '"Open ERP" <noreply@open-erp.com>',
         to,
         subject,
         text: body,
         html: this.convertToHtml(body),
       });
 
-      this.logger.log(`Verification email sent successfully to ${to}. Message ID: ${info.messageId}`);
+      this.logger.log(
+        `Verification email sent successfully to ${to}. Message ID: ${info.messageId}`,
+      );
     } catch (error) {
-      this.logger.error(`Failed to send verification email to ${to}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send verification email to ${to}: ${error.message}`,
+        error.stack,
+      );
       throw new Error('Failed to send verification email');
     }
   }
@@ -71,19 +82,27 @@ export class EmailService {
     verificationCode: string,
   ): Promise<{ subject: string; body: string }> {
     try {
-      const templatePath = path.join(__dirname, '../../templates/VERIFY_EMAIL.md');
+      const templatePath = path.join(
+        __dirname,
+        '../../templates/VERIFY_EMAIL.md',
+      );
       const template = await fs.readFile(templatePath, 'utf-8');
 
       // Extract subject (first line starting with #)
       const lines = template.split('\n');
-      const subjectLine = lines.find(line => line.startsWith('#'));
-      const subject = subjectLine ? subjectLine.replace(/^#+\s*/, '').trim() : 'Email Verification';
+      const subjectLine = lines.find((line) => line.startsWith('#'));
+      const subject = subjectLine
+        ? subjectLine.replace(/^#+\s*/, '').trim()
+        : 'Email Verification';
 
       // Replace placeholders
       const body = template
         .replace(/{{fullName}}/g, fullName)
         .replace(/{{verificationCode}}/g, verificationCode)
-        .replace(/{{expiryMinutes}}/g, process.env.VERIFICATION_TOKEN_TTL || '15');
+        .replace(
+          /{{expiryMinutes}}/g,
+          process.env.VERIFICATION_TOKEN_TTL || '15',
+        );
 
       return { subject, body };
     } catch (error) {
@@ -101,26 +120,26 @@ export class EmailService {
    */
   private convertToHtml(text: string): string {
     const lines = text.split('\n');
-    const htmlLines = lines.map(line => {
+    const htmlLines = lines.map((line) => {
       // Headers
       if (line.startsWith('## ')) {
         return `<h2>${line.substring(3)}</h2>`;
       } else if (line.startsWith('# ')) {
         return `<h1>${line.substring(2)}</h1>`;
       }
-      
+
       // Bold and italic
       line = line.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
       line = line.replace(/\*(.+?)\*/g, '<em>$1</em>');
-      
+
       // Empty lines become paragraph breaks
       if (line.trim() === '') {
         return '</p><p>';
       }
-      
+
       return line + '<br>';
     });
-    
+
     return '<p>' + htmlLines.join('\n') + '</p>';
   }
 }

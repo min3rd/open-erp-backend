@@ -25,7 +25,10 @@ export class RabbitMQClient {
   private connection: amqp.AmqpConnectionManager;
   private channelWrapper: ChannelWrapper;
   private retryConfig: RetryConfig;
-  private pendingRPCs: Map<string, { resolve: Function; reject: Function; timeout: NodeJS.Timeout }> = new Map();
+  private pendingRPCs: Map<
+    string,
+    { resolve: Function; reject: Function; timeout: NodeJS.Timeout }
+  > = new Map();
 
   constructor(
     private readonly config: RabbitMQConfig,
@@ -44,7 +47,7 @@ export class RabbitMQClient {
    */
   async connect(): Promise<void> {
     const connectionUrl = this.buildConnectionUrl();
-    
+
     this.connection = amqp.connect([connectionUrl], {
       heartbeatIntervalInSeconds: this.config.heartbeat ?? 30,
       reconnectTimeInSeconds: 5,
@@ -78,7 +81,7 @@ export class RabbitMQClient {
    */
   private buildConnectionUrl(): string {
     const { url, user, password, vhost } = this.config;
-    
+
     if (url.includes('@')) {
       return url; // URL already contains credentials
     }
@@ -86,7 +89,7 @@ export class RabbitMQClient {
     const protocol = url.startsWith('amqps://') ? 'amqps://' : 'amqp://';
     const host = url.replace(/^amqps?:\/\//, '');
     const vhostPath = vhost ? `/${vhost}` : '';
-    
+
     return `${protocol}${user}:${password}@${host}${vhostPath}`;
   }
 
@@ -108,7 +111,10 @@ export class RabbitMQClient {
   /**
    * Create queue with optional dead letter configuration
    */
-  async createQueue(config: QueueConfig, deadLetter?: DeadLetterConfig): Promise<void> {
+  async createQueue(
+    config: QueueConfig,
+    deadLetter?: DeadLetterConfig,
+  ): Promise<void> {
     await this.channelWrapper.addSetup(async (channel: Channel) => {
       const queueArgs: Record<string, any> = { ...config.arguments };
 
@@ -200,13 +206,16 @@ export class RabbitMQClient {
             // Note: In this template, retry count tracking for consumers is simplified.
             // For production, consider using a plugin like rabbitmq-delayed-message-exchange
             // or implement a custom retry mechanism with separate retry queues.
-            const retryCount = (msg.properties.headers?.['x-retry-count'] || 0) as number;
+            const retryCount = (msg.properties.headers?.['x-retry-count'] ||
+              0) as number;
             if (retryCount < this.retryConfig.maxRetries) {
               // Requeue the message for retry (will be redelivered immediately)
               channel.nack(msg, false, true);
             } else {
               channel.nack(msg, false, false); // Send to DLX
-              this.logger.warn(`Message sent to DLX after ${retryCount} retries`);
+              this.logger.warn(
+                `Message sent to DLX after ${retryCount} retries`,
+              );
             }
           }
         },
@@ -252,7 +261,11 @@ export class RabbitMQClient {
         reject(new Error(`RPC timeout after ${timeout}ms`));
       }, timeout);
 
-      this.pendingRPCs.set(correlationId, { resolve, reject, timeout: timeoutHandle });
+      this.pendingRPCs.set(correlationId, {
+        resolve,
+        reject,
+        timeout: timeoutHandle,
+      });
 
       // Subscribe to reply queue
       this.channelWrapper.addSetup(async (channel: Channel) => {
@@ -330,7 +343,10 @@ export class RabbitMQClient {
 
             channel.ack(msg);
           } catch (error) {
-            this.logger.error(`Error processing RPC: ${error.message}`, error.stack);
+            this.logger.error(
+              `Error processing RPC: ${error.message}`,
+              error.stack,
+            );
 
             response = {
               success: false,
@@ -391,7 +407,12 @@ export class RabbitMQClient {
         publishOptions.priority = options.priority;
       }
 
-      await this.channelWrapper.publish(exchange, routingKey, message, publishOptions);
+      await this.channelWrapper.publish(
+        exchange,
+        routingKey,
+        message,
+        publishOptions,
+      );
 
       this.logger.debug(
         `Message published to ${exchange}/${routingKey} [${options?.messageId}]`,
@@ -399,7 +420,8 @@ export class RabbitMQClient {
     } catch (error) {
       if (attempt < this.retryConfig.maxRetries) {
         const delay = Math.min(
-          this.retryConfig.initialDelay * Math.pow(this.retryConfig.backoffMultiplier, attempt),
+          this.retryConfig.initialDelay *
+            Math.pow(this.retryConfig.backoffMultiplier, attempt),
           this.retryConfig.maxDelay,
         );
 
@@ -408,7 +430,13 @@ export class RabbitMQClient {
         );
 
         await new Promise((resolve) => setTimeout(resolve, delay));
-        return this.publishWithRetry(exchange, routingKey, message, options, attempt + 1);
+        return this.publishWithRetry(
+          exchange,
+          routingKey,
+          message,
+          options,
+          attempt + 1,
+        );
       }
 
       this.logger.error(

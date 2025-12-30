@@ -68,22 +68,24 @@ describe('AuthService - Login Integration Tests', () => {
   describe('login - successful login', () => {
     it('should successfully login with valid credentials', async () => {
       // Mock RPC to return active user with password
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-            verifiedAt: new Date(),
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+              verifiedAt: new Date(),
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -105,21 +107,23 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should call findUserByEmail with includePassword flag', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -129,7 +133,7 @@ describe('AuthService - Login Integration Tests', () => {
       await service.login(loginDto);
 
       const findUserCall = mockRabbitMQClient.sendRPCRequest.mock.calls.find(
-        call => call[2] === 'findUserByEmail'
+        (call) => call[2] === 'findUserByEmail',
       );
       expect(findUserCall).toBeDefined();
       expect(findUserCall[3]).toEqual({
@@ -139,21 +143,23 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should create a refresh token in database', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -170,21 +176,23 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should update last login timestamp', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -194,7 +202,7 @@ describe('AuthService - Login Integration Tests', () => {
       await service.login(loginDto);
 
       const updateLoginCall = mockRabbitMQClient.sendRPCRequest.mock.calls.find(
-        call => call[2] === 'updateLastLogin'
+        (call) => call[2] === 'updateLastLogin',
       );
       expect(updateLoginCall).toBeDefined();
       expect(updateLoginCall[3]).toEqual({
@@ -203,21 +211,23 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should publish user.login event', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -241,19 +251,23 @@ describe('AuthService - Login Integration Tests', () => {
 
   describe('login - invalid credentials', () => {
     it('should throw USER_NOT_FOUND error when user does not exist', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve(null);
+          }
           return Promise.resolve(null);
-        }
-        return Promise.resolve(null);
-      });
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'nonexistent@example.com',
         password: 'Password123',
       };
 
-      await expect(service.login(loginDto)).rejects.toThrow(StandardizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        StandardizedException,
+      );
       await expect(service.login(loginDto)).rejects.toThrow(
         expect.objectContaining({
           errorCode: 'USER_0001',
@@ -263,25 +277,29 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should throw AUTH_INVALID_CREDENTIALS when password is incorrect', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
         password: 'WrongPassword123',
       };
 
-      await expect(service.login(loginDto)).rejects.toThrow(StandardizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        StandardizedException,
+      );
       await expect(service.login(loginDto)).rejects.toThrow(
         expect.objectContaining({
           errorCode: 'AUTH_0002',
@@ -291,25 +309,29 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should throw AUTH_INVALID_CREDENTIALS when user is not active', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'pending@example.com',
-            fullName: 'Pending User',
-            password: hashedPassword,
-            status: 'pending',
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'pending@example.com',
+              fullName: 'Pending User',
+              password: hashedPassword,
+              status: 'pending',
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'pending@example.com',
         password: 'Password123',
       };
 
-      await expect(service.login(loginDto)).rejects.toThrow(StandardizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        StandardizedException,
+      );
       await expect(service.login(loginDto)).rejects.toThrow(
         expect.objectContaining({
           errorCode: 'AUTH_0002',
@@ -320,12 +342,14 @@ describe('AuthService - Login Integration Tests', () => {
 
     it('should not reveal whether user exists when credentials are invalid', async () => {
       // Test 1: User doesn't exist
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve(null);
+          }
           return Promise.resolve(null);
-        }
-        return Promise.resolve(null);
-      });
+        },
+      );
 
       const loginDto1: LoginDto = {
         email: 'nonexistent@example.com',
@@ -335,17 +359,19 @@ describe('AuthService - Login Integration Tests', () => {
       const error1Promise = service.login(loginDto1);
 
       // Test 2: User exists but wrong password
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto2: LoginDto = {
         email: 'test@example.com',
@@ -362,67 +388,77 @@ describe('AuthService - Login Integration Tests', () => {
 
   describe('login - user status validation', () => {
     it('should reject login for inactive users', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'inactive@example.com',
-            fullName: 'Inactive User',
-            password: hashedPassword,
-            status: 'inactive',
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'inactive@example.com',
+              fullName: 'Inactive User',
+              password: hashedPassword,
+              status: 'inactive',
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'inactive@example.com',
         password: 'Password123',
       };
 
-      await expect(service.login(loginDto)).rejects.toThrow(StandardizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        StandardizedException,
+      );
     });
 
     it('should reject login for suspended users', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'suspended@example.com',
-            fullName: 'Suspended User',
-            password: hashedPassword,
-            status: 'suspended',
-          });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'suspended@example.com',
+              fullName: 'Suspended User',
+              password: hashedPassword,
+              status: 'suspended',
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'suspended@example.com',
         password: 'Password123',
       };
 
-      await expect(service.login(loginDto)).rejects.toThrow(StandardizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        StandardizedException,
+      );
     });
   });
 
   describe('login - token generation', () => {
     it('should generate unique refresh tokens for each login', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -436,21 +472,23 @@ describe('AuthService - Login Integration Tests', () => {
     });
 
     it('should generate access token with correct payload structure', async () => {
-      mockRabbitMQClient.sendRPCRequest.mockImplementation((exchange, routingKey, method, params) => {
-        if (method === 'findUserByEmail') {
-          return Promise.resolve({
-            _id: mockUserId,
-            email: 'test@example.com',
-            fullName: 'Test User',
-            password: hashedPassword,
-            status: 'active',
-          });
-        }
-        if (method === 'updateLastLogin') {
-          return Promise.resolve({ success: true });
-        }
-        return Promise.resolve(null);
-      });
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserByEmail') {
+            return Promise.resolve({
+              _id: mockUserId,
+              email: 'test@example.com',
+              fullName: 'Test User',
+              password: hashedPassword,
+              status: 'active',
+            });
+          }
+          if (method === 'updateLastLogin') {
+            return Promise.resolve({ success: true });
+          }
+          return Promise.resolve(null);
+        },
+      );
 
       const loginDto: LoginDto = {
         email: 'test@example.com',
@@ -462,8 +500,10 @@ describe('AuthService - Login Integration Tests', () => {
       // Decode JWT token (without verification for testing)
       const tokenParts = result.accessToken.split('.');
       expect(tokenParts).toHaveLength(3);
-      
-      const payload = JSON.parse(Buffer.from(tokenParts[1], 'base64').toString());
+
+      const payload = JSON.parse(
+        Buffer.from(tokenParts[1], 'base64').toString(),
+      );
       expect(payload.sub).toBe(mockUserId);
       expect(payload.email).toBe('test@example.com');
       expect(payload.type).toBe('access');
