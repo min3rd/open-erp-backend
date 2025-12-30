@@ -374,14 +374,14 @@ export class AuthService {
         verifiedAt: new Date(),
       },
     );
-
+    this.logger.log(`User verified: ${JSON.stringify(user)}`);
     // Publish user.verified event
     await this.rabbitMQClient.publishEvent(
       RABBITMQ_EXCHANGES.EVENTS,
       RABBITMQ_ROUTING_KEYS.AUTH_USER_VERIFIED,
       'user.verified',
       {
-        userId: user._id.toString(),
+        userId: user.id.toString(),
         email,
         timestamp: new Date(),
       },
@@ -390,7 +390,7 @@ export class AuthService {
     // Log structured event
     this.logger.log({
       event: 'user.verified',
-      userId: user._id.toString(),
+      userId: user.id.toString(),
       email,
       timestamp: new Date().toISOString(),
     });
@@ -399,7 +399,7 @@ export class AuthService {
       success: true,
       message: 'Email verified successfully. You can now log in.',
       data: {
-        userId: user._id.toString(),
+        userId: user.id.toString(),
         email,
       },
     };
