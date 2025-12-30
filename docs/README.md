@@ -11,8 +11,14 @@ This directory contains a complete implementation of a multi-tenant architecture
 - **user.schema.ts** - Updated with multi-tenant and RBAC fields
 
 ### Services (`libs/shared/services/`)
-- **permission.service.ts** - Core permission resolution logic
+- **permission.service.ts** - Core permission resolution logic (legacy)
 - **permission.service.spec.ts** - Comprehensive test suite
+
+### Authorization (`libs/shared/authz/`)
+- **decorators.ts** - @Public(), @Permissions(), @Roles() decorators
+- **permissions.guard.ts** - NestJS guard for route protection
+- **authorization.service.ts** - Enhanced permission checking with scope support
+- **Tests** - Comprehensive unit tests for all components
 
 ### Types (`libs/shared/types/`)
 - **permission.enum.ts** - Centralized permission definitions
@@ -28,7 +34,10 @@ This directory contains a complete implementation of a multi-tenant architecture
 
 ### Documentation (`docs/`)
 - **MULTI_TENANT_RBAC.md** - Complete usage guide and reference
-- **examples/permission-guards.example.ts** - NestJS guard and decorator examples
+- **RBAC_AUTHORIZATION.md** - Authorization middleware, decorators, and guards
+- **examples/permission-guards.example.ts** - NestJS guard examples (legacy)
+- **examples/rbac-decorators.example.ts** - Complete controller examples with new decorators
+- **examples/rbac-integration-tests.example.ts** - Integration test patterns
 
 ## 🚀 Quick Start
 
@@ -50,17 +59,50 @@ node scripts/seed-roles.js
 
 ### 3. Use in Your Code
 
+**Option A: Using Decorators (Recommended)**
+
 ```typescript
-import { PermissionService } from '@shared/services';
+import { Controller, Get, Post, UseGuards } from '@nestjs/common';
+import { Public, Permissions, Roles, PermissionsGuard } from '@shared/authz';
+import { Permission } from '@shared/types';
+
+@Controller('orders')
+@UseGuards(PermissionsGuard)
+export class OrdersController {
+  @Get()
+  @Permissions(Permission.ORDER_READ)
+  async getOrders() {
+    // Only users with order.read permission can access
+  }
+
+  @Post()
+  @Permissions([Permission.ORDER_CREATE, Permission.ORDER_UPDATE])
+  async createOrder() {
+    // Users need both permissions
+  }
+
+  @Get('catalog')
+  @Public()
+  async getPublicCatalog() {
+    // No authentication required
+  }
+}
+```
+
+**Option B: Using Service Programmatically**
+
+```typescript
+import { AuthorizationService } from '@shared/authz';
 import { Permission } from '@shared/types';
 
 // Inject the service
-constructor(private permissionService: PermissionService) {}
+constructor(private authorizationService: AuthorizationService) {}
 
 // Check permission
-const canCreate = await this.permissionService.hasPermission(
+const canCreate = await this.authorizationService.hasPermission(
   userId,
-  Permission.USER_CREATE
+  Permission.ORDER_CREATE,
+  { scope: 'tenant' }
 );
 ```
 
@@ -91,12 +133,17 @@ const canCreate = await this.permissionService.hasPermission(
 
 ## 📚 Further Reading
 
-See [MULTI_TENANT_RBAC.md](./MULTI_TENANT_RBAC.md) for:
+- **[MULTI_TENANT_RBAC.md](./MULTI_TENANT_RBAC.md)** - Complete schema documentation and permission resolution
+- **[RBAC_AUTHORIZATION.md](./RBAC_AUTHORIZATION.md)** - Decorators, guards, and authorization service guide
+
+Topics covered:
 - Complete schema documentation
-- Usage examples
+- Usage examples for decorators and services
+- Scope behavior (global vs tenant)
 - Security best practices
 - Troubleshooting guide
 - API integration patterns
+- Testing strategies
 
 ## 🧪 Testing
 
@@ -128,11 +175,14 @@ npm test -- permission.service.spec.ts
 
 ## 🛠️ Integration Example
 
+**Full module setup with new authorization:**
+
 ```typescript
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
+import { APP_GUARD } from '@nestjs/core';
 import { User, UserSchema, Role, RoleSchema } from '@shared/schemas';
-import { PermissionService } from '@shared/services';
+import { AuthorizationService, PermissionsGuard } from '@shared/authz';
 
 @Module({
   imports: [
@@ -141,8 +191,15 @@ import { PermissionService } from '@shared/services';
       { name: Role.name, schema: RoleSchema },
     ]),
   ],
-  providers: [PermissionService],
-  exports: [PermissionService],
+  providers: [
+    AuthorizationService,
+    {
+      // Apply guard globally to all routes
+      provide: APP_GUARD,
+      useClass: PermissionsGuard,
+    },
+  ],
+  exports: [AuthorizationService],
 })
 export class AuthModule {}
 ```
