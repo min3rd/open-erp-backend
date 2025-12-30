@@ -1,0 +1,43 @@
+{
+  "auth": {
+    "email_already_registered": "Email này đã được đăng ký. Vui lòng đăng nhập hoặc sử dụng email khác.",
+    "invalid_credentials": "Email hoặc mật khẩu không hợp lệ. Vui lòng kiểm tra lại thông tin đăng nhập.",
+    "token_expired": "Phiên đăng nhập của bạn đã hết hạn. Vui lòng đăng nhập lại.",
+    "token_invalid": "Mã xác thực không hợp lệ. Vui lòng đăng nhập lại.",
+    "unauthorized": "Bạn không có quyền truy cập tài nguyên này.",
+    "verification_rate_limit": "Quá nhiều lần yêu cầu mã xác thực. Vui lòng thử lại sau.",
+    "verification_code_expired": "Mã xác thực của bạn đã hết hạn. Vui lòng yêu cầu mã mới.",
+    "verification_code_invalid": "Mã xác thực bạn nhập không đúng. Vui lòng kiểm tra và thử lại."
+  },
+  "user": {
+    "not_found": "Không tìm thấy người dùng.",
+    "already_exists": "Người dùng với thông tin này đã tồn tại.",
+    "invalid_status": "Không thể thực hiện thao tác này do trạng thái người dùng không hợp lệ.",
+    "profile_incomplete": "Vui lòng hoàn thiện hồ sơ của bạn trước khi tiếp tục."
+  },
+  "validation": {
+    "failed": "Thông tin bạn cung cấp không hợp lệ. Vui lòng kiểm tra và thử lại.",
+    "email_invalid": "Vui lòng cung cấp địa chỉ email hợp lệ.",
+    "password_weak": "Mật khẩu của bạn phải có ít nhất 8 ký tự và bao gồm cả chữ cái và số."
+  },
+  "database": {
+    "connection_failed": "Không thể kết nối đến cơ sở dữ liệu. Vui lòng thử lại sau.",
+    "query_failed": "Đã xảy ra lỗi cơ sở dữ liệu. Vui lòng thử lại.",
+    "duplicate_key": "Thông tin này đã tồn tại trong hệ thống.",
+    "transaction_failed": "Không thể hoàn tất thao tác. Vui lòng thử lại."
+  },
+  "system": {
+    "internal_error": "Đã xảy ra lỗi không mong muốn. Đội ngũ của chúng tôi đã được thông báo.",
+    "service_unavailable": "Dịch vụ tạm thời không khả dụng. Vui lòng thử lại sau.",
+    "timeout": "Yêu cầu mất quá nhiều thời gian để xử lý. Vui lòng thử lại.",
+    "configuration_error": "Đã xảy ra lỗi cấu hình hệ thống. Vui lòng liên hệ bộ phận hỗ trợ."
+  },
+  "resource": {
+    "not_found": "Không tìm thấy tài nguyên được yêu cầu.",
+    "conflict": "Tài nguyên xung đột với dữ liệu hiện có.",
+    "forbidden": "Bạn không có quyền truy cập tài nguyên này."
+  },
+  "rate_limit": {
+    "exceeded": "Bạn đã thực hiện quá nhiều yêu cầu. Vui lòng đợi trước khi thử lại."
+  }
+}
