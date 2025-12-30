@@ -1,5 +1,16 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, HydratedDocument } from 'mongoose';
+import { Document, HydratedDocument, Schema as MongooseSchema } from 'mongoose';
+
+/**
+ * Role assignment for a user
+ * Supports multiple roles per user, with optional department scoping
+ */
+export interface RoleAssignment {
+  roleId: MongooseSchema.Types.ObjectId | string;
+  departmentId?: MongooseSchema.Types.ObjectId | string;
+  grantedAt: Date;
+  grantedBy?: MongooseSchema.Types.ObjectId | string;
+}
 
 // Define interface for instance methods
 export interface UserMethods {
@@ -75,6 +86,57 @@ export class User extends Document {
   verifiedAt?: Date;
 
   @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Tenant',
+    required: true,
+    index: true,
+  })
+  tenantId: MongooseSchema.Types.ObjectId;
+
+  @Prop({
+    type: [
+      {
+        roleId: {
+          type: MongooseSchema.Types.ObjectId,
+          ref: 'Role',
+          required: true,
+        },
+        departmentId: {
+          type: MongooseSchema.Types.ObjectId,
+          ref: 'Department',
+          default: null,
+        },
+        grantedAt: {
+          type: Date,
+          default: Date.now,
+        },
+        grantedBy: {
+          type: MongooseSchema.Types.ObjectId,
+          ref: 'User',
+          default: null,
+        },
+      },
+    ],
+    default: [],
+  })
+  roleAssignments: RoleAssignment[];
+
+  @Prop({
+    type: [String],
+    default: [],
+    validate: {
+      validator: function (permissions: string[]) {
+        // Validate that all permissions are valid strings
+        return permissions.every(
+          (p) => typeof p === 'string' && p.length > 0 && p.includes('.'),
+        );
+      },
+      message: 'Special permissions must be valid strings in format: resource.action',
+    },
+  })
+  specialPermissions: string[];
+
+  @Prop({
     type: Date,
     default: null,
   })
@@ -99,6 +161,9 @@ export const UserSchema = SchemaFactory.createForClass(User);
 // Add compound indexes
 UserSchema.index({ email: 1, status: 1 });
 UserSchema.index({ username: 1, status: 1 });
+UserSchema.index({ tenantId: 1, status: 1 });
+UserSchema.index({ tenantId: 1, email: 1 });
+UserSchema.index({ tenantId: 1, username: 1 });
 
 // Add text index for search
 UserSchema.index({
