@@ -44,11 +44,15 @@ describe('PermissionService', () => {
     userModel = moduleRef.get('UserModel');
     roleModel = moduleRef.get('RoleModel');
     tenantModel = moduleRef.get('TenantModel');
-  });
+  }, 60000); // Increase timeout for MongoDB download
 
   afterAll(async () => {
-    await moduleRef.close();
-    await mongod.stop();
+    if (moduleRef) {
+      await moduleRef.close();
+    }
+    if (mongod) {
+      await mongod.stop();
+    }
   });
 
   beforeEach(async () => {
@@ -74,8 +78,12 @@ describe('PermissionService', () => {
       name: 'Tenant Admin',
       code: 'TENANT_ADMIN',
       scope: 'tenant',
-      tenantId: testTenant._id,
-      permissions: [Permission.USER_CREATE, Permission.USER_READ, Permission.ORDER_MANAGE],
+      tenantId: testTenant._id as any,
+      permissions: [
+        Permission.USER_CREATE,
+        Permission.USER_READ,
+        Permission.ORDER_MANAGE,
+      ],
       status: 'active',
       isSystem: false,
     });
@@ -85,7 +93,7 @@ describe('PermissionService', () => {
       name: 'Manager',
       code: 'MANAGER',
       scope: 'tenant',
-      tenantId: testTenant._id,
+      tenantId: testTenant._id as any,
       permissions: [Permission.ORDER_READ, Permission.ORDER_APPROVE],
       status: 'active',
       isSystem: false,
@@ -95,7 +103,7 @@ describe('PermissionService', () => {
     testUser = await userModel.create({
       username: 'testuser',
       email: 'test@example.com',
-      tenantId: testTenant._id,
+      tenantId: testTenant._id as any,
       status: 'active',
       roleAssignments: [],
       specialPermissions: [],
@@ -104,14 +112,23 @@ describe('PermissionService', () => {
 
   afterEach(async () => {
     // Clean up between tests
-    await userModel.deleteMany({});
-    await roleModel.deleteMany({});
-    await tenantModel.deleteMany({});
+    if (userModel) {
+      await userModel.deleteMany({});
+    }
+    if (roleModel) {
+      await roleModel.deleteMany({});
+    }
+    if (tenantModel) {
+      await tenantModel.deleteMany({});
+    }
   });
 
   describe('hasPermission', () => {
     it('should return false when user has no permissions', async () => {
-      const result = await service.hasPermission(testUser._id, Permission.USER_CREATE);
+      const result = await service.hasPermission(
+        testUser._id.toString(),
+        Permission.USER_CREATE,
+      );
       expect(result).toBe(false);
     });
 
@@ -120,7 +137,10 @@ describe('PermissionService', () => {
       testUser.specialPermissions = [Permission.USER_DELETE];
       await testUser.save();
 
-      const result = await service.hasPermission(testUser._id, Permission.USER_DELETE);
+      const result = await service.hasPermission(
+        testUser._id.toString(),
+        Permission.USER_DELETE,
+      );
       expect(result).toBe(true);
     });
 
@@ -128,13 +148,16 @@ describe('PermissionService', () => {
       // Assign tenant admin role to user
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id,
+          roleId: tenantAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
       await testUser.save();
 
-      const result = await service.hasPermission(testUser._id, Permission.USER_CREATE);
+      const result = await service.hasPermission(
+        testUser._id.toString(),
+        Permission.USER_CREATE,
+      );
       expect(result).toBe(true);
     });
 
@@ -142,19 +165,25 @@ describe('PermissionService', () => {
       // Assign global admin role to user
       testUser.roleAssignments = [
         {
-          roleId: globalAdminRole._id,
+          roleId: globalAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
       await testUser.save();
 
-      const result = await service.hasPermission(testUser._id, Permission.SYSTEM_ADMIN);
+      const result = await service.hasPermission(
+        testUser._id.toString(),
+        Permission.SYSTEM_ADMIN,
+      );
       expect(result).toBe(true);
     });
 
     it('should return false for non-existent user', async () => {
-      const fakeId = new MongooseSchema.Types.ObjectId();
-      const result = await service.hasPermission(fakeId, Permission.USER_CREATE);
+      const fakeId = new MongooseSchema.Types.ObjectId('507f1f77bcf86cd799439011');
+      const result = await service.hasPermission(
+        fakeId.toString(),
+        Permission.USER_CREATE,
+      );
       expect(result).toBe(false);
     });
   });
@@ -164,7 +193,7 @@ describe('PermissionService', () => {
       testUser.specialPermissions = [Permission.USER_READ];
       await testUser.save();
 
-      const result = await service.hasAnyPermission(testUser._id, [
+      const result = await service.hasAnyPermission(testUser._id.toString(), [
         Permission.USER_CREATE,
         Permission.USER_READ,
         Permission.USER_DELETE,
@@ -174,7 +203,7 @@ describe('PermissionService', () => {
     });
 
     it('should return false if user has none of the permissions', async () => {
-      const result = await service.hasAnyPermission(testUser._id, [
+      const result = await service.hasAnyPermission(testUser._id.toString(), [
         Permission.USER_CREATE,
         Permission.USER_DELETE,
       ]);
@@ -192,7 +221,7 @@ describe('PermissionService', () => {
       ];
       await testUser.save();
 
-      const result = await service.hasAllPermissions(testUser._id, [
+      const result = await service.hasAllPermissions(testUser._id.toString(), [
         Permission.USER_READ,
         Permission.USER_CREATE,
       ]);
@@ -204,7 +233,7 @@ describe('PermissionService', () => {
       testUser.specialPermissions = [Permission.USER_READ];
       await testUser.save();
 
-      const result = await service.hasAllPermissions(testUser._id, [
+      const result = await service.hasAllPermissions(testUser._id.toString(), [
         Permission.USER_READ,
         Permission.USER_CREATE,
       ]);
@@ -220,7 +249,10 @@ describe('PermissionService', () => {
     });
 
     it('should return special permissions', async () => {
-      testUser.specialPermissions = [Permission.USER_DELETE, Permission.ORDER_DELETE];
+      testUser.specialPermissions = [
+        Permission.USER_DELETE,
+        Permission.ORDER_DELETE,
+      ];
       await testUser.save();
 
       const permissions = await service.getEffectivePermissions(testUser);
@@ -233,11 +265,11 @@ describe('PermissionService', () => {
       // Assign both tenant admin and manager roles
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id,
+          roleId: tenantAdminRole._id as any,
           grantedAt: new Date(),
         },
         {
-          roleId: managerRole._id,
+          roleId: managerRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -255,7 +287,7 @@ describe('PermissionService', () => {
       testUser.specialPermissions = [Permission.USER_DELETE];
       testUser.roleAssignments = [
         {
-          roleId: managerRole._id,
+          roleId: managerRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -279,7 +311,7 @@ describe('PermissionService', () => {
         name: 'Other Tenant Role',
         code: 'OTHER_ROLE',
         scope: 'tenant',
-        tenantId: otherTenant._id,
+        tenantId: otherTenant._id as any,
         permissions: [Permission.PRODUCT_CREATE],
         status: 'active',
         isSystem: false,
@@ -288,7 +320,7 @@ describe('PermissionService', () => {
       // Assign both tenant roles to user (user belongs to testTenant)
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id,
+          roleId: tenantAdminRole._id as any,
           grantedAt: new Date(),
         },
         {
@@ -308,7 +340,7 @@ describe('PermissionService', () => {
     it('should include global role permissions regardless of tenant', async () => {
       testUser.roleAssignments = [
         {
-          roleId: globalAdminRole._id,
+          roleId: globalAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -327,7 +359,7 @@ describe('PermissionService', () => {
 
       testUser.roleAssignments = [
         {
-          roleId: managerRole._id,
+          roleId: managerRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -344,7 +376,7 @@ describe('PermissionService', () => {
         name: 'Role 1',
         code: 'ROLE_1',
         scope: 'tenant',
-        tenantId: testTenant._id,
+        tenantId: testTenant._id as any,
         permissions: [Permission.USER_READ, Permission.USER_CREATE],
         status: 'active',
         isSystem: false,
@@ -354,22 +386,24 @@ describe('PermissionService', () => {
         name: 'Role 2',
         code: 'ROLE_2',
         scope: 'tenant',
-        tenantId: testTenant._id,
+        tenantId: testTenant._id as any,
         permissions: [Permission.USER_READ, Permission.USER_UPDATE],
         status: 'active',
         isSystem: false,
       });
 
       testUser.roleAssignments = [
-        { roleId: role1._id, grantedAt: new Date() },
-        { roleId: role2._id, grantedAt: new Date() },
+        { roleId: role1._id as any, grantedAt: new Date() },
+        { roleId: role2._id as any, grantedAt: new Date() },
       ];
       await testUser.save();
 
       const permissions = await service.getEffectivePermissions(testUser);
 
       // USER_READ should only appear once
-      const readCount = permissions.filter((p) => p === Permission.USER_READ).length;
+      const readCount = permissions.filter(
+        (p) => p === Permission.USER_READ,
+      ).length;
       expect(readCount).toBe(1);
       expect(permissions).toHaveLength(3); // USER_READ, USER_CREATE, USER_UPDATE
     });
@@ -377,7 +411,7 @@ describe('PermissionService', () => {
 
   describe('getUserRolesWithDetails', () => {
     it('should return empty array when user has no roles', async () => {
-      const roles = await service.getUserRolesWithDetails(testUser._id);
+      const roles = await service.getUserRolesWithDetails(testUser._id.toString());
       expect(roles).toEqual([]);
     });
 
@@ -385,13 +419,13 @@ describe('PermissionService', () => {
       const grantedAt = new Date();
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id,
+          roleId: tenantAdminRole._id as any,
           grantedAt: grantedAt,
         },
       ];
       await testUser.save();
 
-      const roles = await service.getUserRolesWithDetails(testUser._id);
+      const roles = await service.getUserRolesWithDetails(testUser._id.toString());
 
       expect(roles).toHaveLength(1);
       expect(roles[0].role.name).toBe('Tenant Admin');
@@ -399,17 +433,17 @@ describe('PermissionService', () => {
     });
 
     it('should include department info when present', async () => {
-      const departmentId = new MongooseSchema.Types.ObjectId();
+      const departmentId = new MongooseSchema.Types.ObjectId('507f1f77bcf86cd799439011');
       testUser.roleAssignments = [
         {
-          roleId: managerRole._id,
+          roleId: managerRole._id as any,
           departmentId: departmentId,
           grantedAt: new Date(),
         },
       ];
       await testUser.save();
 
-      const roles = await service.getUserRolesWithDetails(testUser._id);
+      const roles = await service.getUserRolesWithDetails(testUser._id.toString());
 
       expect(roles).toHaveLength(1);
       expect(roles[0].departmentId).toEqual(departmentId);

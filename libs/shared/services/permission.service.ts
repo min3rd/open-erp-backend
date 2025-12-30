@@ -39,7 +39,10 @@ export class PermissionService {
       }
 
       // Step 1: Check special permissions
-      if (user.specialPermissions && user.specialPermissions.includes(permission)) {
+      if (
+        user.specialPermissions &&
+        user.specialPermissions.includes(permission)
+      ) {
         this.logger.debug(
           `Permission '${permission}' granted via special permissions for user ${userId}`,
         );
@@ -124,7 +127,10 @@ export class PermissionService {
     try {
       let userDoc: UserDocument | null;
 
-      if (typeof user === 'string' || user instanceof MongooseSchema.Types.ObjectId) {
+      if (
+        typeof user === 'string' ||
+        user instanceof MongooseSchema.Types.ObjectId
+      ) {
         userDoc = await this.userModel.findById(user).exec();
         if (!userDoc) {
           this.logger.warn(`User not found: ${user}`);
@@ -151,7 +157,7 @@ export class PermissionService {
       // Fetch all assigned roles
       const roles = await this.roleModel
         .find({
-          _id: { $in: roleIds },
+          _id: { $in: roleIds as any },
           status: 'active',
         })
         .exec();
@@ -214,7 +220,7 @@ export class PermissionService {
 
       const roles = await this.roleModel
         .find({
-          _id: { $in: roleIds },
+          _id: { $in: roleIds as any },
         })
         .exec();
 

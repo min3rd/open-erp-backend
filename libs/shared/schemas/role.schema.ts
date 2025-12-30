@@ -125,14 +125,13 @@ RoleSchema.index({
 RoleSchema.index({ deletedAt: 1 }, { expireAfterSeconds: 7776000 });
 
 // Validation: global roles cannot have tenantId
-RoleSchema.pre('save', function (next) {
+RoleSchema.pre('save', function (next: any) {
   if (this.scope === 'global' && this.tenantId) {
-    next(new Error('Global roles cannot have a tenantId'));
+    return next(new Error('Global roles cannot have a tenantId'));
   } else if (this.scope === 'tenant' && !this.tenantId) {
-    next(new Error('Tenant roles must have a tenantId'));
-  } else {
-    next();
+    return next(new Error('Tenant roles must have a tenantId'));
   }
+  return next();
 });
 
 // Middleware to exclude soft-deleted documents by default
