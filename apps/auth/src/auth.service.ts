@@ -65,6 +65,7 @@ export class AuthService {
           'createUser',
           {
             email,
+            username: email,
             fullName,
             password: hashedPassword,
             status: 'pending',
