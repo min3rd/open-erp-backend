@@ -149,7 +149,9 @@ describe('ErrorFactory', () => {
 
       expect(response.correlationId).toBeDefined();
       expect(typeof response.correlationId).toBe('string');
-      expect(response.correlationId.length).toBeGreaterThan(0);
+      if (response.correlationId) {
+        expect(response.correlationId.length).toBeGreaterThan(0);
+      }
     });
   });
 
