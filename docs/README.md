@@ -67,7 +67,8 @@ const canCreate = await this.permissionService.hasPermission(
 ## 📖 Key Concepts
 
 ### Multi-Tenancy
-- Each user belongs to exactly one tenant
+- Users can optionally belong to a tenant
+- Users without a tenant can create their own or be invited to join one
 - Data is isolated by `tenantId`
 - Automatic filtering at the query level
 

@@ -164,7 +164,7 @@ export class PermissionService {
 
       // Filter and aggregate permissions:
       // - Include all global roles' permissions
-      // - Include only tenant roles that match user's tenantId
+      // - Include only tenant roles that match user's tenantId (if user has a tenant)
       for (const role of roles) {
         if (role.scope === 'global') {
           // Global roles apply across all tenants
@@ -172,6 +172,7 @@ export class PermissionService {
         } else if (
           role.scope === 'tenant' &&
           role.tenantId &&
+          userDoc.tenantId &&
           role.tenantId.toString() === userDoc.tenantId.toString()
         ) {
           // Tenant roles only apply if they match user's tenant

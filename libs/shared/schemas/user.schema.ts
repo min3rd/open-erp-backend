@@ -88,10 +88,10 @@ export class User extends Document {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
     ref: 'Tenant',
-    required: true,
+    required: false,
     index: true,
   })
-  tenantId: MongooseSchema.Types.ObjectId;
+  tenantId?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: [

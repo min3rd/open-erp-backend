@@ -76,7 +76,7 @@ This implementation provides a complete, production-ready multi-tenant architect
 
 - ✅ **20251230080300-add-multitenant-rbac-to-users.js** (NEW) - 8,119 bytes
   - Updates users collection with new fields
-  - Creates default tenant if users exist
+  - Makes tenantId optional (users can create or join tenant later)
   - Initializes empty roleAssignments and specialPermissions
   - Adds tenant-based indexes
   - Includes rollback logic
@@ -175,10 +175,10 @@ For user U with permission P:
 2. Run migration 20251230080100 (creates roles)
 3. Run migration 20251230080200 (creates departments)
 4. Run migration 20251230080300 (updates users)
-   - Automatically creates "Default Organization" tenant
-   - Assigns all existing users to default tenant
+   - Makes tenantId optional for users
+   - Initializes roleAssignments and specialPermissions arrays
 5. Run seed-roles script
-6. Optionally: create additional tenants and migrate users
+6. Users can then create their own tenants or be invited to existing ones
 
 ### Rollback Support
 All migrations include `down()` functions for rollback:
@@ -296,7 +296,7 @@ async performAction(userId: string) {
 - [x] Department entity for organizational structure
 - [x] Permission resolution logic implemented
 - [x] Multi-tenant isolation enforced
-- [x] Migration scripts with default tenant creation
+- [x] Migration scripts for schema updates
 - [x] Seed scripts for default roles
 - [x] Tests for permission resolution
 - [x] Documentation with examples
