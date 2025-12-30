@@ -82,7 +82,7 @@ Verify a user's email address with the verification code sent during registratio
 }
 ```
 
-- **200 OK** - User already verified
+- **409 Conflict** - User already verified
 ```json
 {
   "success": false,
@@ -149,7 +149,7 @@ Request a new verification code to be sent to the user's email.
 
 **Error Responses**:
 
-- **200 OK** - User already verified
+- **409 Conflict** - User already verified
 ```json
 {
   "success": false,

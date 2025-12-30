@@ -59,7 +59,7 @@
     {
       "code": "AUTH_0009",
       "defaultMessageKey": "auth.user_already_verified",
-      "httpStatus": 200,
+      "httpStatus": 409,
       "description": "User email is already verified",
       "supportUrl": "/docs/errors/AUTH_0009"
     },
