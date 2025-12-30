@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../src/auth.service';
 import { VerificationTokenRepository } from '../src/repositories/verification-token.repository';
+import { RefreshTokenRepository } from '../src/repositories/refresh-token.repository';
 import { RegisterDto } from '../src/dto/register.dto';
 import { StandardizedException } from '@shared/errors';
 
@@ -14,6 +15,17 @@ const mockRabbitMQClient = {
 const mockVerificationTokenRepository = {
   create: jest.fn().mockResolvedValue({ token: '123456' }),
   countRecentTokens: jest.fn().mockResolvedValue(0),
+};
+
+// Mock Refresh Token Repository
+const mockRefreshTokenRepository = {
+  create: jest.fn().mockResolvedValue({
+    userId: 'mock-user-id',
+    token: 'mock-refresh-token',
+    expiresAt: new Date(),
+  }),
+  findByToken: jest.fn(),
+  revokeToken: jest.fn(),
 };
 
 describe('AuthService - Register Integration Tests', () => {
@@ -30,6 +42,10 @@ describe('AuthService - Register Integration Tests', () => {
         {
           provide: VerificationTokenRepository,
           useValue: mockVerificationTokenRepository,
+        },
+        {
+          provide: RefreshTokenRepository,
+          useValue: mockRefreshTokenRepository,
         },
       ],
     }).compile();
