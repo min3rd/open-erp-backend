@@ -1,6 +1,6 @@
 import { NestFactory } from '@nestjs/core';
 import { UserModule } from './user.module';
-import { Logger, ValidationPipe } from '@nestjs/common';
+import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
 
@@ -8,6 +8,12 @@ async function bootstrap() {
   const logger = new Logger('UserService');
 
   const app = await NestFactory.create(UserModule);
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+    prefix: 'v',
+  });
 
   // Apply global exception filter for standardized error handling
   app.useGlobalFilters(new GlobalExceptionFilter());
