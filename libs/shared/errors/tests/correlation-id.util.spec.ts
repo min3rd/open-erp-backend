@@ -1,20 +1,24 @@
-import { generateCorrelationId, getOrCreateCorrelationId } from '../correlation-id.util';
+import {
+  generateCorrelationId,
+  getOrCreateCorrelationId,
+} from '../correlation-id.util';
 
 describe('Correlation ID Utilities', () => {
   describe('generateCorrelationId', () => {
     it('should generate a valid UUID v4', () => {
       const id = generateCorrelationId();
-      
+
       // UUID v4 pattern: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-      const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-      
+      const uuidV4Pattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
       expect(id).toMatch(uuidV4Pattern);
     });
 
     it('should generate unique IDs', () => {
       const id1 = generateCorrelationId();
       const id2 = generateCorrelationId();
-      
+
       expect(id1).not.toBe(id2);
     });
   });
@@ -63,15 +67,17 @@ describe('Correlation ID Utilities', () => {
       };
 
       const id = getOrCreateCorrelationId(request);
-      
-      const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+      const uuidV4Pattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       expect(id).toMatch(uuidV4Pattern);
     });
 
     it('should generate new ID if request is undefined', () => {
       const id = getOrCreateCorrelationId();
-      
-      const uuidV4Pattern = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+      const uuidV4Pattern =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
       expect(id).toMatch(uuidV4Pattern);
     });
   });

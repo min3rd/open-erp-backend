@@ -1,6 +1,9 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
-import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import {
+  RABBITMQ_EXCHANGES,
+  RABBITMQ_ROUTING_KEYS,
+} from '@shared/config/rabbitmq.config';
 import {
   ErrorFactory,
   AUTH_EMAIL_ALREADY_REGISTERED,
@@ -38,10 +41,17 @@ export class AuthService {
     private readonly verificationTokenRepository: VerificationTokenRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {
-    this.verificationTokenTTL = parseInt(process.env.VERIFICATION_TOKEN_TTL || '15');
-    this.maxTokensPerHour = parseInt(process.env.VERIFICATION_MAX_ATTEMPTS || '3');
-    this.rateLimitWindow = parseInt(process.env.VERIFICATION_RATE_LIMIT_WINDOW || '3600000'); // 1 hour default
-    this.jwtSecret = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    this.verificationTokenTTL = parseInt(
+      process.env.VERIFICATION_TOKEN_TTL || '15',
+    );
+    this.maxTokensPerHour = parseInt(
+      process.env.VERIFICATION_MAX_ATTEMPTS || '3',
+    );
+    this.rateLimitWindow = parseInt(
+      process.env.VERIFICATION_RATE_LIMIT_WINDOW || '3600000',
+    ); // 1 hour default
+    this.jwtSecret =
+      process.env.JWT_SECRET || 'your-secret-key-change-in-production';
     this.jwtAccessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
     this.jwtRefreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
   }
@@ -50,13 +60,16 @@ export class AuthService {
     const { email, fullName, password } = data;
 
     // Check if user already exists via RPC to user service
-    const existingUser = await this.rabbitMQClient.sendRPCRequest<{ email: string }, any>(
+    const existingUser = await this.rabbitMQClient.sendRPCRequest<
+      { email: string },
+      any
+    >(
       RABBITMQ_EXCHANGES.RPC,
       RABBITMQ_ROUTING_KEYS.RPC_USER,
       'findUserByEmail',
       { email },
     );
-    
+
     if (existingUser) {
       if (existingUser.status === 'active' || existingUser.verifiedAt) {
         // User already verified
@@ -67,10 +80,11 @@ export class AuthService {
 
       // User exists but not verified - check rate limiting
       const rateLimitStart = new Date(Date.now() - this.rateLimitWindow);
-      const recentTokenCount = await this.verificationTokenRepository.countRecentTokens(
-        email,
-        rateLimitStart,
-      );
+      const recentTokenCount =
+        await this.verificationTokenRepository.countRecentTokens(
+          email,
+          rateLimitStart,
+        );
 
       if (recentTokenCount >= this.maxTokensPerHour) {
         throw ErrorFactory.createError({
@@ -87,7 +101,7 @@ export class AuthService {
     } else {
       // Create new user via RPC to user service
       const hashedPassword = await hashPassword(password);
-      
+
       try {
         await this.rabbitMQClient.sendRPCRequest<any, any>(
           RABBITMQ_EXCHANGES.RPC,
@@ -101,7 +115,7 @@ export class AuthService {
             status: 'pending',
           },
         );
-        
+
         this.logger.log(`New user created: ${email}`);
       } catch (error) {
         this.logger.error(`Error creating user: ${error.message}`, error.stack);
@@ -120,7 +134,11 @@ export class AuthService {
     const expiresAt = getTokenExpiration(this.verificationTokenTTL);
 
     // Save verification token
-    await this.verificationTokenRepository.create(email, verificationCode, expiresAt);
+    await this.verificationTokenRepository.create(
+      email,
+      verificationCode,
+      expiresAt,
+    );
 
     // Send verification email via RPC to notification service
     try {
@@ -135,7 +153,10 @@ export class AuthService {
         },
       );
     } catch (error) {
-      this.logger.error(`Failed to send verification email: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send verification email: ${error.message}`,
+        error.stack,
+      );
       // NOTE: Email sending failure is logged but doesn't block registration.
       // User record is created and can request a new verification code.
       // In production, consider:
@@ -166,7 +187,8 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Registration successful. Please check your email for verification code.',
+      message:
+        'Registration successful. Please check your email for verification code.',
       data: {
         email,
       },
@@ -177,7 +199,10 @@ export class AuthService {
     const { email, password } = data;
 
     // Get user via RPC to user service (include password field)
-    const user = await this.rabbitMQClient.sendRPCRequest<{ email: string; includePassword: boolean }, any>(
+    const user = await this.rabbitMQClient.sendRPCRequest<
+      { email: string; includePassword: boolean },
+      any
+    >(
       RABBITMQ_EXCHANGES.RPC,
       RABBITMQ_ROUTING_KEYS.RPC_USER,
       'findUserByEmail',
@@ -196,7 +221,9 @@ export class AuthService {
     if (user.status !== 'active') {
       throw ErrorFactory.createError({
         code: AUTH_INVALID_CREDENTIALS,
-        details: { reason: 'Account not active. Please verify your email first.' },
+        details: {
+          reason: 'Account not active. Please verify your email first.',
+        },
       });
     }
 
@@ -217,7 +244,9 @@ export class AuthService {
     );
 
     const refreshTokenValue = generateRefreshToken();
-    const refreshTokenExpiresAt = calculateExpirationDate(this.jwtRefreshExpiresIn);
+    const refreshTokenExpiresAt = calculateExpirationDate(
+      this.jwtRefreshExpiresIn,
+    );
 
     // Save refresh token to database
     await this.refreshTokenRepository.create(

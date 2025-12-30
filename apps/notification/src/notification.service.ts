@@ -1,7 +1,10 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
-import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import {
+  RABBITMQ_EXCHANGES,
+  RABBITMQ_ROUTING_KEYS,
+} from '@shared/config/rabbitmq.config';
 import { EmailService } from './email.service';
 
 @Injectable()
@@ -37,12 +40,20 @@ export class NotificationService {
     };
   }
 
-  async sendVerificationEmail(data: { to: string; fullName: string; verificationCode: string }) {
+  async sendVerificationEmail(data: {
+    to: string;
+    fullName: string;
+    verificationCode: string;
+  }) {
     this.logger.log(`Sending verification email to ${data.to}`);
 
     try {
-      await this.emailService.sendVerificationEmail(data.to, data.fullName, data.verificationCode);
-      
+      await this.emailService.sendVerificationEmail(
+        data.to,
+        data.fullName,
+        data.verificationCode,
+      );
+
       // Publish email sent event
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
@@ -60,7 +71,10 @@ export class NotificationService {
         message: 'Verification email sent successfully',
       };
     } catch (error) {
-      this.logger.error(`Failed to send verification email: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to send verification email: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -95,7 +109,9 @@ export class NotificationService {
     switch (message.eventName) {
       case 'user.registered':
         // Send welcome email when user registers (different from verification email)
-        this.logger.log(`Sending welcome email to new user: ${message.data.email}`);
+        this.logger.log(
+          `Sending welcome email to new user: ${message.data.email}`,
+        );
         // Note: This is different from verification email, can be implemented later
         break;
 

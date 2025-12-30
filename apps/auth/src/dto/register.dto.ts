@@ -19,7 +19,8 @@ export class RegisterDto {
   fullName: string;
 
   @ApiProperty({
-    description: 'User password (at least 8 characters, must contain letter and number)',
+    description:
+      'User password (at least 8 characters, must contain letter and number)',
     example: 'Password123',
     minLength: 8,
   })

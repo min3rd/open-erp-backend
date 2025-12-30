@@ -1,8 +1,5 @@
 import { HttpStatus } from '@nestjs/common';
-import {
-  ErrorFactory,
-  StandardizedException,
-} from '../error.factory';
+import { ErrorFactory, StandardizedException } from '../error.factory';
 import {
   AUTH_EMAIL_ALREADY_REGISTERED,
   AUTH_VERIFICATION_RATE_LIMIT,
@@ -137,7 +134,7 @@ describe('ErrorFactory', () => {
     it('should use provided correlation ID', () => {
       const error = new Error('Test error');
       const correlationId = 'test-id-123';
-      
+
       const response = ErrorFactory.createErrorResponse(error, correlationId);
 
       expect(response.correlationId).toBe(correlationId);
@@ -171,7 +168,7 @@ describe('ErrorFactory', () => {
       it(`should map status ${status} to error code ${expectedCode}`, () => {
         const HttpException = require('@nestjs/common').HttpException;
         const error = new HttpException('Test error', status);
-        
+
         const response = ErrorFactory.createErrorResponse(error);
 
         expect(response.errorCode).toBe(expectedCode);

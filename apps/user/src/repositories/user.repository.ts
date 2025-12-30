@@ -43,7 +43,10 @@ export class UserRepository {
     try {
       return await this.userModel.find().exec();
     } catch (error) {
-      this.logger.error(`Error finding all users: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding all users: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -52,7 +55,10 @@ export class UserRepository {
     try {
       return await this.userModel.findById(id).exec();
     } catch (error) {
-      this.logger.error(`Error finding user by id: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding user by id: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -61,7 +67,10 @@ export class UserRepository {
     try {
       return await this.userModel.findOne({ email }).exec();
     } catch (error) {
-      this.logger.error(`Error finding user by email: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding user by email: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -70,7 +79,10 @@ export class UserRepository {
     try {
       return await this.userModel.findOne({ username }).exec();
     } catch (error) {
-      this.logger.error(`Error finding user by username: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding user by username: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -98,7 +110,10 @@ export class UserRepository {
       await user.save();
       return user;
     } catch (error) {
-      this.logger.error(`Error soft deleting user: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error soft deleting user: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -108,7 +123,10 @@ export class UserRepository {
       const result = await this.userModel.findByIdAndDelete(id).exec();
       return !!result;
     } catch (error) {
-      this.logger.error(`Error hard deleting user: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error hard deleting user: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -161,7 +179,10 @@ export class UserRepository {
         .findByIdAndUpdate(id, { lastLoginAt: new Date() }, { new: true })
         .exec();
     } catch (error) {
-      this.logger.error(`Error updating last login: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating last login: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

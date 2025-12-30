@@ -42,7 +42,8 @@ export class VerificationToken extends Document {
   attempts: number;
 }
 
-export const VerificationTokenSchema = SchemaFactory.createForClass(VerificationToken);
+export const VerificationTokenSchema =
+  SchemaFactory.createForClass(VerificationToken);
 
 // Indexes
 VerificationTokenSchema.index({ email: 1, token: 1 }, { unique: true });

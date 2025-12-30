@@ -33,10 +33,7 @@ export const getDatabaseConfig = (): DatabaseConfig => ({
     process.env.MONGODB_CONNECT_TIMEOUT || '10000',
     10,
   ),
-  socketTimeoutMS: parseInt(
-    process.env.MONGODB_SOCKET_TIMEOUT || '45000',
-    10,
-  ),
+  socketTimeoutMS: parseInt(process.env.MONGODB_SOCKET_TIMEOUT || '45000', 10),
 });
 
 export const getMongooseOptions = (

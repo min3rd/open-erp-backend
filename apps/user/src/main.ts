@@ -20,7 +20,7 @@ async function bootstrap() {
       transform: true,
     }),
   );
-  
+
   // Setup Swagger/OpenAPI
   const enableSwagger = process.env.ENABLE_SWAGGER === 'true';
   if (enableSwagger) {
@@ -30,26 +30,26 @@ async function bootstrap() {
       .setVersion('1.0.0')
       .addTag('users')
       .build();
-    
+
     // Add custom property for service identification
     config['x-service-name'] = 'user-service';
-    
+
     const document = SwaggerModule.createDocument(app, config);
-    
+
     // Serve Swagger UI at /docs
     SwaggerModule.setup('docs', app, document);
-    
+
     // Serve OpenAPI JSON at /api-docs.json
     app.getHttpAdapter().get('/api-docs.json', (req, res) => {
       res.json(document);
     });
-    
+
     logger.log('Swagger documentation enabled at /docs and /api-docs.json');
   }
-  
+
   const port = process.env.USER_SERVICE_PORT || 3002;
   await app.listen(port);
-  
+
   logger.log(`User service is running on port ${port}`);
 }
 
