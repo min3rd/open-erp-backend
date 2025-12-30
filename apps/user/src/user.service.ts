@@ -5,7 +5,7 @@ import {
   RABBITMQ_EXCHANGES,
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
-import { UserRepository } from './repositories/user.repository';
+import { UserRepository, UpdateUserDto } from './repositories/user.repository';
 
 @Injectable()
 export class UserService {
@@ -195,10 +195,10 @@ export class UserService {
             throw new Error(`User not found with email: ${email}`);
           }
           
-          const updateData: any = { status };
-          if (verifiedAt) {
-            updateData.verifiedAt = verifiedAt;
-          }
+          const updateData: Partial<UpdateUserDto> = {
+            status,
+            ...(verifiedAt && { verifiedAt }),
+          };
           
           const updatedUser = await this.userRepository.update(
             user._id.toString(),
