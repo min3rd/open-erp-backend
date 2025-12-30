@@ -21,7 +21,12 @@ import {
   VerificationToken,
   VerificationTokenSchema,
 } from './schemas/verification-token.schema';
+import {
+  RefreshToken,
+  RefreshTokenSchema,
+} from './schemas/refresh-token.schema';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
+import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 
 @Module({
   imports: [
@@ -30,6 +35,7 @@ import { VerificationTokenRepository } from './repositories/verification-token.r
     RabbitMQModule.forRoot(getRabbitMQConfig()),
     MongooseModule.forFeature([
       { name: VerificationToken.name, schema: VerificationTokenSchema },
+      { name: RefreshToken.name, schema: RefreshTokenSchema },
     ]),
     ThrottlerModule.forRoot([
       {
@@ -42,6 +48,7 @@ import { VerificationTokenRepository } from './repositories/verification-token.r
   providers: [
     AuthService,
     VerificationTokenRepository,
+    RefreshTokenRepository,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
