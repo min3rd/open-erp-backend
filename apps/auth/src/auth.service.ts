@@ -9,7 +9,6 @@ import {
   AUTH_EMAIL_ALREADY_REGISTERED,
   AUTH_VERIFICATION_RATE_LIMIT,
   AUTH_INVALID_CREDENTIALS,
-  USER_NOT_FOUND,
   DB_DUPLICATE_KEY,
 } from '@shared/errors';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
@@ -50,6 +49,11 @@ export class AuthService {
     this.rateLimitWindow = parseInt(
       process.env.VERIFICATION_RATE_LIMIT_WINDOW || '3600000',
     ); // 1 hour default
+    
+    // JWT configuration - fail fast if not set in production
+    if (!process.env.JWT_SECRET && process.env.NODE_ENV === 'production') {
+      throw new Error('JWT_SECRET environment variable must be set in production');
+    }
     this.jwtSecret =
       process.env.JWT_SECRET || 'your-secret-key-change-in-production';
     this.jwtAccessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
@@ -209,11 +213,10 @@ export class AuthService {
       { email, includePassword: true },
     );
 
-    // Check if user exists
+    // Check if user exists - use AUTH_INVALID_CREDENTIALS to prevent user enumeration
     if (!user) {
       throw ErrorFactory.createError({
-        code: USER_NOT_FOUND,
-        details: { email },
+        code: AUTH_INVALID_CREDENTIALS,
       });
     }
 

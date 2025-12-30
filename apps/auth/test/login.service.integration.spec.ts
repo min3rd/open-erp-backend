@@ -250,7 +250,7 @@ describe('AuthService - Login Integration Tests', () => {
   });
 
   describe('login - invalid credentials', () => {
-    it('should throw USER_NOT_FOUND error when user does not exist', async () => {
+    it('should throw AUTH_INVALID_CREDENTIALS error when user does not exist', async () => {
       mockRabbitMQClient.sendRPCRequest.mockImplementation(
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
@@ -270,8 +270,8 @@ describe('AuthService - Login Integration Tests', () => {
       );
       await expect(service.login(loginDto)).rejects.toThrow(
         expect.objectContaining({
-          errorCode: 'USER_0001',
-          messageKey: 'user.not_found',
+          errorCode: 'AUTH_0002',
+          messageKey: 'auth.invalid_credentials',
         }),
       );
     });
