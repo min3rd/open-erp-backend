@@ -9,12 +9,18 @@ import {
   AUTH_EMAIL_ALREADY_REGISTERED,
   AUTH_VERIFICATION_RATE_LIMIT,
   AUTH_INVALID_CREDENTIALS,
+  AUTH_VERIFICATION_CODE_EXPIRED,
+  AUTH_VERIFICATION_CODE_INVALID,
+  AUTH_USER_ALREADY_VERIFIED,
   DB_DUPLICATE_KEY,
+  USER_NOT_FOUND,
 } from '@shared/errors';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { VerifyEmailDto } from './dto/verify-email.dto';
+import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { hashPassword, comparePassword } from './utils/password.util';
 import {
   generateVerificationCode,
@@ -296,4 +302,207 @@ export class AuthService {
       },
     };
   }
-}
+
+  async verifyEmail(data: VerifyEmailDto) {
+    const { email, code } = data;
+
+    // Get user via RPC to user service
+    const user = await this.rabbitMQClient.sendRPCRequest<
+      { email: string },
+      any
+    >(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserByEmail',
+      { email },
+    );
+
+    // Check if user exists
+    if (!user) {
+      this.logger.warn(`Verification attempt for non-existent user: ${email}`);
+      throw ErrorFactory.createError({
+        code: USER_NOT_FOUND,
+      });
+    }
+
+    // Check if user is already verified
+    if (user.status === 'active' || user.verifiedAt) {
+      this.logger.log(`User already verified: ${email}`);
+      throw ErrorFactory.createError({
+        code: AUTH_USER_ALREADY_VERIFIED,
+      });
+    }
+
+    // Find valid verification token
+    const verificationToken =
+      await this.verificationTokenRepository.findValidToken(email, code);
+
+    if (!verificationToken) {
+      this.logger.warn(`Invalid or expired verification code for: ${email}`);
+      
+      // Check if there's any token (to differentiate between invalid and expired)
+      const anyToken = await this.verificationTokenRepository.findToken(
+        email,
+        code,
+      );
+      
+      throw ErrorFactory.createError({
+        code: anyToken
+          ? AUTH_VERIFICATION_CODE_EXPIRED
+          : AUTH_VERIFICATION_CODE_INVALID,
+        details: {
+          email,
+        },
+      });
+    }
+
+    // Mark token as used (single-use)
+    await this.verificationTokenRepository.markAsUsed(
+      verificationToken._id.toString(),
+    );
+
+    // Update user status to 'active' via RPC
+    await this.rabbitMQClient.sendRPCRequest<any, any>(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'updateUserStatus',
+      {
+        email,
+        status: 'active',
+        verifiedAt: new Date(),
+      },
+    );
+
+    // Publish user.verified event
+    await this.rabbitMQClient.publishEvent(
+      RABBITMQ_EXCHANGES.EVENTS,
+      RABBITMQ_ROUTING_KEYS.AUTH_USER_VERIFIED,
+      'user.verified',
+      {
+        userId: user._id.toString(),
+        email,
+        timestamp: new Date(),
+      },
+    );
+
+    // Log structured event
+    this.logger.log({
+      event: 'user.verified',
+      userId: user._id.toString(),
+      email,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      success: true,
+      message: 'Email verified successfully. You can now log in.',
+      data: {
+        userId: user._id.toString(),
+        email,
+      },
+    };
+  }
+
+  async resendVerification(data: ResendVerificationDto) {
+    const { email } = data;
+
+    // Get user via RPC to user service
+    const user = await this.rabbitMQClient.sendRPCRequest<
+      { email: string },
+      any
+    >(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserByEmail',
+      { email },
+    );
+
+    // Soft response for security - don't reveal if user exists
+    // But we need to check internally
+    if (!user) {
+      this.logger.warn(`Resend verification for non-existent user: ${email}`);
+      // Return success to avoid user enumeration
+      return {
+        success: true,
+        message:
+          'If your email is registered and not verified, you will receive a verification code.',
+      };
+    }
+
+    // Check if user is already verified
+    if (user.status === 'active' || user.verifiedAt) {
+      this.logger.log(
+        `Resend verification attempted for already verified user: ${email}`,
+      );
+      throw ErrorFactory.createError({
+        code: AUTH_USER_ALREADY_VERIFIED,
+      });
+    }
+
+    // Check rate limiting
+    const rateLimitStart = new Date(Date.now() - this.rateLimitWindow);
+    const recentTokenCount =
+      await this.verificationTokenRepository.countRecentTokens(
+        email,
+        rateLimitStart,
+      );
+
+    if (recentTokenCount >= this.maxTokensPerHour) {
+      throw ErrorFactory.createError({
+        code: AUTH_VERIFICATION_RATE_LIMIT,
+        details: {
+          maxAttempts: this.maxTokensPerHour,
+          windowMinutes: this.rateLimitWindow / 60000,
+          remainingAttempts: 0,
+        },
+      });
+    }
+
+    // Generate new verification code
+    const verificationCode = generateVerificationCode();
+    const expiresAt = getTokenExpiration(this.verificationTokenTTL);
+
+    // Save verification token
+    await this.verificationTokenRepository.create(
+      email,
+      verificationCode,
+      expiresAt,
+    );
+
+    // Send verification email via RPC to notification service
+    try {
+      await this.rabbitMQClient.sendRPCRequest<any, any>(
+        RABBITMQ_EXCHANGES.RPC,
+        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
+        'sendVerificationEmail',
+        {
+          to: email,
+          fullName: user.fullName || user.username,
+          verificationCode,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send verification email: ${error.message}`,
+        error.stack,
+      );
+      // Email sending failure is logged but doesn't block the request
+    }
+
+    // Log structured event
+    this.logger.log({
+      event: 'verification.resent',
+      email,
+      attemptsRemaining: this.maxTokensPerHour - recentTokenCount - 1,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      success: true,
+      message: 'Verification code has been sent to your email.',
+      data: {
+        email,
+        attemptsRemaining: this.maxTokensPerHour - recentTokenCount - 1,
+      },
+    };
+  }

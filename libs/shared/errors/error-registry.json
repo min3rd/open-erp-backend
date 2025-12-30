@@ -57,6 +57,13 @@
       "supportUrl": "/docs/errors/AUTH_0008"
     },
     {
+      "code": "AUTH_0009",
+      "defaultMessageKey": "auth.user_already_verified",
+      "httpStatus": 200,
+      "description": "User email is already verified",
+      "supportUrl": "/docs/errors/AUTH_0009"
+    },
+    {
       "code": "USER_0001",
       "defaultMessageKey": "user.not_found",
       "httpStatus": 404,

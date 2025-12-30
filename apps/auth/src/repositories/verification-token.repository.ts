@@ -64,6 +64,27 @@ export class VerificationTokenRepository {
     }
   }
 
+  async findToken(
+    email: string,
+    token: string,
+  ): Promise<VerificationToken | null> {
+    try {
+      return await this.tokenModel
+        .findOne({
+          email: email.toLowerCase(),
+          token,
+          usedAt: null,
+        })
+        .exec();
+    } catch (error) {
+      this.logger.error(
+        `Error finding token: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
   async markAsUsed(id: string): Promise<VerificationToken | null> {
     try {
       return await this.tokenModel
