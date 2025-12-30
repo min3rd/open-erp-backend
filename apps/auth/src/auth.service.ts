@@ -1,6 +1,12 @@
-import { Injectable, Inject, ConflictException, BadRequestException, Logger } from '@nestjs/common';
+import { Injectable, Inject, Logger } from '@nestjs/common';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { RABBITMQ_EXCHANGES, RABBITMQ_ROUTING_KEYS } from '@shared/config/rabbitmq.config';
+import {
+  ErrorFactory,
+  AUTH_EMAIL_ALREADY_REGISTERED,
+  AUTH_VERIFICATION_RATE_LIMIT,
+  DB_DUPLICATE_KEY,
+} from '@shared/errors';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
 import { RegisterDto } from './dto/register.dto';
 import { hashPassword } from './utils/password.util';
@@ -36,7 +42,9 @@ export class AuthService {
     if (existingUser) {
       if (existingUser.status === 'active' || existingUser.verifiedAt) {
         // User already verified
-        throw new ConflictException('Email already registered and verified');
+        throw ErrorFactory.createError({
+          code: AUTH_EMAIL_ALREADY_REGISTERED,
+        });
       }
 
       // User exists but not verified - check rate limiting
@@ -47,9 +55,13 @@ export class AuthService {
       );
 
       if (recentTokenCount >= this.maxTokensPerHour) {
-        throw new BadRequestException(
-          `Too many verification attempts. Please try again later.`,
-        );
+        throw ErrorFactory.createError({
+          code: AUTH_VERIFICATION_RATE_LIMIT,
+          details: {
+            maxAttempts: this.maxTokensPerHour,
+            windowMinutes: this.rateLimitWindow / 60000,
+          },
+        });
       }
 
       // Allow resending verification code
@@ -76,7 +88,10 @@ export class AuthService {
       } catch (error) {
         this.logger.error(`Error creating user: ${error.message}`, error.stack);
         if (error.code === 11000 || error.message?.includes('duplicate')) {
-          throw new ConflictException('Email already registered');
+          throw ErrorFactory.createError({
+            code: DB_DUPLICATE_KEY,
+            details: { field: 'email' },
+          });
         }
         throw error;
       }

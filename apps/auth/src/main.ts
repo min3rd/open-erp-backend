@@ -1,12 +1,25 @@
 import { NestFactory } from '@nestjs/core';
 import { AuthModule } from './auth.module';
-import { Logger } from '@nestjs/common';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { GlobalExceptionFilter } from '@shared/errors';
 
 async function bootstrap() {
   const logger = new Logger('AuthService');
 
   const app = await NestFactory.create(AuthModule);
+
+  // Apply global exception filter for standardized error handling
+  app.useGlobalFilters(new GlobalExceptionFilter());
+
+  // Enable validation pipe
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+    }),
+  );
 
   // Setup Swagger/OpenAPI
   const enableSwagger = process.env.ENABLE_SWAGGER === 'true';

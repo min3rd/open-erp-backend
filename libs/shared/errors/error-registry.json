@@ -1,0 +1,193 @@
+{
+  "errors": [
+    {
+      "code": "AUTH_0001",
+      "defaultMessageKey": "auth.email_already_registered",
+      "httpStatus": 409,
+      "description": "Email is already registered and verified",
+      "supportUrl": "/docs/errors/AUTH_0001"
+    },
+    {
+      "code": "AUTH_0002",
+      "defaultMessageKey": "auth.invalid_credentials",
+      "httpStatus": 401,
+      "description": "Invalid email or password",
+      "supportUrl": "/docs/errors/AUTH_0002"
+    },
+    {
+      "code": "AUTH_0003",
+      "defaultMessageKey": "auth.token_expired",
+      "httpStatus": 401,
+      "description": "Authentication token has expired",
+      "supportUrl": "/docs/errors/AUTH_0003"
+    },
+    {
+      "code": "AUTH_0004",
+      "defaultMessageKey": "auth.token_invalid",
+      "httpStatus": 401,
+      "description": "Authentication token is invalid",
+      "supportUrl": "/docs/errors/AUTH_0004"
+    },
+    {
+      "code": "AUTH_0005",
+      "defaultMessageKey": "auth.unauthorized",
+      "httpStatus": 401,
+      "description": "User is not authorized to access this resource",
+      "supportUrl": "/docs/errors/AUTH_0005"
+    },
+    {
+      "code": "AUTH_0006",
+      "defaultMessageKey": "auth.verification_rate_limit",
+      "httpStatus": 429,
+      "description": "Too many verification attempts. Please try again later",
+      "supportUrl": "/docs/errors/AUTH_0006"
+    },
+    {
+      "code": "AUTH_0007",
+      "defaultMessageKey": "auth.verification_code_expired",
+      "httpStatus": 400,
+      "description": "Verification code has expired",
+      "supportUrl": "/docs/errors/AUTH_0007"
+    },
+    {
+      "code": "AUTH_0008",
+      "defaultMessageKey": "auth.verification_code_invalid",
+      "httpStatus": 400,
+      "description": "Verification code is invalid",
+      "supportUrl": "/docs/errors/AUTH_0008"
+    },
+    {
+      "code": "USER_0001",
+      "defaultMessageKey": "user.not_found",
+      "httpStatus": 404,
+      "description": "User not found",
+      "supportUrl": "/docs/errors/USER_0001"
+    },
+    {
+      "code": "USER_0002",
+      "defaultMessageKey": "user.already_exists",
+      "httpStatus": 409,
+      "description": "User with this identifier already exists",
+      "supportUrl": "/docs/errors/USER_0002"
+    },
+    {
+      "code": "USER_0003",
+      "defaultMessageKey": "user.invalid_status",
+      "httpStatus": 400,
+      "description": "Invalid user status transition",
+      "supportUrl": "/docs/errors/USER_0003"
+    },
+    {
+      "code": "USER_0004",
+      "defaultMessageKey": "user.profile_incomplete",
+      "httpStatus": 400,
+      "description": "User profile is incomplete",
+      "supportUrl": "/docs/errors/USER_0004"
+    },
+    {
+      "code": "VALIDATION_0001",
+      "defaultMessageKey": "validation.failed",
+      "httpStatus": 400,
+      "description": "Input validation failed",
+      "supportUrl": "/docs/errors/VALIDATION_0001"
+    },
+    {
+      "code": "VALIDATION_0002",
+      "defaultMessageKey": "validation.email_invalid",
+      "httpStatus": 400,
+      "description": "Email format is invalid",
+      "supportUrl": "/docs/errors/VALIDATION_0002"
+    },
+    {
+      "code": "VALIDATION_0003",
+      "defaultMessageKey": "validation.password_weak",
+      "httpStatus": 400,
+      "description": "Password does not meet security requirements",
+      "supportUrl": "/docs/errors/VALIDATION_0003"
+    },
+    {
+      "code": "DB_0001",
+      "defaultMessageKey": "database.connection_failed",
+      "httpStatus": 503,
+      "description": "Failed to connect to database",
+      "supportUrl": "/docs/errors/DB_0001"
+    },
+    {
+      "code": "DB_0002",
+      "defaultMessageKey": "database.query_failed",
+      "httpStatus": 500,
+      "description": "Database query failed",
+      "supportUrl": "/docs/errors/DB_0002"
+    },
+    {
+      "code": "DB_0003",
+      "defaultMessageKey": "database.duplicate_key",
+      "httpStatus": 409,
+      "description": "Duplicate key constraint violation",
+      "supportUrl": "/docs/errors/DB_0003"
+    },
+    {
+      "code": "DB_0004",
+      "defaultMessageKey": "database.transaction_failed",
+      "httpStatus": 500,
+      "description": "Database transaction failed",
+      "supportUrl": "/docs/errors/DB_0004"
+    },
+    {
+      "code": "SYS_0001",
+      "defaultMessageKey": "system.internal_error",
+      "httpStatus": 500,
+      "description": "An internal server error occurred",
+      "supportUrl": "/docs/errors/SYS_0001"
+    },
+    {
+      "code": "SYS_0002",
+      "defaultMessageKey": "system.service_unavailable",
+      "httpStatus": 503,
+      "description": "Service temporarily unavailable",
+      "supportUrl": "/docs/errors/SYS_0002"
+    },
+    {
+      "code": "SYS_0003",
+      "defaultMessageKey": "system.timeout",
+      "httpStatus": 504,
+      "description": "Request timeout",
+      "supportUrl": "/docs/errors/SYS_0003"
+    },
+    {
+      "code": "SYS_0004",
+      "defaultMessageKey": "system.configuration_error",
+      "httpStatus": 500,
+      "description": "System configuration error",
+      "supportUrl": "/docs/errors/SYS_0004"
+    },
+    {
+      "code": "RESOURCE_0001",
+      "defaultMessageKey": "resource.not_found",
+      "httpStatus": 404,
+      "description": "Requested resource not found",
+      "supportUrl": "/docs/errors/RESOURCE_0001"
+    },
+    {
+      "code": "RESOURCE_0002",
+      "defaultMessageKey": "resource.conflict",
+      "httpStatus": 409,
+      "description": "Resource conflict",
+      "supportUrl": "/docs/errors/RESOURCE_0002"
+    },
+    {
+      "code": "RESOURCE_0003",
+      "defaultMessageKey": "resource.forbidden",
+      "httpStatus": 403,
+      "description": "Access to resource is forbidden",
+      "supportUrl": "/docs/errors/RESOURCE_0003"
+    },
+    {
+      "code": "RATE_LIMIT_0001",
+      "defaultMessageKey": "rate_limit.exceeded",
+      "httpStatus": 429,
+      "description": "Rate limit exceeded",
+      "supportUrl": "/docs/errors/RATE_LIMIT_0001"
+    }
+  ]
+}

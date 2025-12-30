@@ -1,8 +1,8 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, BadRequestException } from '@nestjs/common';
 import { AuthService } from '../src/auth.service';
 import { VerificationTokenRepository } from '../src/repositories/verification-token.repository';
 import { RegisterDto } from '../src/dto/register.dto';
+import { StandardizedException } from '@shared/errors';
 
 // Mock RabbitMQ client
 const mockRabbitMQClient = {
@@ -207,8 +207,13 @@ describe('AuthService - Register Integration Tests', () => {
         password: 'Password123',
       };
 
-      await expect(service.register(registerDto)).rejects.toThrow(ConflictException);
-      await expect(service.register(registerDto)).rejects.toThrow('Email already registered and verified');
+      await expect(service.register(registerDto)).rejects.toThrow(StandardizedException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        expect.objectContaining({
+          errorCode: 'AUTH_0001',
+          messageKey: 'auth.email_already_registered',
+        }),
+      );
     });
 
     it('should allow resending verification code for pending user', async () => {
@@ -276,8 +281,13 @@ describe('AuthService - Register Integration Tests', () => {
         password: 'Password123',
       };
 
-      await expect(service.register(registerDto)).rejects.toThrow(BadRequestException);
-      await expect(service.register(registerDto)).rejects.toThrow('Too many verification attempts');
+      await expect(service.register(registerDto)).rejects.toThrow(StandardizedException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        expect.objectContaining({
+          errorCode: 'AUTH_0006',
+          messageKey: 'auth.verification_rate_limit',
+        }),
+      );
     });
   });
 
