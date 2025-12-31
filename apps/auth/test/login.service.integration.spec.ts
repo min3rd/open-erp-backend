@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../src/auth.service';
 import { VerificationTokenRepository } from '../src/repositories/verification-token.repository';
 import { RefreshTokenRepository } from '../src/repositories/refresh-token.repository';
+import { PasswordResetTokenRepository } from '../src/repositories/password-reset-token.repository';
 import { LoginDto } from '../src/dto/login.dto';
 import { StandardizedException } from '@shared/errors';
 import { Types } from 'mongoose';
@@ -30,6 +31,15 @@ const mockRefreshTokenRepository = {
   revokeToken: jest.fn(),
 };
 
+// Mock Password Reset Token Repository
+const mockPasswordResetTokenRepository = {
+  create: jest.fn(),
+  findValidToken: jest.fn(),
+  findToken: jest.fn(),
+  markAsUsed: jest.fn(),
+  countRecentTokens: jest.fn().mockResolvedValue(0),
+};
+
 describe('AuthService - Login Integration Tests', () => {
   let service: AuthService;
   const mockUserId = new Types.ObjectId().toString();
@@ -50,6 +60,10 @@ describe('AuthService - Login Integration Tests', () => {
         {
           provide: RefreshTokenRepository,
           useValue: mockRefreshTokenRepository,
+        },
+        {
+          provide: PasswordResetTokenRepository,
+          useValue: mockPasswordResetTokenRepository,
         },
       ],
     }).compile();
@@ -72,6 +86,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -111,6 +126,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -147,6 +163,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -180,6 +197,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -215,6 +233,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -281,6 +300,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -313,6 +333,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'pending@example.com',
               fullName: 'Pending User',
@@ -363,6 +384,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               password: hashedPassword,
@@ -392,6 +414,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'inactive@example.com',
               fullName: 'Inactive User',
@@ -418,6 +441,7 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
               _id: mockUserId,
               email: 'suspended@example.com',
               fullName: 'Suspended User',
@@ -446,6 +470,8 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -476,6 +502,8 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
+              id: mockUserId,
+              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
