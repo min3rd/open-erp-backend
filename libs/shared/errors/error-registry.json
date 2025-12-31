@@ -64,6 +64,41 @@
       "supportUrl": "/docs/errors/AUTH_0009"
     },
     {
+      "code": "AUTH_0010",
+      "defaultMessageKey": "auth.insufficient_permissions",
+      "httpStatus": 403,
+      "description": "User does not have sufficient permissions",
+      "supportUrl": "/docs/errors/AUTH_0010"
+    },
+    {
+      "code": "AUTH_0011",
+      "defaultMessageKey": "auth.forbidden_cross_tenant",
+      "httpStatus": 403,
+      "description": "Cross-tenant access forbidden",
+      "supportUrl": "/docs/errors/AUTH_0011"
+    },
+    {
+      "code": "AUTH_0012",
+      "defaultMessageKey": "auth.reset_token_invalid",
+      "httpStatus": 400,
+      "description": "Password reset token is invalid",
+      "supportUrl": "/docs/errors/AUTH_0012"
+    },
+    {
+      "code": "AUTH_0013",
+      "defaultMessageKey": "auth.reset_token_expired",
+      "httpStatus": 400,
+      "description": "Password reset token has expired",
+      "supportUrl": "/docs/errors/AUTH_0013"
+    },
+    {
+      "code": "AUTH_0014",
+      "defaultMessageKey": "auth.reset_rate_limit",
+      "httpStatus": 429,
+      "description": "Too many password reset requests. Please try again later",
+      "supportUrl": "/docs/errors/AUTH_0014"
+    },
+    {
       "code": "USER_0001",
       "defaultMessageKey": "user.not_found",
       "httpStatus": 404,

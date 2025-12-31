@@ -156,8 +156,92 @@ export class NotificationService {
       case 'sendVerificationEmail':
         return await this.sendVerificationEmail(message.params);
 
+      case 'sendPasswordResetEmail':
+        return await this.sendPasswordResetEmail(message.params);
+
+      case 'sendPasswordChangedEmail':
+        return await this.sendPasswordChangedEmail(message.params);
+
       default:
         throw new Error(`Unknown RPC method: ${message.method}`);
+    }
+  }
+
+  async sendPasswordResetEmail(data: {
+    to: string;
+    fullName: string;
+    resetLink: string;
+  }) {
+    this.logger.log(`Sending password reset email to ${data.to}`);
+
+    try {
+      await this.emailService.sendPasswordResetEmail(
+        data.to,
+        data.fullName,
+        data.resetLink,
+      );
+
+      // Publish email sent event
+      await this.rabbitMQClient.publishEvent(
+        RABBITMQ_EXCHANGES.EVENTS,
+        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
+        'notification.email.sent',
+        {
+          to: data.to,
+          subject: 'Password Reset Request',
+          sentAt: new Date(),
+        },
+      );
+
+      return {
+        success: true,
+        message: 'Password reset email sent successfully',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async sendPasswordChangedEmail(data: {
+    to: string;
+    fullName: string;
+    timestamp: string;
+  }) {
+    this.logger.log(`Sending password changed email to ${data.to}`);
+
+    try {
+      await this.emailService.sendPasswordChangedEmail(
+        data.to,
+        data.fullName,
+        data.timestamp,
+      );
+
+      // Publish email sent event
+      await this.rabbitMQClient.publishEvent(
+        RABBITMQ_EXCHANGES.EVENTS,
+        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
+        'notification.email.sent',
+        {
+          to: data.to,
+          subject: 'Password Changed Successfully',
+          sentAt: new Date(),
+        },
+      );
+
+      return {
+        success: true,
+        message: 'Password changed email sent successfully',
+      };
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password changed email: ${error.message}`,
+        error.stack,
+      );
+      throw error;
     }
   }
 }

@@ -25,8 +25,13 @@ import {
   RefreshToken,
   RefreshTokenSchema,
 } from './schemas/refresh-token.schema';
+import {
+  PasswordResetToken,
+  PasswordResetTokenSchema,
+} from './schemas/password-reset-token.schema';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
+import { PasswordResetTokenRepository } from './repositories/password-reset-token.repository';
 
 @Module({
   imports: [
@@ -36,6 +41,7 @@ import { RefreshTokenRepository } from './repositories/refresh-token.repository'
     MongooseModule.forFeature([
       { name: VerificationToken.name, schema: VerificationTokenSchema },
       { name: RefreshToken.name, schema: RefreshTokenSchema },
+      { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
     ]),
     ThrottlerModule.forRoot([
       {
@@ -49,6 +55,7 @@ import { RefreshTokenRepository } from './repositories/refresh-token.repository'
     AuthService,
     VerificationTokenRepository,
     RefreshTokenRepository,
+    PasswordResetTokenRepository,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
