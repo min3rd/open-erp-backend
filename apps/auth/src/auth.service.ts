@@ -227,7 +227,6 @@ export class AuthService {
         code: AUTH_INVALID_CREDENTIALS,
       });
     }
-    this.logger.log(`User found for login: ${JSON.stringify(user)}`);
     // Check if user account is active
     if (user.status !== 'active') {
       throw ErrorFactory.createError({
