@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AuthService } from '../src/auth.service';
 import { VerificationTokenRepository } from '../src/repositories/verification-token.repository';
 import { RefreshTokenRepository } from '../src/repositories/refresh-token.repository';
+import { PasswordResetTokenRepository } from '../src/repositories/password-reset-token.repository';
 import { VerifyEmailDto } from '../src/dto/verify-email.dto';
 import { ResendVerificationDto } from '../src/dto/resend-verification.dto';
 import { StandardizedException } from '@shared/errors';
@@ -32,6 +33,15 @@ const mockRefreshTokenRepository = {
   revokeToken: jest.fn(),
 };
 
+// Mock Password Reset Token Repository
+const mockPasswordResetTokenRepository = {
+  create: jest.fn(),
+  findValidToken: jest.fn(),
+  findToken: jest.fn(),
+  markAsUsed: jest.fn(),
+  countRecentTokens: jest.fn().mockResolvedValue(0),
+};
+
 describe('AuthService - Email Verification Tests', () => {
   let service: AuthService;
 
@@ -51,6 +61,10 @@ describe('AuthService - Email Verification Tests', () => {
           provide: RefreshTokenRepository,
           useValue: mockRefreshTokenRepository,
         },
+        {
+          provide: PasswordResetTokenRepository,
+          useValue: mockPasswordResetTokenRepository,
+        },
       ],
     }).compile();
 
@@ -64,6 +78,7 @@ describe('AuthService - Email Verification Tests', () => {
       (exchange, routingKey, method, params) => {
         if (method === 'findUserByEmail') {
           return Promise.resolve({
+            id: 'user123',
             _id: { toString: () => 'user123' },
             email: params.email,
             fullName: 'Test User',
