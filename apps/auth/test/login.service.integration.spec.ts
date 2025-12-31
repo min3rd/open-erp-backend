@@ -471,7 +471,6 @@ describe('AuthService - Login Integration Tests', () => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
               id: mockUserId,
-              id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',
               fullName: 'Test User',
@@ -502,7 +501,6 @@ describe('AuthService - Login Integration Tests', () => {
         (exchange, routingKey, method, params) => {
           if (method === 'findUserByEmail') {
             return Promise.resolve({
-              id: mockUserId,
               id: mockUserId,
               _id: mockUserId,
               email: 'test@example.com',

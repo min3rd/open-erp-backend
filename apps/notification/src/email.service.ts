@@ -41,8 +41,7 @@ export class EmailService {
     verificationCode: string,
   ): Promise<void> {
     try {
-      const { subject, body } = await this.loadEmailTemplate(
-        'VERIFY_EMAIL',
+      const { subject, body } = await this.loadVerificationEmailTemplate(
         fullName,
         verificationCode,
       );
@@ -166,17 +165,16 @@ export class EmailService {
   }
 
   /**
-   * Load email template from VERIFY_EMAIL.md file
+   * Load verification email template from VERIFY_EMAIL.md file
    */
-  private async loadEmailTemplate(
-    templateType: string,
+  private async loadVerificationEmailTemplate(
     fullName: string,
     verificationCode: string,
   ): Promise<{ subject: string; body: string }> {
     try {
       const templatePath = path.join(
         __dirname,
-        `../../templates/${templateType}.md`,
+        '../../templates/VERIFY_EMAIL.md',
       );
       const template = await fs.readFile(templatePath, 'utf-8');
 
