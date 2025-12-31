@@ -268,7 +268,7 @@ export class ConfigService {
    * Validate config data size
    */
   private validateConfigData(data: Record<string, any>): void {
-    const dataSize = JSON.stringify(data).length;
+    const dataSize = Buffer.byteLength(JSON.stringify(data), 'utf8');
 
     if (dataSize > MAX_CONFIG_SIZE_BYTES) {
       throw new BadRequestException(

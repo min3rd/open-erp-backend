@@ -23,6 +23,7 @@ import { ConfigService } from '../services/config.service';
 import { CreateConfigDto } from '../dto/create-config.dto';
 import { UpdateConfigDto } from '../dto/update-config.dto';
 import { ConfigResponseDto } from '../dto/config-response.dto';
+import { Config } from '../schemas/config.schema';
 import { PermissionsGuard } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -190,9 +191,9 @@ export class ConfigController {
   // Helper Methods
   // ========================================
 
-  private mapToResponseDto(config: any): ConfigResponseDto {
+  private mapToResponseDto(config: Config): ConfigResponseDto {
     return {
-      id: config._id?.toString() || config.id,
+      id: (config as any)._id?.toString() || (config as any).id,
       name: config.name,
       scope: config.scope,
       data: config.data,
@@ -201,8 +202,8 @@ export class ConfigController {
       ownerId: config.ownerId,
       createdBy: config.createdBy,
       updatedBy: config.updatedBy,
-      createdAt: config.createdAt,
-      updatedAt: config.updatedAt,
+      createdAt: config.createdAt!,
+      updatedAt: config.updatedAt!,
     };
   }
 }

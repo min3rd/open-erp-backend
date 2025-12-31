@@ -3,6 +3,7 @@ import { ConfigServiceModule } from './config-service.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
+import { Response } from 'express';
 
 async function bootstrap() {
   const logger = new Logger('ConfigService');
@@ -57,8 +58,7 @@ async function bootstrap() {
     SwaggerModule.setup('docs', app, document);
 
     // Serve OpenAPI JSON at /api-docs.json
-    app.getHttpAdapter().get('/api-docs.json', (req, res) => {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
+    app.getHttpAdapter().get('/api-docs.json', (req, res: Response) => {
       res.json(document);
     });
 

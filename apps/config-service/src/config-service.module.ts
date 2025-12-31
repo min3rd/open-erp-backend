@@ -10,6 +10,7 @@ import { PermissionService } from '@shared/services/permission.service';
 import { User, UserSchema, Role, RoleSchema } from '@shared/schemas';
 import { ConfigController } from './controllers/config.controller';
 import { UserConfigController } from './controllers/user-config.controller';
+import { HealthController } from './controllers/health.controller';
 import { ConfigService } from './services/config.service';
 import { ConfigRepository } from './repositories/config.repository';
 import { Config, ConfigSchema } from './schemas/config.schema';
@@ -31,7 +32,7 @@ import { Config, ConfigSchema } from './schemas/config.schema';
       },
     ]),
   ],
-  controllers: [ConfigController, UserConfigController],
+  controllers: [ConfigController, UserConfigController, HealthController],
   providers: [
     ConfigService,
     ConfigRepository,
