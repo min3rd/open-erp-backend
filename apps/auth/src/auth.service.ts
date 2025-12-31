@@ -12,15 +12,21 @@ import {
   AUTH_VERIFICATION_CODE_EXPIRED,
   AUTH_VERIFICATION_CODE_INVALID,
   AUTH_USER_ALREADY_VERIFIED,
+  AUTH_RESET_TOKEN_INVALID,
+  AUTH_RESET_TOKEN_EXPIRED,
+  AUTH_RESET_RATE_LIMIT,
   DB_DUPLICATE_KEY,
   USER_NOT_FOUND,
 } from '@shared/errors';
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
+import { PasswordResetTokenRepository } from './repositories/password-reset-token.repository';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
 import { hashPassword, comparePassword } from './utils/password.util';
 import {
   generateVerificationCode,
@@ -28,6 +34,8 @@ import {
   generateAccessToken,
   generateRefreshToken,
   calculateExpirationDate,
+  generateResetToken,
+  hashToken,
 } from './utils/token.util';
 import { Types } from 'mongoose';
 
@@ -40,11 +48,16 @@ export class AuthService {
   private readonly jwtSecret: string;
   private readonly jwtAccessExpiresIn: string;
   private readonly jwtRefreshExpiresIn: string;
+  private readonly resetTokenTTL: number;
+  private readonly resetRateLimitWindow: number;
+  private readonly maxResetRequestsPerWindow: number;
+  private readonly appUrl: string;
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     private readonly verificationTokenRepository: VerificationTokenRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
+    private readonly passwordResetTokenRepository: PasswordResetTokenRepository,
   ) {
     this.verificationTokenTTL = parseInt(
       process.env.VERIFICATION_TOKEN_TTL || '15',
@@ -66,6 +79,20 @@ export class AuthService {
       process.env.JWT_SECRET || 'your-secret-key-change-in-production';
     this.jwtAccessExpiresIn = process.env.JWT_ACCESS_EXPIRES_IN || '15m';
     this.jwtRefreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
+
+    // Password reset configuration
+    this.resetTokenTTL = parseInt(
+      process.env.RESET_TOKEN_TTL || '15',
+    ); // 15 minutes default
+    this.resetRateLimitWindow = parseInt(
+      process.env.RESET_RATE_LIMIT_WINDOW || '60000',
+    ); // 1 minute default
+    this.maxResetRequestsPerWindow = parseInt(
+      process.env.RESET_MAX_REQUESTS || '1',
+    ); // 1 request per window
+
+    // App URL for email links
+    this.appUrl = process.env.APP_URL || 'http://localhost:3000';
   }
 
   async register(data: RegisterDto) {
@@ -505,6 +532,254 @@ export class AuthService {
         email,
         attemptsRemaining: this.maxTokensPerHour - recentTokenCount - 1,
       },
+    };
+  }
+
+  async forgotPassword(data: ForgotPasswordDto) {
+    const { email } = data;
+
+    // Get user via RPC to user service
+    const user = await this.rabbitMQClient.sendRPCRequest<
+      { email: string },
+      any
+    >(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserByEmail',
+      { email },
+    );
+
+    // Always return success to prevent user enumeration
+    // But only send email if user exists
+    if (!user) {
+      this.logger.warn(`Password reset requested for non-existent user: ${email}`);
+      // Log the attempt for security monitoring
+      this.logger.log({
+        event: 'password.reset.requested',
+        email,
+        userExists: false,
+        timestamp: new Date().toISOString(),
+      });
+      return {
+        success: true,
+        message:
+          'If your email is registered, you will receive a password reset link.',
+      };
+    }
+
+    // Check rate limiting
+    const rateLimitStart = new Date(Date.now() - this.resetRateLimitWindow);
+    const recentResetCount =
+      await this.passwordResetTokenRepository.countRecentTokens(
+        email,
+        rateLimitStart,
+      );
+
+    if (recentResetCount >= this.maxResetRequestsPerWindow) {
+      this.logger.warn(`Rate limit exceeded for password reset: ${email}`);
+      throw ErrorFactory.createError({
+        code: AUTH_RESET_RATE_LIMIT,
+        details: {
+          windowSeconds: this.resetRateLimitWindow / 1000,
+        },
+      });
+    }
+
+    // Generate secure reset token
+    const resetToken = generateResetToken();
+    const tokenHash = hashToken(resetToken);
+    const expiresAt = getTokenExpiration(this.resetTokenTTL);
+
+    // Save hashed token to database
+    await this.passwordResetTokenRepository.create(email, tokenHash, expiresAt);
+
+    // Build reset link
+    const resetLink = `${this.appUrl}/auth/reset-password?token=${resetToken}`;
+
+    // Send password reset email via RPC to notification service
+    try {
+      await this.rabbitMQClient.sendRPCRequest<any, any>(
+        RABBITMQ_EXCHANGES.RPC,
+        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
+        'sendPasswordResetEmail',
+        {
+          to: email,
+          fullName: user.fullName || user.username,
+          resetLink,
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password reset email: ${error.message}`,
+        error.stack,
+      );
+      // Don't expose email sending failure to user
+    }
+
+    // Log structured event
+    this.logger.log({
+      event: 'password.reset.requested',
+      email,
+      userExists: true,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      success: true,
+      message:
+        'If your email is registered, you will receive a password reset link.',
+    };
+  }
+
+  async validateResetToken(token: string) {
+    if (!token) {
+      return { valid: false, reason: 'Token is required' };
+    }
+
+    // Hash the token to compare with stored hash
+    const tokenHash = hashToken(token);
+
+    // Try to find any token with this hash (to differentiate between invalid and expired)
+    const resetToken = await this.passwordResetTokenRepository.findToken(
+      '',
+      tokenHash,
+    );
+
+    if (!resetToken) {
+      return { valid: false, reason: 'Invalid token' };
+    }
+
+    // Check if token is expired
+    if (resetToken.expiresAt < new Date()) {
+      return { valid: false, reason: 'Token has expired' };
+    }
+
+    // Check if token is already used
+    if (resetToken.usedAt) {
+      return { valid: false, reason: 'Token has already been used' };
+    }
+
+    return { valid: true };
+  }
+
+  async resetPassword(data: ResetPasswordDto) {
+    const { token, password } = data;
+
+    // Hash the token to find in database
+    const tokenHash = hashToken(token);
+
+    // Find valid token across all emails
+    // We need to search across all emails, so we'll use a different approach
+    const resetToken = await this.passwordResetTokenRepository.findToken(
+      '',
+      tokenHash,
+    );
+
+    if (!resetToken) {
+      this.logger.warn(`Invalid reset token used`);
+      throw ErrorFactory.createError({
+        code: AUTH_RESET_TOKEN_INVALID,
+      });
+    }
+
+    // Check if token is expired
+    if (resetToken.expiresAt < new Date()) {
+      this.logger.warn(`Expired reset token used for: ${resetToken.email}`);
+      throw ErrorFactory.createError({
+        code: AUTH_RESET_TOKEN_EXPIRED,
+      });
+    }
+
+    // Check if token is already used
+    if (resetToken.usedAt) {
+      this.logger.warn(`Already used reset token for: ${resetToken.email}`);
+      throw ErrorFactory.createError({
+        code: AUTH_RESET_TOKEN_INVALID,
+      });
+    }
+
+    const email = resetToken.email;
+
+    // Get user via RPC
+    const user = await this.rabbitMQClient.sendRPCRequest<
+      { email: string },
+      any
+    >(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserByEmail',
+      { email },
+    );
+
+    if (!user) {
+      this.logger.error(`User not found for reset token: ${email}`);
+      throw ErrorFactory.createError({
+        code: USER_NOT_FOUND,
+      });
+    }
+
+    // Hash new password
+    const hashedPassword = await hashPassword(password);
+
+    // Update user password via RPC
+    await this.rabbitMQClient.sendRPCRequest<any, any>(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'updateUserPassword',
+      {
+        email,
+        password: hashedPassword,
+      },
+    );
+
+    // Mark token as used
+    await this.passwordResetTokenRepository.markAsUsed(
+      resetToken._id.toString(),
+    );
+
+    // Send password changed notification email
+    try {
+      await this.rabbitMQClient.sendRPCRequest<any, any>(
+        RABBITMQ_EXCHANGES.RPC,
+        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
+        'sendPasswordChangedEmail',
+        {
+          to: email,
+          fullName: user.fullName || user.username,
+          timestamp: new Date().toISOString(),
+        },
+      );
+    } catch (error) {
+      this.logger.error(
+        `Failed to send password changed email: ${error.message}`,
+        error.stack,
+      );
+      // Don't fail the request if email sending fails
+    }
+
+    // Publish password changed event
+    await this.rabbitMQClient.publishEvent(
+      RABBITMQ_EXCHANGES.EVENTS,
+      RABBITMQ_ROUTING_KEYS.AUTH_USER_PASSWORD_CHANGED,
+      'user.password.changed',
+      {
+        userId: user.id.toString(),
+        email,
+        timestamp: new Date(),
+      },
+    );
+
+    // Log structured event
+    this.logger.log({
+      event: 'password.reset.completed',
+      userId: user.id.toString(),
+      email,
+      timestamp: new Date().toISOString(),
+    });
+
+    return {
+      success: true,
+      message: 'Password has been reset successfully. You can now log in with your new password.',
     };
   }
 }

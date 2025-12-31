@@ -1,5 +1,6 @@
 import * as jwt from 'jsonwebtoken';
 import { v4 as uuidv4 } from 'uuid';
+import * as crypto from 'crypto';
 
 /**
  * Generate a 6-digit verification code
@@ -98,3 +99,22 @@ export function verifyToken(token: string, secret: string): any {
     return null;
   }
 }
+
+/**
+ * Generate a cryptographically secure random token for password reset
+ * @returns Secure random token string (hex encoded)
+ */
+export function generateResetToken(): string {
+  // Generate 32 bytes (256 bits) of random data
+  return crypto.randomBytes(32).toString('hex');
+}
+
+/**
+ * Hash a token using SHA256 for secure storage
+ * @param token - Token to hash
+ * @returns Hashed token (hex encoded)
+ */
+export function hashToken(token: string): string {
+  return crypto.createHash('sha256').update(token).digest('hex');
+}
+

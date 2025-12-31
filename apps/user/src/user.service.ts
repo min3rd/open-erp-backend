@@ -246,6 +246,40 @@ export class UserService {
           throw error;
         }
 
+      case 'updateUserPassword':
+        try {
+          const { email, password } = message.params;
+          const user = await this.userRepository.findByEmail(email);
+          if (!user) {
+            throw new Error(`User not found with email: ${email}`);
+          }
+
+          const updatedUser = await this.userRepository.update(
+            user._id.toString(),
+            { password },
+          );
+
+          // Publish user updated event
+          await this.rabbitMQClient.publishEvent(
+            RABBITMQ_EXCHANGES.EVENTS,
+            RABBITMQ_ROUTING_KEYS.USER_UPDATED,
+            'user.updated',
+            {
+              userId: user._id.toString(),
+              email,
+              passwordChanged: true,
+            },
+          );
+
+          return updatedUser;
+        } catch (error) {
+          this.logger.error(
+            `Error updating user password via RPC: ${error.message}`,
+            error.stack,
+          );
+          throw error;
+        }
+
       default:
         throw new Error(`Unknown RPC method: ${message.method}`);
     }

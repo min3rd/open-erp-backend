@@ -3,6 +3,7 @@ import {
   Post,
   Body,
   Get,
+  Query,
   UsePipes,
   ValidationPipe,
   HttpCode,
@@ -13,7 +14,9 @@ import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
-import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
+import { ForgotPasswordDto } from './dto/forgot-password.dto';
+import { ResetPasswordDto } from './dto/reset-password.dto';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -67,6 +70,45 @@ export class AuthController {
     @Body() resendVerificationDto: ResendVerificationDto,
   ) {
     return this.authService.resendVerification(resendVerificationDto);
+  }
+
+  @Post('forgot-password')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ summary: 'Request password reset link' })
+  @ApiResponse({
+    status: 200,
+    description: 'If email exists, password reset link sent',
+  })
+  @ApiResponse({ status: 429, description: 'Too many reset requests' })
+  async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
+    return this.authService.forgotPassword(forgotPasswordDto);
+  }
+
+  @Get('validate-reset-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Validate password reset token' })
+  @ApiQuery({
+    name: 'token',
+    required: true,
+    description: 'Password reset token',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Token validation result',
+  })
+  async validateResetToken(@Query('token') token: string) {
+    return this.authService.validateResetToken(token);
+  }
+
+  @Post('reset-password')
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ summary: 'Reset password with token' })
+  @ApiResponse({ status: 200, description: 'Password reset successfully' })
+  @ApiResponse({ status: 400, description: 'Invalid or expired token' })
+  async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
+    return this.authService.resetPassword(resetPasswordDto);
   }
 
   @Get('health')
