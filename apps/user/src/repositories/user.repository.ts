@@ -64,8 +64,27 @@ export class UserRepository {
     }
   }
 
-  async findByEmail(email: string): Promise<User | null> {
+  async findByEmail(
+    email: string,
+    includePassword: boolean = false,
+  ): Promise<User | null> {
     try {
+      if (includePassword) {
+        return await this.userModel
+          .findOne(
+            { email },
+            {
+              _id: 1,
+              username: 1,
+              email: 1,
+              fullName: 1,
+              password: 1,
+              status: 1,
+              avatarUrl: 1,
+            },
+          )
+          .exec();
+      }
       return await this.userModel.findOne({ email }).exec();
     } catch (error) {
       this.logger.error(

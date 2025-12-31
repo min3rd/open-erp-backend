@@ -227,7 +227,7 @@ export class AuthService {
         code: AUTH_INVALID_CREDENTIALS,
       });
     }
-
+    this.logger.log(`User found for login: ${JSON.stringify(user)}`);
     // Check if user account is active
     if (user.status !== 'active') {
       throw ErrorFactory.createError({
@@ -248,7 +248,7 @@ export class AuthService {
 
     // Generate tokens
     const accessToken = generateAccessToken(
-      user._id.toString(),
+      user.id.toString(),
       user.email,
       this.jwtSecret,
       this.jwtAccessExpiresIn,
@@ -261,7 +261,7 @@ export class AuthService {
 
     // Save refresh token to database
     await this.refreshTokenRepository.create(
-      new Types.ObjectId(user._id),
+      new Types.ObjectId(user.id),
       refreshTokenValue,
       refreshTokenExpiresAt,
     );
@@ -271,7 +271,7 @@ export class AuthService {
       RABBITMQ_EXCHANGES.RPC,
       RABBITMQ_ROUTING_KEYS.RPC_USER,
       'updateLastLogin',
-      { userId: user._id.toString() },
+      { userId: user.id.toString() },
     );
 
     // Publish user login event
@@ -280,7 +280,7 @@ export class AuthService {
       RABBITMQ_ROUTING_KEYS.AUTH_USER_LOGIN,
       'user.login',
       {
-        userId: user._id.toString(),
+        userId: user.id.toString(),
         email: user.email,
         timestamp: new Date(),
       },
@@ -289,7 +289,7 @@ export class AuthService {
     // Log structured event
     this.logger.log({
       event: 'user.login',
-      userId: user._id.toString(),
+      userId: user.id.toString(),
       email: user.email,
       timestamp: new Date().toISOString(),
     });

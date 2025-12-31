@@ -167,7 +167,10 @@ export class UserService {
 
       case 'getUserByEmail':
       case 'findUserByEmail':
-        return await this.userRepository.findByEmail(message.params.email);
+        return await this.userRepository.findByEmail(
+          message.params.email,
+          message.params.includePassword,
+        );
 
       case 'createUser':
         try {
