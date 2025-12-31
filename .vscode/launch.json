@@ -1,0 +1,38 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Auth Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:auth:dev", "--", "--inspect-brk"],
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "User Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:user:dev", "--", "--inspect-brk"],
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Notification Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:notification:dev", "--", "--inspect-brk"],
+      "autoAttachChildProcesses": true,
+      "restart": true,
+      "sourceMaps": true,
+      "stopOnEntry": false
+    }
+  ]
+}
