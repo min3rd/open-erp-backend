@@ -58,6 +58,7 @@ async function bootstrap() {
 
     // Serve OpenAPI JSON at /api-docs.json
     app.getHttpAdapter().get('/api-docs.json', (req, res) => {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
       res.json(document);
     });
 
@@ -70,4 +71,4 @@ async function bootstrap() {
   logger.log(`Config service is running on port ${port}`);
 }
 
-bootstrap();
+void bootstrap();

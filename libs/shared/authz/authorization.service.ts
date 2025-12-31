@@ -322,12 +322,12 @@ export class AuthorizationService {
 
       const role = await this.roleModel
         .findOne({
-          _id: { $in: roleIds as any },
+          _id: { $in: roleIds },
           code: 'TENANT_ADMIN',
           scope: 'tenant',
           tenantId: effectiveTenantId,
           status: 'active',
-        })
+        } as any)
         .exec();
 
       return !!role;

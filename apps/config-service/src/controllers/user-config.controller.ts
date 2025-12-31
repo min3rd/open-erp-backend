@@ -122,7 +122,8 @@ export class UserConfigController {
     name: 'fallback',
     required: false,
     type: Boolean,
-    description: 'If true, falls back to global config when user config not found',
+    description:
+      'If true, falls back to global config when user config not found',
   })
   @ApiResponse({
     status: 200,

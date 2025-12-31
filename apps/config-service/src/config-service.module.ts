@@ -3,12 +3,11 @@ import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from '@shared/database';
-import {
-  RabbitMQModule,
-  getRabbitMQConfig,
-} from '@shared/rabbitmq';
+import { RabbitMQModule } from '@shared/rabbitmq';
+import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
 import { AuthorizationService } from '@shared/authz/authorization.service';
 import { PermissionService } from '@shared/services/permission.service';
+import { User, UserSchema, Role, RoleSchema } from '@shared/schemas';
 import { ConfigController } from './controllers/config.controller';
 import { UserConfigController } from './controllers/user-config.controller';
 import { ConfigService } from './services/config.service';
@@ -20,7 +19,11 @@ import { Config, ConfigSchema } from './schemas/config.schema';
     NestConfigModule.forRoot(),
     DatabaseModule,
     RabbitMQModule.forRoot(getRabbitMQConfig()),
-    MongooseModule.forFeature([{ name: Config.name, schema: ConfigSchema }]),
+    MongooseModule.forFeature([
+      { name: Config.name, schema: ConfigSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Role.name, schema: RoleSchema },
+    ]),
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute

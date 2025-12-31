@@ -10,11 +10,8 @@ import { ConfigRepository } from '../repositories/config.repository';
 import { Config, ConfigScope } from '../schemas/config.schema';
 import { CreateConfigDto } from '../dto/create-config.dto';
 import { UpdateConfigDto } from '../dto/update-config.dto';
-import {
-  RabbitMQClient,
-  RABBITMQ_CLIENT,
-  RABBITMQ_EXCHANGES,
-} from '@shared/rabbitmq';
+import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
+import { RABBITMQ_EXCHANGES } from '@shared/config/rabbitmq.config';
 
 const MAX_CONFIG_SIZE_BYTES = 100 * 1024; // 100KB default limit
 
@@ -105,7 +102,10 @@ export class ConfigService {
    * Delete a global config
    */
   async deleteGlobalConfig(name: string, userId: string): Promise<void> {
-    const deleted = await this.configRepository.delete(name, ConfigScope.GLOBAL);
+    const deleted = await this.configRepository.delete(
+      name,
+      ConfigScope.GLOBAL,
+    );
 
     if (!deleted) {
       throw new NotFoundException(`Global config '${name}' not found`);
@@ -247,13 +247,20 @@ export class ConfigService {
    * List all global configs
    */
   async listGlobalConfigs(limit: number = 100): Promise<Config[]> {
-    return await this.configRepository.find(ConfigScope.GLOBAL, undefined, limit);
+    return await this.configRepository.find(
+      ConfigScope.GLOBAL,
+      undefined,
+      limit,
+    );
   }
 
   /**
    * List all user-scoped configs for a user
    */
-  async listUserConfigs(userId: string, limit: number = 100): Promise<Config[]> {
+  async listUserConfigs(
+    userId: string,
+    limit: number = 100,
+  ): Promise<Config[]> {
     return await this.configRepository.find(ConfigScope.USER, userId, limit);
   }
 
@@ -281,6 +288,7 @@ export class ConfigService {
     try {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
+        eventType,
         eventType,
         {
           config,

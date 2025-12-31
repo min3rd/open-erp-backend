@@ -20,7 +20,6 @@ const mockConfigRepository = {
 
 describe('ConfigService', () => {
   let service: ConfigService;
-  let repository: ConfigRepository;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -38,7 +37,6 @@ describe('ConfigService', () => {
     }).compile();
 
     service = module.get<ConfigService>(ConfigService);
-    repository = module.get<ConfigRepository>(ConfigRepository);
 
     // Reset mocks before each test
     jest.clearAllMocks();

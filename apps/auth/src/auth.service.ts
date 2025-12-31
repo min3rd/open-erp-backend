@@ -81,9 +81,7 @@ export class AuthService {
     this.jwtRefreshExpiresIn = process.env.JWT_REFRESH_EXPIRES_IN || '7d';
 
     // Password reset configuration
-    this.resetTokenTTL = parseInt(
-      process.env.RESET_TOKEN_TTL || '15',
-    ); // 15 minutes default
+    this.resetTokenTTL = parseInt(process.env.RESET_TOKEN_TTL || '15'); // 15 minutes default
     this.resetRateLimitWindow = parseInt(
       process.env.RESET_RATE_LIMIT_WINDOW || '60000',
     ); // 1 minute default
@@ -552,7 +550,9 @@ export class AuthService {
     // Always return success to prevent user enumeration
     // But only send email if user exists
     if (!user) {
-      this.logger.warn(`Password reset requested for non-existent user: ${email}`);
+      this.logger.warn(
+        `Password reset requested for non-existent user: ${email}`,
+      );
       // Log the attempt for security monitoring
       this.logger.log({
         event: 'password.reset.requested',
@@ -779,7 +779,8 @@ export class AuthService {
 
     return {
       success: true,
-      message: 'Password has been reset successfully. You can now log in with your new password.',
+      message:
+        'Password has been reset successfully. You can now log in with your new password.',
     };
   }
 }

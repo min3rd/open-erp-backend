@@ -144,7 +144,7 @@ export class ConfigRepository {
           { data, description, updatedBy: userId },
           ownerId,
         );
-        return updated!;
+        return updated;
       } else {
         return await this.create({
           name,
@@ -157,7 +157,10 @@ export class ConfigRepository {
         });
       }
     } catch (error) {
-      this.logger.error(`Error upserting config: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error upserting config: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -195,7 +198,10 @@ export class ConfigRepository {
 
       return await this.configModel.countDocuments(query).exec();
     } catch (error) {
-      this.logger.error(`Error counting configs: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error counting configs: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

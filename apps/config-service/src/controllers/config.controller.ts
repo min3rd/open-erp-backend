@@ -101,7 +101,9 @@ export class ConfigController {
     type: ConfigResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Config not found' })
-  async getGlobalConfig(@Param('name') name: string): Promise<ConfigResponseDto> {
+  async getGlobalConfig(
+    @Param('name') name: string,
+  ): Promise<ConfigResponseDto> {
     const config = await this.configService.getGlobalConfig(name);
     return this.mapToResponseDto(config);
   }
@@ -127,7 +129,11 @@ export class ConfigController {
     @Request() req: any,
   ): Promise<ConfigResponseDto> {
     const userId = req.user?.userId || 'system';
-    const config = await this.configService.updateGlobalConfig(name, dto, userId);
+    const config = await this.configService.updateGlobalConfig(
+      name,
+      dto,
+      userId,
+    );
     return this.mapToResponseDto(config);
   }
 
@@ -152,7 +158,11 @@ export class ConfigController {
     @Request() req: any,
   ): Promise<ConfigResponseDto> {
     const userId = req.user?.userId || 'system';
-    const config = await this.configService.updateGlobalConfig(name, dto, userId);
+    const config = await this.configService.updateGlobalConfig(
+      name,
+      dto,
+      userId,
+    );
     return this.mapToResponseDto(config);
   }
 
