@@ -73,7 +73,7 @@ export class PasswordResetTokenRepository {
         tokenHash,
         usedAt: null,
       };
-      
+
       if (email) {
         query.email = email.toLowerCase();
       }

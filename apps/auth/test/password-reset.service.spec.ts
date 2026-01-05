@@ -101,7 +101,9 @@ describe('AuthService - Password Reset Tests', () => {
       };
 
       mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce(mockUser);
-      mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce({ success: true });
+      mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce({
+        success: true,
+      });
 
       const result = await service.forgotPassword(forgotPasswordDto);
 
@@ -127,7 +129,9 @@ describe('AuthService - Password Reset Tests', () => {
       };
 
       mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce(mockUser);
-      mockPasswordResetTokenRepository.countRecentTokens.mockResolvedValueOnce(2);
+      mockPasswordResetTokenRepository.countRecentTokens.mockResolvedValueOnce(
+        2,
+      );
 
       await expect(service.forgotPassword(forgotPasswordDto)).rejects.toThrow(
         StandardizedException,
@@ -275,8 +279,12 @@ describe('AuthService - Password Reset Tests', () => {
         validToken,
       );
       mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce(mockUser);
-      mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce({ success: true });
-      mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce({ success: true });
+      mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce({
+        success: true,
+      });
+      mockRabbitMQClient.sendRPCRequest.mockResolvedValueOnce({
+        success: true,
+      });
 
       const result = await service.resetPassword(resetPasswordDto);
 
@@ -306,7 +314,8 @@ describe('AuthService - Password Reset Tests', () => {
 
       // Call twice to get two tokens
       await service.forgotPassword({ email: 'test@example.com' });
-      const firstCallArgs = mockPasswordResetTokenRepository.create.mock.calls[0];
+      const firstCallArgs =
+        mockPasswordResetTokenRepository.create.mock.calls[0];
 
       jest.clearAllMocks();
       mockRabbitMQClient.sendRPCRequest.mockResolvedValue(mockUser);

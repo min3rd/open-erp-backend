@@ -233,7 +233,9 @@ export class EmailService {
 
       return { subject, body };
     } catch (error) {
-      this.logger.error(`Failed to load password reset template: ${error.message}`);
+      this.logger.error(
+        `Failed to load password reset template: ${error.message}`,
+      );
       // Fallback to default template
       return {
         subject: 'Password Reset Request',
@@ -281,7 +283,9 @@ export class EmailService {
 
       return { subject, body };
     } catch (error) {
-      this.logger.error(`Failed to load password changed template: ${error.message}`);
+      this.logger.error(
+        `Failed to load password changed template: ${error.message}`,
+      );
       // Fallback to default template
       return {
         subject: 'Password Changed Successfully',
