@@ -25,8 +25,19 @@ export class JwtAuthGuard implements CanActivate {
         'JWT_SECRET environment variable must be set in production',
       );
     }
-    this.jwtSecret =
-      process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+    this.jwtSecret = process.env.JWT_SECRET || this.generateRandomSecret();
+  }
+
+  /**
+   * Generate a random secret for non-production use
+   */
+  private generateRandomSecret(): string {
+    const crypto = require('crypto');
+    const secret = crypto.randomBytes(32).toString('hex');
+    this.logger.warn(
+      'Using auto-generated JWT secret. Set JWT_SECRET in production!',
+    );
+    return secret;
   }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {

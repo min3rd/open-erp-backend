@@ -10,7 +10,6 @@ import {
   HttpStatus,
   UseGuards,
   Request,
-  ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -28,6 +27,16 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { Public } from '@shared/authz/decorators';
+
+/**
+ * Authenticated request interface with user context
+ */
+interface AuthenticatedRequest {
+  user: {
+    userId: string;
+    email: string;
+  };
+}
 
 @ApiTags('auth')
 @Controller('auth')
@@ -158,13 +167,8 @@ export class MeController {
     status: 403,
     description: 'Forbidden - User account is not active',
   })
-  async getMe(@Request() req: any) {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      throw new ForbiddenException('User not authenticated');
-    }
-
-    return this.authService.getMe(userId);
+  async getMe(@Request() req: AuthenticatedRequest) {
+    // JwtAuthGuard ensures user is set, so we can safely access userId
+    return this.authService.getMe(req.user.userId);
   }
 }
