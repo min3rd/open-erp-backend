@@ -783,4 +783,47 @@ export class AuthService {
         'Password has been reset successfully. You can now log in with your new password.',
     };
   }
+
+  async getMe(userId: string) {
+    // Get user via RPC to user service
+    const user = await this.rabbitMQClient.sendRPCRequest<
+      { userId: string },
+      any
+    >(
+      RABBITMQ_EXCHANGES.RPC,
+      RABBITMQ_ROUTING_KEYS.RPC_USER,
+      'findUserById',
+      { userId },
+    );
+
+    if (!user) {
+      this.logger.warn(`User not found for getMe: ${userId}`);
+      throw ErrorFactory.createError({
+        code: USER_NOT_FOUND,
+      });
+    }
+
+    // Check if user account is active
+    if (user.status !== 'active') {
+      this.logger.warn(`Inactive user attempted access: ${userId}`);
+      throw ErrorFactory.createError({
+        code: AUTH_INVALID_CREDENTIALS,
+        details: {
+          reason: 'Account is not active',
+        },
+      });
+    }
+
+    // Return user profile information
+    return {
+      id: user.id.toString(),
+      email: user.email,
+      username: user.username,
+      fullName: user.fullName,
+      avatarUrl: user.avatarUrl || null,
+      status: user.status,
+      verifiedAt: user.verifiedAt,
+      createdAt: user.createdAt,
+    };
+  }
 }

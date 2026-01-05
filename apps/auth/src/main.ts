@@ -39,6 +39,8 @@ async function bootstrap() {
       .setDescription('Authentication and authorization service')
       .setVersion('1.0.0')
       .addTag('auth')
+      .addTag('user')
+      .addBearerAuth()
       .build();
 
     // Add custom property for service identification
