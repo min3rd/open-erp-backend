@@ -27,6 +27,15 @@
       "runtimeArgs": ["run", "start:notification:dev"],
       "sourceMaps": true,
       "console": "integratedTerminal"
+    },
+        {
+      "type": "node",
+      "request": "launch",
+      "name": "Config Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:config:dev"],
+      "sourceMaps": true,
+      "console": "integratedTerminal"
     }
   ]
 }
