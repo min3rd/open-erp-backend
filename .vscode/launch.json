@@ -5,34 +5,27 @@
       "type": "node",
       "request": "launch",
       "name": "Auth Service (Dev)",
+      "preLaunchTask": "npm: install",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:auth:dev", "--", "--inspect-brk"],
-      "autoAttachChildProcesses": true,
-      "restart": true,
-      "sourceMaps": true,
-      "stopOnEntry": false
+      "runtimeArgs": ["run", "start:auth:dev"],
+      "sourceMaps": true
     },
     {
       "type": "node",
-      "request": "launch",
       "name": "User Service (Dev)",
+      "preLaunchTask": "npm: install",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:user:dev", "--", "--inspect-brk"],
-      "autoAttachChildProcesses": true,
-      "restart": true,
-      "sourceMaps": true,
-      "stopOnEntry": false
+      "runtimeArgs": ["run", "start:user:dev"],
+      "sourceMaps": true
     },
     {
       "type": "node",
       "request": "launch",
       "name": "Notification Service (Dev)",
+      "preLaunchTask": "npm: install",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:notification:dev", "--", "--inspect-brk"],
-      "autoAttachChildProcesses": true,
-      "restart": true,
-      "sourceMaps": true,
-      "stopOnEntry": false
+      "runtimeArgs": ["run", "start:notification:dev"],
+      "sourceMaps": true
     }
   ]
 }
