@@ -1,5 +1,5 @@
 import { Module, OnModuleInit, Inject, Logger } from '@nestjs/common';
-import { AuthController } from './auth.controller';
+import { AuthController, MeController } from './auth.controller';
 import { AuthService } from './auth.service';
 import {
   RabbitMQModule,
@@ -50,7 +50,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
       },
     ]),
   ],
-  controllers: [AuthController],
+  controllers: [AuthController, MeController],
   providers: [
     AuthService,
     VerificationTokenRepository,

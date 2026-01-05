@@ -8,6 +8,9 @@ import {
   ValidationPipe,
   HttpCode,
   HttpStatus,
+  UseGuards,
+  Request,
+  ForbiddenException,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -16,14 +19,24 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiQuery,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { Public } from '@shared/authz/decorators';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
   @Post('register')
+  @Public()
   @HttpCode(HttpStatus.CREATED)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Register a new user' })
@@ -34,6 +47,7 @@ export class AuthController {
   }
 
   @Post('login')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Login with email and password' })
@@ -44,6 +58,7 @@ export class AuthController {
   }
 
   @Post('verify-email')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Verify email with verification code' })
@@ -58,6 +73,7 @@ export class AuthController {
   }
 
   @Post('resend-verification')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Resend verification code to email' })
@@ -73,6 +89,7 @@ export class AuthController {
   }
 
   @Post('forgot-password')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Request password reset link' })
@@ -86,6 +103,7 @@ export class AuthController {
   }
 
   @Get('validate-reset-token')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Validate password reset token' })
   @ApiQuery({
@@ -102,6 +120,7 @@ export class AuthController {
   }
 
   @Post('reset-password')
+  @Public()
   @HttpCode(HttpStatus.OK)
   @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
   @ApiOperation({ summary: 'Reset password with token' })
@@ -112,9 +131,40 @@ export class AuthController {
   }
 
   @Get('health')
+  @Public()
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   health() {
     return { status: 'ok', service: 'auth' };
+  }
+}
+
+@ApiTags('user')
+@Controller()
+@UseGuards(JwtAuthGuard)
+export class MeController {
+  constructor(private readonly authService: AuthService) {}
+
+  @Get('me')
+  @ApiBearerAuth()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Get current user profile' })
+  @ApiResponse({
+    status: 200,
+    description: 'User profile retrieved successfully',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - User account is not active',
+  })
+  async getMe(@Request() req: any) {
+    const userId = req.user?.userId;
+
+    if (!userId) {
+      throw new ForbiddenException('User not authenticated');
+    }
+
+    return this.authService.getMe(userId);
   }
 }
