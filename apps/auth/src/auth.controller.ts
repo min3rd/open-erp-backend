@@ -8,8 +8,6 @@ import {
   ValidationPipe,
   HttpCode,
   HttpStatus,
-  UseGuards,
-  Request,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { RegisterDto } from './dto/register.dto';
@@ -18,29 +16,11 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-  ApiBearerAuth,
-} from '@nestjs/swagger';
-import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Public } from '@shared/authz/decorators';
-
-/**
- * Authenticated request interface with user context
- */
-interface AuthenticatedRequest {
-  user: {
-    userId: string;
-    email: string;
-  };
-}
 
 @ApiTags('auth')
 @Controller('auth')
-@UseGuards(JwtAuthGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
@@ -145,30 +125,5 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   health() {
     return { status: 'ok', service: 'auth' };
-  }
-}
-
-@ApiTags('user')
-@Controller()
-@UseGuards(JwtAuthGuard)
-export class MeController {
-  constructor(private readonly authService: AuthService) {}
-
-  @Get('me')
-  @ApiBearerAuth()
-  @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Get current user profile' })
-  @ApiResponse({
-    status: 200,
-    description: 'User profile retrieved successfully',
-  })
-  @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
-  @ApiResponse({
-    status: 403,
-    description: 'Forbidden - User account is not active',
-  })
-  async getMe(@Request() req: AuthenticatedRequest) {
-    // JwtAuthGuard ensures user is set, so we can safely access userId
-    return this.authService.getMe(req.user.userId);
   }
 }
