@@ -789,12 +789,9 @@ export class AuthService {
     const user = await this.rabbitMQClient.sendRPCRequest<
       { userId: string },
       any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserById',
-      { userId },
-    );
+    >(RABBITMQ_EXCHANGES.RPC, RABBITMQ_ROUTING_KEYS.RPC_USER, 'findUserById', {
+      userId,
+    });
 
     if (!user) {
       this.logger.warn(`User not found for getMe: ${userId}`);

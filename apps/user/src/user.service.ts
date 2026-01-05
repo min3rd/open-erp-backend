@@ -172,6 +172,9 @@ export class UserService {
           message.params.includePassword,
         );
 
+      case 'findUserById':
+        return await this.userRepository.findById(message.params.userId);
+
       case 'createUser':
         try {
           const user = await this.userRepository.create(message.params);
