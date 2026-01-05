@@ -22,6 +22,8 @@ export interface UpdateUserDto {
   status?: string;
   lastLoginAt?: Date;
   verifiedAt?: Date;
+  avatarUrl?: string;
+  password?: string;
 }
 
 @Injectable()

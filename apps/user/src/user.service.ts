@@ -256,7 +256,7 @@ export class UserService {
 
           const updatedUser = await this.userRepository.update(
             user._id.toString(),
-            { password },
+            { password: password },
           );
 
           // Publish user updated event
