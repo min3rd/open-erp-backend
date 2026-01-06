@@ -146,7 +146,7 @@ export class OrganizationRepository {
         return null;
       }
       organization.deletedAt = new Date();
-      organization.updatedBy = deletedBy;
+      organization.updatedBy = deletedBy as any;
       await organization.save();
       return organization;
     } catch (error) {

@@ -115,7 +115,7 @@ export class InvitationRepository {
     status?: InvitationStatus,
   ): Promise<OrganizationInvitationDocument[]> {
     try {
-      const query: any = { organizationId: new Types.ObjectId(organizationId) };
+      const query: any = { organizationId };
       if (status) query.status = status;
 
       return await this.invitationModel.find(query).exec();
@@ -171,7 +171,7 @@ export class InvitationRepository {
     try {
       return await this.invitationModel
         .findOne({
-          organizationId: new Types.ObjectId(organizationId),
+          organizationId: organizationId as any,
           inviteeEmail: email,
           status: InvitationStatus.PENDING,
           expiresAt: { $gt: new Date() },
