@@ -40,8 +40,6 @@ export class UserModule implements OnModuleInit {
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     private readonly userService: UserService,
-    private readonly userRpcController: UserRpcController,
-    private readonly userEventController: UserEventController,
   ) {}
 
   async onModuleInit() {
@@ -113,16 +111,18 @@ export class UserModule implements OnModuleInit {
       routingKey: 'user.dlx',
     });
 
-    // Subscribe to events - using new UserEventController
+    // Subscribe to events - using new UserEventController with @EventPattern
+    // NestJS microservice will handle routing automatically
     await this.rabbitMQClient.subscribeToEvent(
       RABBITMQ_QUEUES.USER_EVENTS,
-      this.userEventController.handleEvent.bind(this.userEventController),
+      this.userService.handleEvent.bind(this.userService),
     );
 
-    // Handle RPC requests - using new UserRpcController
+    // Handle RPC requests - using new UserRpcController with @MessagePattern
+    // NestJS microservice will handle routing automatically
     await this.rabbitMQClient.handleRPCRequest(
       RABBITMQ_QUEUES.USER_RPC,
-      this.userRpcController.handleRPC.bind(this.userRpcController),
+      this.userService.handleRPC.bind(this.userService),
     );
 
     console.log('User service RabbitMQ setup complete');

@@ -29,8 +29,6 @@ export class NotificationModule implements OnModuleInit {
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     private readonly notificationService: NotificationService,
-    private readonly notificationRpcController: NotificationRpcController,
-    private readonly notificationEventController: NotificationEventController,
   ) {}
 
   async onModuleInit() {
@@ -101,16 +99,18 @@ export class NotificationModule implements OnModuleInit {
       routingKey: 'notification.dlx',
     });
 
-    // Subscribe to events - using new NotificationEventController
+    // Subscribe to events - using new NotificationEventController with @EventPattern
+    // NestJS microservice will handle routing automatically
     await this.rabbitMQClient.subscribeToEvent(
       RABBITMQ_QUEUES.NOTIFICATION_EVENTS,
-      this.notificationEventController.handleEvent.bind(this.notificationEventController),
+      this.notificationService.handleEvent.bind(this.notificationService),
     );
 
-    // Handle RPC requests - using new NotificationRpcController
+    // Handle RPC requests - using new NotificationRpcController with @MessagePattern
+    // NestJS microservice will handle routing automatically
     await this.rabbitMQClient.handleRPCRequest(
       RABBITMQ_QUEUES.NOTIFICATION_RPC,
-      this.notificationRpcController.handleRPC.bind(this.notificationRpcController),
+      this.notificationService.handleRPC.bind(this.notificationService),
     );
 
     console.log('Notification service RabbitMQ setup complete');
