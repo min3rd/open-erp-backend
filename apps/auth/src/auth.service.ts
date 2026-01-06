@@ -1,5 +1,8 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
+import { ClientProxy } from '@nestjs/microservices';
+import { firstValueFrom } from 'rxjs';
+import { RabbitMQClient, RABBITMQ_CLIENT, RABBITMQ_USER_CLIENT, RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
+import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import {
   RABBITMQ_EXCHANGES,
   RABBITMQ_ROUTING_KEYS,
@@ -55,6 +58,8 @@ export class AuthService {
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
+    @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
     private readonly verificationTokenRepository: VerificationTokenRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly passwordResetTokenRepository: PasswordResetTokenRepository,
@@ -96,15 +101,9 @@ export class AuthService {
   async register(data: RegisterDto) {
     const { email, fullName, password } = data;
 
-    // Check if user already exists via RPC to user service
-    const existingUser = await this.rabbitMQClient.sendRPCRequest<
-      { email: string },
-      any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserByEmail',
-      { email },
+    // Check if user already exists via RPC to user service using NestJS ClientProxy
+    const existingUser = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
     );
 
     if (existingUser) {
@@ -136,21 +135,18 @@ export class AuthService {
       // Allow resending verification code
       this.logger.log(`Resending verification code for pending user: ${email}`);
     } else {
-      // Create new user via RPC to user service
+      // Create new user via RPC to user service using NestJS ClientProxy
       const hashedPassword = await hashPassword(password);
 
       try {
-        await this.rabbitMQClient.sendRPCRequest<any, any>(
-          RABBITMQ_EXCHANGES.RPC,
-          RABBITMQ_ROUTING_KEYS.RPC_USER,
-          'createUser',
-          {
+        await firstValueFrom(
+          this.userClient.send(RPC_METHODS.USER.CREATE_USER, {
             email,
             username: email,
             fullName,
             password: hashedPassword,
             status: 'pending',
-          },
+          })
         );
 
         this.logger.log(`New user created: ${email}`);
@@ -177,17 +173,14 @@ export class AuthService {
       expiresAt,
     );
 
-    // Send verification email via RPC to notification service
+    // Send verification email via RPC to notification service using NestJS ClientProxy
     try {
-      await this.rabbitMQClient.sendRPCRequest<any, any>(
-        RABBITMQ_EXCHANGES.RPC,
-        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
-        'sendVerificationEmail',
-        {
+      await firstValueFrom(
+        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL, {
           to: email,
           fullName,
           verificationCode,
-        },
+        })
       );
     } catch (error) {
       this.logger.error(
