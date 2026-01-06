@@ -6,12 +6,12 @@ import {
   ForbiddenException,
   Inject,
 } from '@nestjs/common';
+import { ClientProxy } from '@nestjs/microservices';
 import { ConfigRepository } from '../repositories/config.repository';
 import { Config, ConfigScope } from '../schemas/config.schema';
 import { CreateConfigDto } from '../dto/create-config.dto';
 import { UpdateConfigDto } from '../dto/update-config.dto';
-import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
-import { RABBITMQ_EXCHANGES } from '@shared/config/rabbitmq.config';
+import { EVENT_NAMES } from '@shared/constants/message.constants';
 
 const MAX_CONFIG_SIZE_BYTES = 100 * 1024; // 100KB default limit
 
@@ -21,7 +21,7 @@ export class ConfigService {
 
   constructor(
     private readonly configRepository: ConfigRepository,
-    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    @Inject('RABBITMQ_USER_CLIENT') private readonly userClient: ClientProxy,
   ) {}
 
   /**
@@ -286,21 +286,38 @@ export class ConfigService {
     userId: string,
   ): Promise<void> {
     try {
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        eventType,
-        eventType,
-        {
-          config,
-          userId,
-          timestamp: new Date().toISOString(),
-        },
-      );
+      // Map event type to constant
+      let eventConstant: string;
+      switch (eventType) {
+        case 'config.global.upserted':
+          eventConstant = EVENT_NAMES.CONFIG.GLOBAL_UPSERTED;
+          break;
+        case 'config.global.updated':
+          eventConstant = EVENT_NAMES.CONFIG.GLOBAL_UPDATED;
+          break;
+        case 'config.global.deleted':
+          eventConstant = EVENT_NAMES.CONFIG.GLOBAL_DELETED;
+          break;
+        case 'config.user.upserted':
+          eventConstant = EVENT_NAMES.CONFIG.USER_UPSERTED;
+          break;
+        case 'config.user.updated':
+          eventConstant = EVENT_NAMES.CONFIG.USER_UPDATED;
+          break;
+        case 'config.user.deleted':
+          eventConstant = EVENT_NAMES.CONFIG.USER_DELETED;
+          break;
+        default:
+          eventConstant = eventType;
+      }
+      
+      this.userClient.emit(eventConstant, {
+        config,
+        userId,
+        timestamp: new Date().toISOString(),
+      });
     } catch (error) {
-      this.logger.error(
-        `Failed to emit config event: ${error.message}`,
-        error.stack,
-      );
+      this.logger.warn(`Failed to emit config event: ${error.message}`);
       // Don't fail the operation if event emission fails
     }
   }
