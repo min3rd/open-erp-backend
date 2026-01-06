@@ -94,7 +94,7 @@ describe('UserRpcController', () => {
       expect(mockRabbitMQClient.publishEvent).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(String),
-        'user.created',
+        EVENT_NAMES.USER.CREATED,
         mockUser,
       );
     });
