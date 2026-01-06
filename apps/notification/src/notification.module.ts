@@ -100,12 +100,16 @@ export class NotificationModule implements OnModuleInit {
     });
 
     // Subscribe to events
+    // @deprecated - Use NotificationEventController with @EventPattern decorators instead
+    // This binding is kept for backwards compatibility during migration
     await this.rabbitMQClient.subscribeToEvent(
       RABBITMQ_QUEUES.NOTIFICATION_EVENTS,
       this.notificationService.handleEvent.bind(this.notificationService),
     );
 
     // Handle RPC requests
+    // @deprecated - Use NotificationRpcController with @MessagePattern decorators instead
+    // This binding is kept for backwards compatibility during migration
     await this.rabbitMQClient.handleRPCRequest(
       RABBITMQ_QUEUES.NOTIFICATION_RPC,
       this.notificationService.handleRPC.bind(this.notificationService),
