@@ -555,7 +555,7 @@ export class AuthService {
           fullName: user.fullName || user.username,
           resetLink,
         },
-      );
+      ));
     } catch (error) {
       this.logger.error(
         `Failed to send password reset email: ${error.message}`,

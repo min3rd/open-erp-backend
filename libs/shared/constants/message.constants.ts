@@ -58,6 +58,7 @@ export const EVENT_NAMES = {
     REGISTERED: 'user.registered',
     LOGIN: 'user.login',
     PROFILE_UPDATED: 'user.profile.updated',
+    PASSWORD_CHANGED: 'user.password.changed',
   },
   
   // Auth Events
