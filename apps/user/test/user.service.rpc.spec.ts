@@ -223,6 +223,7 @@ describe('UserService - RPC Handler Tests', () => {
       expect(result).toEqual(mockUser);
       expect(mockUserRepository.findByEmail).toHaveBeenCalledWith(
         'test@example.com',
+        undefined,
       );
     });
 
