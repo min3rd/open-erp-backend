@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import {
   OrganizationRepository,
@@ -22,10 +27,7 @@ export class OrganizationService {
     private readonly auditService: AuditService,
   ) {}
 
-  async create(
-    createDto: CreateOrganizationDto,
-    userId: string,
-  ) {
+  async create(createDto: CreateOrganizationDto, userId: string) {
     try {
       // Check if taxId already exists
       const existing = await this.organizationRepository.findByTaxId(
@@ -47,7 +49,7 @@ export class OrganizationService {
 
       // Add creator as primary owner
       const memberDto: CreateMemberDto = {
-        organizationId: organization._id as Types.ObjectId,
+        organizationId: organization._id,
         userId: new Types.ObjectId(userId),
         roles: [MemberRole.OWNER],
         status: MemberStatus.ACTIVE,
@@ -68,7 +70,10 @@ export class OrganizationService {
 
       return organization;
     } catch (error) {
-      this.logger.error(`Error creating organization: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating organization: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -85,11 +90,7 @@ export class OrganizationService {
     return this.organizationRepository.findAll(filters);
   }
 
-  async update(
-    id: string,
-    updateDto: UpdateOrganizationDto,
-    userId: string,
-  ) {
+  async update(id: string, updateDto: UpdateOrganizationDto, userId: string) {
     const organization = await this.organizationRepository.update(id, {
       ...updateDto,
       updatedBy: new Types.ObjectId(userId),

@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import {
   InvitationRepository,
@@ -49,11 +54,10 @@ export class InvitationService {
       }
 
       // Check for existing pending invitation
-      const existing =
-        await this.invitationRepository.findPendingByOrgAndEmail(
-          organizationId,
-          inviteeEmail,
-        );
+      const existing = await this.invitationRepository.findPendingByOrgAndEmail(
+        organizationId,
+        inviteeEmail,
+      );
       if (existing) {
         throw new BadRequestException(
           'An active invitation already exists for this email',
@@ -64,7 +68,8 @@ export class InvitationService {
       const { token, hash } = this.invitationRepository.generateToken();
 
       // Calculate expiry
-      const expiryDays = options?.expiryDays || parseInt(process.env.INVITE_EXPIRY_DAYS || '7');
+      const expiryDays =
+        options?.expiryDays || parseInt(process.env.INVITE_EXPIRY_DAYS || '7');
       const expiresAt = new Date();
       expiresAt.setDate(expiresAt.getDate() + expiryDays);
 
@@ -79,7 +84,10 @@ export class InvitationService {
         invitedBy: new Types.ObjectId(invitedBy),
       };
 
-      const invitation = await this.invitationRepository.create(createDto, hash);
+      const invitation = await this.invitationRepository.create(
+        createDto,
+        hash,
+      );
 
       // Log audit event
       await this.auditService.logEvent(
@@ -92,7 +100,10 @@ export class InvitationService {
 
       return { invitation, token };
     } catch (error) {
-      this.logger.error(`Error creating invitation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating invitation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -107,9 +118,7 @@ export class InvitationService {
       }
 
       if (invitation.status !== InvitationStatus.PENDING) {
-        throw new BadRequestException(
-          `Invitation is ${invitation.status}`,
-        );
+        throw new BadRequestException(`Invitation is ${invitation.status}`);
       }
 
       if (invitation.expiresAt < new Date()) {
@@ -120,11 +129,10 @@ export class InvitationService {
       }
 
       // Check if user is already a member
-      const existing =
-        await this.memberRepository.findByOrganizationAndUser(
-          invitation.organizationId.toString(),
-          userId,
-        );
+      const existing = await this.memberRepository.findByOrganizationAndUser(
+        invitation.organizationId.toString(),
+        userId,
+      );
 
       if (existing) {
         throw new BadRequestException(
@@ -169,13 +177,19 @@ export class InvitationService {
 
       return member;
     } catch (error) {
-      this.logger.error(`Error accepting invitation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error accepting invitation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
   async findByOrganization(organizationId: string, status?: InvitationStatus) {
-    return this.invitationRepository.findByOrganizationId(organizationId, status);
+    return this.invitationRepository.findByOrganizationId(
+      organizationId,
+      status,
+    );
   }
 
   async revoke(invitationId: string, userId: string) {

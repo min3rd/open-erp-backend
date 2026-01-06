@@ -43,10 +43,7 @@ export class OrganizationMemberRepository {
       const member = new this.memberModel(createDto);
       return await member.save();
     } catch (error) {
-      this.logger.error(
-        `Error creating member: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error creating member: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -167,10 +164,7 @@ export class OrganizationMemberRepository {
         .findByIdAndUpdate(id, updateDto, { new: true })
         .exec();
     } catch (error) {
-      this.logger.error(
-        `Error updating member: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error updating member: ${error.message}`, error.stack);
       throw error;
     }
   }

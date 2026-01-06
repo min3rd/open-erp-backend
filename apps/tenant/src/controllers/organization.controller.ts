@@ -8,9 +8,17 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { OrganizationService } from '../services/organization.service';
-import { CreateOrganizationDto, UpdateOrganizationDto } from '../dto/organization.dto';
+import {
+  CreateOrganizationDto,
+  UpdateOrganizationDto,
+} from '../dto/organization.dto';
 
 @ApiTags('organizations')
 @ApiBearerAuth()
@@ -20,7 +28,10 @@ export class OrganizationController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new organization' })
-  @ApiResponse({ status: 201, description: 'Organization created successfully' })
+  @ApiResponse({
+    status: 201,
+    description: 'Organization created successfully',
+  })
   async create(
     @Body() createDto: CreateOrganizationDto,
     // TODO: Get userId from JWT token after authentication is implemented
@@ -31,7 +42,10 @@ export class OrganizationController {
 
   @Get()
   @ApiOperation({ summary: 'Get all organizations' })
-  @ApiResponse({ status: 200, description: 'Organizations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organizations retrieved successfully',
+  })
   async findAll(
     @Query('type') type?: string,
     @Query('status') status?: string,
@@ -42,7 +56,10 @@ export class OrganizationController {
 
   @Get(':id')
   @ApiOperation({ summary: 'Get organization by ID' })
-  @ApiResponse({ status: 200, description: 'Organization retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization retrieved successfully',
+  })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async findById(@Param('id') id: string) {
     return this.organizationService.findById(id);
@@ -50,7 +67,10 @@ export class OrganizationController {
 
   @Patch(':id')
   @ApiOperation({ summary: 'Update organization' })
-  @ApiResponse({ status: 200, description: 'Organization updated successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization updated successfully',
+  })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async update(
     @Param('id') id: string,
@@ -62,7 +82,10 @@ export class OrganizationController {
 
   @Delete(':id')
   @ApiOperation({ summary: 'Delete organization' })
-  @ApiResponse({ status: 200, description: 'Organization deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Organization not found' })
   async delete(@Param('id') id: string) {
     const userId = 'temp-user-id'; // Placeholder

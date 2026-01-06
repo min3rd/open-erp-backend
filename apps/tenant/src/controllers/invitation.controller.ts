@@ -7,9 +7,17 @@ import {
   Param,
   Query,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { InvitationService } from '../services/invitation.service';
-import { CreateInvitationDto, AcceptInvitationDto } from '../dto/invitation.dto';
+import {
+  CreateInvitationDto,
+  AcceptInvitationDto,
+} from '../dto/invitation.dto';
 
 @ApiTags('invitations')
 @ApiBearerAuth()
@@ -47,12 +55,18 @@ export class InvitationController {
 
   @Get('organizations/:organizationId')
   @ApiOperation({ summary: 'Get invitations for organization' })
-  @ApiResponse({ status: 200, description: 'Invitations retrieved successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Invitations retrieved successfully',
+  })
   async findByOrganization(
     @Param('organizationId') organizationId: string,
     @Query('status') status?: string,
   ) {
-    return this.invitationService.findByOrganization(organizationId, status as any);
+    return this.invitationService.findByOrganization(
+      organizationId,
+      status as any,
+    );
   }
 
   @Delete(':id')

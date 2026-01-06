@@ -7,7 +7,12 @@ import {
   Body,
   Param,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiBearerAuth } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiBearerAuth,
+} from '@nestjs/swagger';
 import { RelationService } from '../services/relation.service';
 import { CreateRelationDto, UpdateRelationDto } from '../dto/relation.dto';
 
@@ -48,10 +53,7 @@ export class RelationController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update relation' })
   @ApiResponse({ status: 200, description: 'Relation updated successfully' })
-  async update(
-    @Param('id') id: string,
-    @Body() updateDto: UpdateRelationDto,
-  ) {
+  async update(@Param('id') id: string, @Body() updateDto: UpdateRelationDto) {
     const userId = 'temp-user-id'; // Placeholder
     return this.relationService.update(id, updateDto as any, userId);
   }

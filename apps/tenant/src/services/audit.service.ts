@@ -39,7 +39,10 @@ export class AuditService {
       await this.auditEventRepository.create(createDto);
     } catch (error) {
       // Log but don't throw - audit failures shouldn't break business logic
-      this.logger.error(`Failed to log audit event: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to log audit event: ${error.message}`,
+        error.stack,
+      );
     }
   }
 

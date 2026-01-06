@@ -52,7 +52,9 @@ export class CreateOrganizationDto {
   @ApiProperty()
   @IsString()
   @IsNotEmpty()
-  @Matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/)
+  @Matches(
+    /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
+  )
   contactPhone: string;
 
   @ApiProperty()

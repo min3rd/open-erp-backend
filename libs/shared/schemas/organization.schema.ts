@@ -72,7 +72,8 @@ export class Organization extends Document {
   @Prop({
     required: true,
     trim: true,
-    match: /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
+    match:
+      /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
   })
   contactPhone: string;
 
