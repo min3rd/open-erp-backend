@@ -28,12 +28,21 @@
       "sourceMaps": true,
       "console": "integratedTerminal"
     },
-        {
+    {
       "type": "node",
       "request": "launch",
       "name": "Config Service (Dev)",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "start:config:dev"],
+      "sourceMaps": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Tenant Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:tenant:dev"],
       "sourceMaps": true,
       "console": "integratedTerminal"
     }
