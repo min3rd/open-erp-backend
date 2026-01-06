@@ -5,6 +5,7 @@ import {
   RABBITMQ_EXCHANGES,
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
+import { EVENT_NAMES, RPC_METHODS } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
 
 @Injectable()
@@ -59,7 +60,7 @@ export class UserService {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.USER_CREATED,
-        'user.created',
+        EVENT_NAMES.USER.CREATED,
         user,
       );
 
@@ -81,7 +82,7 @@ export class UserService {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-        'user.updated',
+        EVENT_NAMES.USER.UPDATED,
         { userId: id, changes: data },
       );
 
@@ -103,7 +104,7 @@ export class UserService {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.USER_DELETED,
-        'user.deleted',
+        EVENT_NAMES.USER.DELETED,
         { userId: id },
       );
 
@@ -121,7 +122,7 @@ export class UserService {
     this.logger.log(`Received event: ${message.eventName}`);
 
     switch (message.eventName) {
-      case 'user.registered':
+      case EVENT_NAMES.AUTH.USER_REGISTERED:
         // Handle user registration from auth service
         this.logger.log(`New user registered: ${JSON.stringify(message.data)}`);
         // Store user data
@@ -139,7 +140,7 @@ export class UserService {
         }
         break;
 
-      case 'user.login':
+      case EVENT_NAMES.AUTH.USER_LOGIN:
         this.logger.log(`User logged in: ${message.data.userId}`);
         if (message.data.userId) {
           try {
@@ -162,26 +163,26 @@ export class UserService {
     this.logger.log(`Received RPC: ${message.method}`);
 
     switch (message.method) {
-      case 'getUser':
+      case RPC_METHODS.USER.GET_USER:
         return await this.userRepository.findById(message.params.userId);
 
-      case 'getUserByEmail':
-      case 'findUserByEmail':
+      case RPC_METHODS.USER.GET_USER_BY_EMAIL:
+      case RPC_METHODS.USER.FIND_USER_BY_EMAIL:
         return await this.userRepository.findByEmail(
           message.params.email,
           message.params.includePassword,
         );
 
-      case 'findUserById':
+      case RPC_METHODS.USER.FIND_USER_BY_ID:
         return await this.userRepository.findById(message.params.userId);
 
-      case 'createUser':
+      case RPC_METHODS.USER.CREATE_USER:
         try {
           const user = await this.userRepository.create(message.params);
           await this.rabbitMQClient.publishEvent(
             RABBITMQ_EXCHANGES.EVENTS,
             RABBITMQ_ROUTING_KEYS.USER_CREATED,
-            'user.created',
+            EVENT_NAMES.USER.CREATED,
             user,
           );
           return user;
@@ -193,7 +194,7 @@ export class UserService {
           throw error;
         }
 
-      case 'updateUserStatus':
+      case RPC_METHODS.USER.UPDATE_USER_STATUS:
         try {
           const { email, status, verifiedAt } = message.params;
           const user = await this.userRepository.findByEmail(email);
@@ -215,7 +216,7 @@ export class UserService {
           await this.rabbitMQClient.publishEvent(
             RABBITMQ_EXCHANGES.EVENTS,
             RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-            'user.updated',
+            EVENT_NAMES.USER.UPDATED,
             {
               userId: user._id.toString(),
               email,
@@ -233,7 +234,7 @@ export class UserService {
           throw error;
         }
 
-      case 'updateLastLogin':
+      case RPC_METHODS.USER.UPDATE_LAST_LOGIN:
         try {
           const { userId } = message.params;
           const user = await this.userRepository.updateLastLogin(userId);
@@ -249,7 +250,7 @@ export class UserService {
           throw error;
         }
 
-      case 'updateUserPassword':
+      case RPC_METHODS.USER.UPDATE_USER_PASSWORD:
         try {
           const { email, password } = message.params;
           const user = await this.userRepository.findByEmail(email);
@@ -266,7 +267,7 @@ export class UserService {
           await this.rabbitMQClient.publishEvent(
             RABBITMQ_EXCHANGES.EVENTS,
             RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-            'user.updated',
+            EVENT_NAMES.USER.UPDATED,
             {
               userId: user._id.toString(),
               email,
