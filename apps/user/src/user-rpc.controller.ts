@@ -1,4 +1,5 @@
 import { Controller, Logger, Inject } from '@nestjs/common';
+import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
@@ -6,11 +7,10 @@ import {
   RABBITMQ_EXCHANGES,
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
-import { RPCMessage } from '@shared/types/rabbitmq.types';
 
 /**
  * UserRpcController handles RPC requests for the User service
- * Methods are registered with the custom RabbitMQ client
+ * Uses @MessagePattern decorators for NestJS microservice pattern
  */
 @Controller()
 export class UserRpcController {
@@ -21,59 +21,43 @@ export class UserRpcController {
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
   ) {}
 
-  /**
-   * Main RPC handler that routes messages to specific methods
-   */
-  async handleRPC(message: RPCMessage<any>) {
-    this.logger.log(`RPC: ${message.method}`);
-
-    switch (message.method) {
-      case RPC_METHODS.USER.GET_USER:
-        return await this.getUser(message.params);
-
-      case RPC_METHODS.USER.GET_USER_BY_EMAIL:
-      case RPC_METHODS.USER.FIND_USER_BY_EMAIL:
-        return await this.getUserByEmail(message.params);
-
-      case RPC_METHODS.USER.FIND_USER_BY_ID:
-        return await this.findUserById(message.params);
-
-      case RPC_METHODS.USER.CREATE_USER:
-        return await this.createUser(message.params);
-
-      case RPC_METHODS.USER.UPDATE_USER_STATUS:
-        return await this.updateUserStatus(message.params);
-
-      case RPC_METHODS.USER.UPDATE_LAST_LOGIN:
-        return await this.updateLastLogin(message.params);
-
-      case RPC_METHODS.USER.UPDATE_USER_PASSWORD:
-        return await this.updateUserPassword(message.params);
-
-      default:
-        throw new Error(`Unknown RPC method: ${message.method}`);
-    }
-  }
-
-  private async getUser(params: { userId: string }) {
+  @MessagePattern(RPC_METHODS.USER.GET_USER)
+  async getUser(@Payload() params: { userId: string }) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER}`);
     return await this.userRepository.findById(params.userId);
   }
 
-  private async getUserByEmail(params: {
-    email: string;
-    includePassword?: boolean;
-  }) {
+  @MessagePattern(RPC_METHODS.USER.GET_USER_BY_EMAIL)
+  async getUserByEmail(
+    @Payload() params: { email: string; includePassword?: boolean },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER_BY_EMAIL}`);
     return await this.userRepository.findByEmail(
       params.email,
       params.includePassword,
     );
   }
 
-  private async findUserById(params: { userId: string }) {
+  @MessagePattern(RPC_METHODS.USER.FIND_USER_BY_EMAIL)
+  async findUserByEmail(
+    @Payload() params: { email: string; includePassword?: boolean },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.FIND_USER_BY_EMAIL}`);
+    return await this.userRepository.findByEmail(
+      params.email,
+      params.includePassword,
+    );
+  }
+
+  @MessagePattern(RPC_METHODS.USER.FIND_USER_BY_ID)
+  async findUserById(@Payload() params: { userId: string }) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.FIND_USER_BY_ID}`);
     return await this.userRepository.findById(params.userId);
   }
 
-  private async createUser(params: { username: string; email: string }) {
+  @MessagePattern(RPC_METHODS.USER.CREATE_USER)
+  async createUser(@Payload() params: { username: string; email: string }) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.CREATE_USER}`);
     try {
       const user = await this.userRepository.create(params);
       await this.rabbitMQClient.publishEvent(
@@ -92,11 +76,16 @@ export class UserRpcController {
     }
   }
 
-  private async updateUserStatus(params: {
-    email: string;
-    status: string;
-    verifiedAt?: Date;
-  }) {
+  @MessagePattern(RPC_METHODS.USER.UPDATE_USER_STATUS)
+  async updateUserStatus(
+    @Payload()
+    params: {
+      email: string;
+      status: string;
+      verifiedAt?: Date;
+    },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.UPDATE_USER_STATUS}`);
     try {
       const { email, status, verifiedAt } = params;
       const user = await this.userRepository.findByEmail(email);
@@ -137,7 +126,9 @@ export class UserRpcController {
     }
   }
 
-  private async updateLastLogin(params: { userId: string }) {
+  @MessagePattern(RPC_METHODS.USER.UPDATE_LAST_LOGIN)
+  async updateLastLogin(@Payload() params: { userId: string }) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.UPDATE_LAST_LOGIN}`);
     try {
       const { userId } = params;
       const user = await this.userRepository.updateLastLogin(userId);
@@ -154,7 +145,11 @@ export class UserRpcController {
     }
   }
 
-  private async updateUserPassword(params: { email: string; password: string }) {
+  @MessagePattern(RPC_METHODS.USER.UPDATE_USER_PASSWORD)
+  async updateUserPassword(
+    @Payload() params: { email: string; password: string },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.UPDATE_USER_PASSWORD}`);
     try {
       const { email, password } = params;
       const user = await this.userRepository.findByEmail(email);

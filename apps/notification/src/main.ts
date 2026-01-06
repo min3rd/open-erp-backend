@@ -3,11 +3,29 @@ import { NotificationModule } from './notification.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
 
 async function bootstrap() {
   const logger = new Logger('NotificationService');
 
   const app = await NestFactory.create(NotificationModule);
+
+  // Connect RabbitMQ microservice
+  const rabbitMQConfig = getRabbitMQConfig();
+  app.connectMicroservice<MicroserviceOptions>({
+    transport: Transport.RMQ,
+    options: {
+      urls: [rabbitMQConfig.url],
+      queue: 'notification_queue',
+      queueOptions: {
+        durable: true,
+      },
+      // Enable pattern-based routing
+      noAck: false,
+      prefetchCount: 10,
+    },
+  });
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -52,6 +70,10 @@ async function bootstrap() {
 
     logger.log('Swagger documentation enabled at /docs and /api-docs.json');
   }
+
+  // Start all microservices
+  await app.startAllMicroservices();
+  logger.log('Notification service microservices started');
 
   const port = process.env.NOTIFICATION_SERVICE_PORT || 3003;
   await app.listen(port);
