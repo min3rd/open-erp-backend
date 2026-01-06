@@ -111,19 +111,13 @@ export class UserModule implements OnModuleInit {
       routingKey: 'user.dlx',
     });
 
-    // Subscribe to events - using new UserEventController with @EventPattern
-    // NestJS microservice will handle routing automatically
-    await this.rabbitMQClient.subscribeToEvent(
-      RABBITMQ_QUEUES.USER_EVENTS,
-      this.userService.handleEvent.bind(this.userService),
-    );
-
-    // Handle RPC requests - using new UserRpcController with @MessagePattern
-    // NestJS microservice will handle routing automatically
-    await this.rabbitMQClient.handleRPCRequest(
-      RABBITMQ_QUEUES.USER_RPC,
-      this.userService.handleRPC.bind(this.userService),
-    );
+    // NestJS microservice transport with @MessagePattern/@EventPattern decorators
+    // will automatically handle message routing to UserRpcController and UserEventController
+    // No manual binding needed - comment out legacy custom client bindings
+    
+    // Legacy bindings (can be removed after full migration verification)
+    // await this.rabbitMQClient.subscribeToEvent(...);
+    // await this.rabbitMQClient.handleRPCRequest(...);
 
     console.log('User service RabbitMQ setup complete');
   }
