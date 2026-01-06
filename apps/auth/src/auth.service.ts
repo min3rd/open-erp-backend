@@ -313,14 +313,8 @@ export class AuthService {
     const { email, code } = data;
 
     // Get user via RPC to user service
-    const user = await this.rabbitMQClient.sendRPCRequest<
-      { email: string },
-      any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserByEmail',
-      { email },
+    const user = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
     );
 
     // Check if user exists
@@ -405,14 +399,8 @@ export class AuthService {
     const { email } = data;
 
     // Get user via RPC to user service
-    const user = await this.rabbitMQClient.sendRPCRequest<
-      { email: string },
-      any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserByEmail',
-      { email },
+    const user = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
     );
 
     // Soft response for security - don't reveal if user exists
@@ -469,15 +457,12 @@ export class AuthService {
 
     // Send verification email via RPC to notification service
     try {
-      await this.rabbitMQClient.sendRPCRequest<any, any>(
-        RABBITMQ_EXCHANGES.RPC,
-        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
-        'sendVerificationEmail',
-        {
+      await firstValueFrom(
+        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL, {
           to: email,
           fullName: user.fullName || user.username,
           verificationCode,
-        },
+        }),
       );
     } catch (error) {
       this.logger.error(
@@ -509,14 +494,8 @@ export class AuthService {
     const { email } = data;
 
     // Get user via RPC to user service
-    const user = await this.rabbitMQClient.sendRPCRequest<
-      { email: string },
-      any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserByEmail',
-      { email },
+    const user = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
     );
 
     // Always return success to prevent user enumeration
@@ -570,11 +549,8 @@ export class AuthService {
 
     // Send password reset email via RPC to notification service
     try {
-      await this.rabbitMQClient.sendRPCRequest<any, any>(
-        RABBITMQ_EXCHANGES.RPC,
-        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
-        'sendPasswordResetEmail',
-        {
+      await firstValueFrom(
+        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL, {
           to: email,
           fullName: user.fullName || user.username,
           resetLink,
@@ -673,14 +649,8 @@ export class AuthService {
     const email = resetToken.email;
 
     // Get user via RPC
-    const user = await this.rabbitMQClient.sendRPCRequest<
-      { email: string },
-      any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserByEmail',
-      { email },
+    const user = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
     );
 
     if (!user) {
@@ -694,14 +664,11 @@ export class AuthService {
     const hashedPassword = await hashPassword(password);
 
     // Update user password via RPC
-    await this.rabbitMQClient.sendRPCRequest<any, any>(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'updateUserPassword',
-      {
+    await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.UPDATE_USER_PASSWORD, {
         email,
         password: hashedPassword,
-      },
+      })
     );
 
     // Mark token as used
@@ -711,15 +678,12 @@ export class AuthService {
 
     // Send password changed notification email
     try {
-      await this.rabbitMQClient.sendRPCRequest<any, any>(
-        RABBITMQ_EXCHANGES.RPC,
-        RABBITMQ_ROUTING_KEYS.RPC_NOTIFICATION,
-        'sendPasswordChangedEmail',
-        {
+      await firstValueFrom(
+        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL, {
           to: email,
           fullName: user.fullName || user.username,
           timestamp: new Date().toISOString(),
-        },
+        })
       );
     } catch (error) {
       this.logger.error(
@@ -730,16 +694,15 @@ export class AuthService {
     }
 
     // Publish password changed event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.AUTH_USER_PASSWORD_CHANGED,
-      'user.password.changed',
-      {
+    try {
+      this.userClient.emit(EVENT_NAMES.USER.PASSWORD_CHANGED, {
         userId: user.id.toString(),
         email,
         timestamp: new Date(),
-      },
-    );
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to emit password changed event: ${error.message}`);
+    }
 
     // Log structured event
     this.logger.log({
@@ -758,12 +721,9 @@ export class AuthService {
 
   async getMe(userId: string) {
     // Get user via RPC to user service
-    const user = await this.rabbitMQClient.sendRPCRequest<
-      { userId: string },
-      any
-    >(RABBITMQ_EXCHANGES.RPC, RABBITMQ_ROUTING_KEYS.RPC_USER, 'findUserById', {
-      userId,
-    });
+    const user = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_ID, { userId })
+    );
 
     if (!user) {
       this.logger.warn(`User not found for getMe: ${userId}`);
