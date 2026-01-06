@@ -117,6 +117,7 @@ export class UserService {
 
   /**
    * Handle incoming events from other services
+   * @deprecated Use UserEventController with @EventPattern decorators instead
    */
   async handleEvent(message: EventMessage<any>) {
     this.logger.log(`Received event: ${message.eventName}`);
@@ -158,6 +159,7 @@ export class UserService {
 
   /**
    * Handle RPC requests
+   * @deprecated Use UserRpcController with @MessagePattern decorators instead
    */
   async handleRPC(message: RPCMessage<any>) {
     this.logger.log(`Received RPC: ${message.method}`);

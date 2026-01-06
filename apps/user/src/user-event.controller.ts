@@ -4,12 +4,12 @@ import { EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository } from './repositories/user.repository';
 
 /**
- * UserEventHandler handles incoming events from other services
+ * UserEventController handles incoming events from other services
  * Uses @EventPattern decorators for type-safe event handling
  */
 @Controller()
-export class UserEventHandler {
-  private readonly logger = new Logger(UserEventHandler.name);
+export class UserEventController {
+  private readonly logger = new Logger(UserEventController.name);
 
   constructor(private readonly userRepository: UserRepository) {}
 

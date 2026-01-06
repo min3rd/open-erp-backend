@@ -103,6 +103,7 @@ export class NotificationService {
 
   /**
    * Handle incoming events from other services
+   * @deprecated Use NotificationEventController with @EventPattern decorators instead
    */
   async handleEvent(message: EventMessage<any>) {
     this.logger.log(`Received event: ${message.eventName}`);
@@ -140,6 +141,7 @@ export class NotificationService {
 
   /**
    * Handle RPC requests
+   * @deprecated Use NotificationRpcController with @MessagePattern decorators instead
    */
   async handleRPC(message: RPCMessage<any>) {
     this.logger.log(`Received RPC: ${message.method}`);
