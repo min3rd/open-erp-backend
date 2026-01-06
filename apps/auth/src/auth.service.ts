@@ -195,17 +195,12 @@ export class AuthService {
       // - Allowing users to resend verification code through separate endpoint
     }
 
-    // Publish user registered event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.AUTH_USER_REGISTERED,
-      'user.registered',
-      {
-        email,
-        fullName,
-        timestamp: new Date(),
-      },
-    );
+    // Publish user registered event using NestJS ClientProxy
+    this.userClient.emit(EVENT_NAMES.AUTH.USER_REGISTERED, {
+      email,
+      fullName,
+      timestamp: new Date(),
+    });
 
     // Log structured event
     this.logger.log({
@@ -228,15 +223,12 @@ export class AuthService {
   async login(data: LoginDto) {
     const { email, password } = data;
 
-    // Get user via RPC to user service (include password field)
-    const user = await this.rabbitMQClient.sendRPCRequest<
-      { email: string; includePassword: boolean },
-      any
-    >(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'findUserByEmail',
-      { email, includePassword: true },
+    // Get user via RPC to user service (include password field) using NestJS ClientProxy
+    const user = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { 
+        email, 
+        includePassword: true 
+      })
     );
 
     // Check if user exists - use AUTH_INVALID_CREDENTIALS to prevent user enumeration
@@ -283,21 +275,16 @@ export class AuthService {
       refreshTokenExpiresAt,
     );
 
-    // Update last login timestamp via RPC
-    await this.rabbitMQClient.sendRPCRequest<any, any>(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'updateLastLogin',
-      { userId: user.id.toString() },
+    // Update last login timestamp via RPC using NestJS ClientProxy
+    await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.UPDATE_LAST_LOGIN, { 
+        userId: user.id.toString() 
+      })
     );
 
-    // Publish user login event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.AUTH_USER_LOGIN,
-      'user.login',
-      {
-        userId: user.id.toString(),
+    // Publish user login event using NestJS ClientProxy
+    this.userClient.emit(EVENT_NAMES.AUTH.USER_LOGIN, {
+      userId: user.id.toString(),
         email: user.email,
         timestamp: new Date(),
       },
@@ -380,29 +367,21 @@ export class AuthService {
       verificationToken._id.toString(),
     );
 
-    // Update user status to 'active' via RPC
-    await this.rabbitMQClient.sendRPCRequest<any, any>(
-      RABBITMQ_EXCHANGES.RPC,
-      RABBITMQ_ROUTING_KEYS.RPC_USER,
-      'updateUserStatus',
-      {
+    // Update user status to 'active' via RPC using NestJS ClientProxy
+    await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.UPDATE_USER_STATUS, {
         email,
         status: 'active',
         verifiedAt: new Date(),
-      },
+      })
     );
     this.logger.log(`User verified: ${JSON.stringify(user)}`);
-    // Publish user.verified event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.AUTH_USER_VERIFIED,
-      'user.verified',
-      {
-        userId: user.id.toString(),
-        email,
-        timestamp: new Date(),
-      },
-    );
+    // Publish user.verified event using NestJS ClientProxy
+    this.userClient.emit(EVENT_NAMES.AUTH.USER_VERIFIED, {
+      userId: user.id.toString(),
+      email,
+      timestamp: new Date(),
+    });
 
     // Log structured event
     this.logger.log({
