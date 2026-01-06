@@ -15,10 +15,16 @@ function formatRabbitMQUrl(config: { url: string; user?: string; password?: stri
   
   // If username and password are provided separately, inject them into the URL
   if (config.user && config.password) {
-    // Check if URL already contains credentials
-    if (!url.includes('@')) {
+    // Check if URL already contains credentials (looking for pattern: //user:pass@ or //user@)
+    const hasCredentials = /^amqps?:\/\/[^@]+@/.test(url);
+    
+    if (!hasCredentials) {
+      // URL encode credentials to handle special characters
+      const encodedUser = encodeURIComponent(config.user);
+      const encodedPassword = encodeURIComponent(config.password);
+      
       // Insert credentials after the protocol (amqp:// or amqps://)
-      url = url.replace(/^(amqps?:\/\/)/, `$1${config.user}:${config.password}@`);
+      url = url.replace(/^(amqps?:\/\/)/, `$1${encodedUser}:${encodedPassword}@`);
     }
   }
   
