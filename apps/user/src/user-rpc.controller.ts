@@ -1,6 +1,6 @@
 import { Controller, Logger } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
-import { RPC_METHODS } from '@shared/constants/message.constants';
+import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
 import { Inject } from '@nestjs/common';
@@ -64,7 +64,7 @@ export class UserRpcController {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.USER_CREATED,
-        'user.created',
+        EVENT_NAMES.USER.CREATED,
         user,
       );
       return user;
@@ -108,7 +108,7 @@ export class UserRpcController {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-        'user.updated',
+        EVENT_NAMES.USER.UPDATED,
         {
           userId: user._id.toString(),
           email,
@@ -167,7 +167,7 @@ export class UserRpcController {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-        'user.updated',
+        EVENT_NAMES.USER.UPDATED,
         {
           userId: user._id.toString(),
           email,
