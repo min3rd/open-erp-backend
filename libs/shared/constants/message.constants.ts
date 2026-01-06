@@ -65,8 +65,8 @@ export const EVENT_NAMES = {
     USER_REGISTERED: 'auth.user.registered',
     USER_LOGIN: 'auth.user.login',
     USER_LOGOUT: 'auth.user.logout',
-    PASSWORD_CHANGED: 'auth.password.changed',
-    USER_PASSWORD_CHANGED: 'auth.user.password.changed',
+    PASSWORD_CHANGED: 'auth.password.changed', // Legacy - deprecated
+    USER_PASSWORD_CHANGED: 'auth.user.password.changed', // Use this for new code
     USER_VERIFIED: 'auth.user.verified',
   },
   

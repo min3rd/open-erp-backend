@@ -1,9 +1,8 @@
-import { Controller, Logger } from '@nestjs/common';
+import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
-import { Inject } from '@nestjs/common';
 import {
   RABBITMQ_EXCHANGES,
   RABBITMQ_ROUTING_KEYS,
