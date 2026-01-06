@@ -2,3 +2,8 @@ export * from './user.schema';
 export * from './tenant.schema';
 export * from './role.schema';
 export * from './department.schema';
+export * from './organization.schema';
+export * from './organization-relation.schema';
+export * from './organization-member.schema';
+export * from './organization-invitation.schema';
+export * from './organization-audit-event.schema';
