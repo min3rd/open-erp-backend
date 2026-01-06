@@ -29,6 +29,8 @@ export class NotificationModule implements OnModuleInit {
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     private readonly notificationService: NotificationService,
+    private readonly notificationRpcController: NotificationRpcController,
+    private readonly notificationEventController: NotificationEventController,
   ) {}
 
   async onModuleInit() {
@@ -99,20 +101,16 @@ export class NotificationModule implements OnModuleInit {
       routingKey: 'notification.dlx',
     });
 
-    // Subscribe to events
-    // @deprecated - Use NotificationEventController with @EventPattern decorators instead
-    // This binding is kept for backwards compatibility during migration
+    // Subscribe to events - using new NotificationEventController
     await this.rabbitMQClient.subscribeToEvent(
       RABBITMQ_QUEUES.NOTIFICATION_EVENTS,
-      this.notificationService.handleEvent.bind(this.notificationService),
+      this.notificationEventController.handleEvent.bind(this.notificationEventController),
     );
 
-    // Handle RPC requests
-    // @deprecated - Use NotificationRpcController with @MessagePattern decorators instead
-    // This binding is kept for backwards compatibility during migration
+    // Handle RPC requests - using new NotificationRpcController
     await this.rabbitMQClient.handleRPCRequest(
       RABBITMQ_QUEUES.NOTIFICATION_RPC,
-      this.notificationService.handleRPC.bind(this.notificationService),
+      this.notificationRpcController.handleRPC.bind(this.notificationRpcController),
     );
 
     console.log('Notification service RabbitMQ setup complete');

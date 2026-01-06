@@ -40,6 +40,8 @@ export class UserModule implements OnModuleInit {
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     private readonly userService: UserService,
+    private readonly userRpcController: UserRpcController,
+    private readonly userEventController: UserEventController,
   ) {}
 
   async onModuleInit() {
@@ -111,20 +113,16 @@ export class UserModule implements OnModuleInit {
       routingKey: 'user.dlx',
     });
 
-    // Subscribe to events
-    // @deprecated - Use UserEventController with @EventPattern decorators instead
-    // This binding is kept for backwards compatibility during migration
+    // Subscribe to events - using new UserEventController
     await this.rabbitMQClient.subscribeToEvent(
       RABBITMQ_QUEUES.USER_EVENTS,
-      this.userService.handleEvent.bind(this.userService),
+      this.userEventController.handleEvent.bind(this.userEventController),
     );
 
-    // Handle RPC requests
-    // @deprecated - Use UserRpcController with @MessagePattern decorators instead
-    // This binding is kept for backwards compatibility during migration
+    // Handle RPC requests - using new UserRpcController
     await this.rabbitMQClient.handleRPCRequest(
       RABBITMQ_QUEUES.USER_RPC,
-      this.userService.handleRPC.bind(this.userService),
+      this.userRpcController.handleRPC.bind(this.userRpcController),
     );
 
     console.log('User service RabbitMQ setup complete');

@@ -1,5 +1,4 @@
 import { Controller, Logger, Inject } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
 import { RPC_METHODS } from '@shared/constants/message.constants';
 import { EmailService } from './email.service';
 import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
@@ -8,10 +7,11 @@ import {
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
 import { EVENT_NAMES } from '@shared/constants/message.constants';
+import { RPCMessage } from '@shared/types/rabbitmq.types';
 
 /**
  * NotificationRpcController handles RPC requests for the Notification service
- * Uses @MessagePattern decorators for type-safe message handling
+ * Methods are registered with the custom RabbitMQ client
  */
 @Controller()
 export class NotificationRpcController {
@@ -22,9 +22,31 @@ export class NotificationRpcController {
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
   ) {}
 
-  @MessagePattern(RPC_METHODS.NOTIFICATION.SEND_NOTIFICATION)
-  async sendNotification(@Payload() params: { type: string; data: any }) {
-    this.logger.log(`RPC: ${RPC_METHODS.NOTIFICATION.SEND_NOTIFICATION}`);
+  /**
+   * Main RPC handler that routes messages to specific methods
+   */
+  async handleRPC(message: RPCMessage<any>) {
+    this.logger.log(`RPC: ${message.method}`);
+
+    switch (message.method) {
+      case RPC_METHODS.NOTIFICATION.SEND_NOTIFICATION:
+        return await this.sendNotification(message.params);
+
+      case RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL:
+        return await this.sendVerificationEmail(message.params);
+
+      case RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL:
+        return await this.sendPasswordResetEmail(message.params);
+
+      case RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL:
+        return await this.sendPasswordChangedEmail(message.params);
+
+      default:
+        throw new Error(`Unknown RPC method: ${message.method}`);
+    }
+  }
+
+  private async sendNotification(params: { type: string; data: any }) {
     const { type, data } = params;
     if (type === 'email') {
       return await this.sendEmail(data);
@@ -34,16 +56,11 @@ export class NotificationRpcController {
     throw new Error(`Unknown notification type: ${type}`);
   }
 
-  @MessagePattern(RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL)
-  async sendVerificationEmail(
-    @Payload()
-    params: {
-      to: string;
-      fullName: string;
-      verificationCode: string;
-    },
-  ) {
-    this.logger.log(`RPC: ${RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL}`);
+  private async sendVerificationEmail(params: {
+    to: string;
+    fullName: string;
+    verificationCode: string;
+  }) {
     try {
       await this.emailService.sendVerificationEmail(
         params.to,
@@ -76,18 +93,11 @@ export class NotificationRpcController {
     }
   }
 
-  @MessagePattern(RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL)
-  async sendPasswordResetEmail(
-    @Payload()
-    params: {
-      to: string;
-      fullName: string;
-      resetLink: string;
-    },
-  ) {
-    this.logger.log(
-      `RPC: ${RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL}`,
-    );
+  private async sendPasswordResetEmail(params: {
+    to: string;
+    fullName: string;
+    resetLink: string;
+  }) {
     try {
       await this.emailService.sendPasswordResetEmail(
         params.to,
@@ -120,18 +130,11 @@ export class NotificationRpcController {
     }
   }
 
-  @MessagePattern(RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL)
-  async sendPasswordChangedEmail(
-    @Payload()
-    params: {
-      to: string;
-      fullName: string;
-      timestamp: string;
-    },
-  ) {
-    this.logger.log(
-      `RPC: ${RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL}`,
-    );
+  private async sendPasswordChangedEmail(params: {
+    to: string;
+    fullName: string;
+    timestamp: string;
+  }) {
     try {
       await this.emailService.sendPasswordChangedEmail(
         params.to,
