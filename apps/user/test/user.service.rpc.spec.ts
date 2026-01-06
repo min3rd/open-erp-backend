@@ -232,7 +232,8 @@ describe('UserService - RPC Handler Tests', () => {
         method: 'unknownMethod',
         params: {},
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       await expect(service.handleRPC(message)).rejects.toThrow(
