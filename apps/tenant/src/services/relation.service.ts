@@ -1,4 +1,9 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import {
   OrganizationRelationRepository,
@@ -44,9 +49,7 @@ export class RelationService {
 
       // Prevent self-reference
       if (parentId === childId) {
-        throw new BadRequestException(
-          'Organization cannot be its own parent',
-        );
+        throw new BadRequestException('Organization cannot be its own parent');
       }
 
       // Check for existing relation
@@ -83,14 +86,18 @@ export class RelationService {
 
       return relation;
     } catch (error) {
-      this.logger.error(`Error creating relation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating relation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
   async findByOrganization(organizationId: string) {
     const parents = await this.relationRepository.findByChildId(organizationId);
-    const children = await this.relationRepository.findByParentId(organizationId);
+    const children =
+      await this.relationRepository.findByParentId(organizationId);
 
     return { parents, children };
   }

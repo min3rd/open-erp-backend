@@ -23,7 +23,11 @@ export class CreateInvitationDto {
   @IsString({ each: true })
   roles: string[];
 
-  @ApiProperty({ enum: InvitationScope, required: false, default: InvitationScope.ORGANIZATION })
+  @ApiProperty({
+    enum: InvitationScope,
+    required: false,
+    default: InvitationScope.ORGANIZATION,
+  })
   @IsEnum(InvitationScope)
   @IsOptional()
   scope?: InvitationScope;

@@ -195,10 +195,12 @@ export class OrganizationRepository {
     }
   }
 
-  async count(filters: {
-    type?: OrganizationType;
-    status?: OrganizationStatus;
-  } = {}): Promise<number> {
+  async count(
+    filters: {
+      type?: OrganizationType;
+      status?: OrganizationStatus;
+    } = {},
+  ): Promise<number> {
     try {
       const query: any = {};
       if (filters.type) query.type = filters.type;

@@ -101,9 +101,8 @@ export class OrganizationMember extends Document {
   updatedBy?: MongooseSchema.Types.ObjectId;
 }
 
-export const OrganizationMemberSchema = SchemaFactory.createForClass(
-  OrganizationMember,
-);
+export const OrganizationMemberSchema =
+  SchemaFactory.createForClass(OrganizationMember);
 
 // Compound indexes
 // Ensure one user can only have one membership per organization

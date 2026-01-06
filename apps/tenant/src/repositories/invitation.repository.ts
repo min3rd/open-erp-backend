@@ -203,9 +203,7 @@ export class InvitationRepository {
     }
   }
 
-  async markAsExpired(
-    cutoffDate: Date,
-  ): Promise<{ modifiedCount: number }> {
+  async markAsExpired(cutoffDate: Date): Promise<{ modifiedCount: number }> {
     try {
       const result = await this.invitationModel
         .updateMany(

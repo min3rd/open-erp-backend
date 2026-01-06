@@ -110,9 +110,8 @@ export class OrganizationRelation extends Document {
   updatedBy?: MongooseSchema.Types.ObjectId;
 }
 
-export const OrganizationRelationSchema = SchemaFactory.createForClass(
-  OrganizationRelation,
-);
+export const OrganizationRelationSchema =
+  SchemaFactory.createForClass(OrganizationRelation);
 
 // Compound indexes
 // Ensure uniqueness: one parent-child pair can only have one active relation at a time
