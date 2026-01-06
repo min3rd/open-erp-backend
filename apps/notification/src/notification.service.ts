@@ -1,5 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
+import { ClientProxy } from '@nestjs/microservices';
+import { RabbitMQClient, RABBITMQ_CLIENT, RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
 import {
   RABBITMQ_EXCHANGES,
@@ -14,6 +15,7 @@ export class NotificationService {
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
     private readonly emailService: EmailService,
   ) {}
 
@@ -24,16 +26,15 @@ export class NotificationService {
     await this.emailService.sendVerificationEmail(data.to, '', ''); // Will be customized based on data
 
     // Publish email sent event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-      EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-      {
+    try {
+      this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
         to: data.to,
         subject: data.subject,
         sentAt: new Date(),
-      },
-    );
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to emit email sent event: ${error.message}`);
+    }
 
     return {
       success: true,
@@ -56,16 +57,15 @@ export class NotificationService {
       );
 
       // Publish email sent event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-        {
+      try {
+        this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
           to: data.to,
           subject: 'Email Verification',
           sentAt: new Date(),
-        },
-      );
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit email sent event: ${error.message}`);
+      }
 
       return {
         success: true,
@@ -85,15 +85,14 @@ export class NotificationService {
     this.logger.log(`Sending SMS to ${data.to}: ${data.message}`);
 
     // Publish SMS sent event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.NOTIFICATION_SMS_SENT,
-      EVENT_NAMES.NOTIFICATION.SMS_SENT,
-      {
+    try {
+      this.userClient.emit(EVENT_NAMES.NOTIFICATION.SMS_SENT, {
         to: data.to,
         sentAt: new Date(),
-      },
-    );
+      });
+    } catch (error) {
+      this.logger.warn(`Failed to emit SMS sent event: ${error.message}`);
+    }
 
     return {
       success: true,
@@ -185,16 +184,15 @@ export class NotificationService {
       );
 
       // Publish email sent event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-        {
+      try {
+        this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
           to: data.to,
           subject: 'Password Reset Request',
           sentAt: new Date(),
-        },
-      );
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit email sent event: ${error.message}`);
+      }
 
       return {
         success: true,
@@ -224,16 +222,15 @@ export class NotificationService {
       );
 
       // Publish email sent event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-        {
+      try {
+        this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
           to: data.to,
           subject: 'Password Changed Successfully',
           sentAt: new Date(),
-        },
-      );
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit email sent event: ${error.message}`);
+      }
 
       return {
         success: true,

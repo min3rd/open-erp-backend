@@ -1,5 +1,6 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
-import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
+import { ClientProxy } from '@nestjs/microservices';
+import { RabbitMQClient, RABBITMQ_CLIENT, RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
 import {
   RABBITMQ_EXCHANGES,
@@ -14,6 +15,7 @@ export class UserService {
 
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -57,12 +59,11 @@ export class UserService {
       });
 
       // Publish user created event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.USER_CREATED,
-        EVENT_NAMES.USER.CREATED,
-        user,
-      );
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
+      } catch (error) {
+        this.logger.warn(`Failed to emit user created event: ${error.message}`);
+      }
 
       return { success: true, user };
     } catch (error) {
@@ -79,12 +80,11 @@ export class UserService {
       }
 
       // Publish user updated event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-        EVENT_NAMES.USER.UPDATED,
-        { userId: id, changes: data },
-      );
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, { userId: id, changes: data });
+      } catch (error) {
+        this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+      }
 
       return { success: true, user };
     } catch (error) {
@@ -101,12 +101,11 @@ export class UserService {
       }
 
       // Publish user deleted event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.USER_DELETED,
-        EVENT_NAMES.USER.DELETED,
-        { userId: id },
-      );
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.DELETED, { userId: id });
+      } catch (error) {
+        this.logger.warn(`Failed to emit user deleted event: ${error.message}`);
+      }
 
       return { success: true, message: 'User deleted' };
     } catch (error) {
@@ -181,12 +180,11 @@ export class UserService {
       case RPC_METHODS.USER.CREATE_USER:
         try {
           const user = await this.userRepository.create(message.params);
-          await this.rabbitMQClient.publishEvent(
-            RABBITMQ_EXCHANGES.EVENTS,
-            RABBITMQ_ROUTING_KEYS.USER_CREATED,
-            EVENT_NAMES.USER.CREATED,
-            user,
-          );
+          try {
+            this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
+          } catch (error) {
+            this.logger.warn(`Failed to emit user created event: ${error.message}`);
+          }
           return user;
         } catch (error) {
           this.logger.error(
@@ -215,17 +213,16 @@ export class UserService {
           );
 
           // Publish user updated event
-          await this.rabbitMQClient.publishEvent(
-            RABBITMQ_EXCHANGES.EVENTS,
-            RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-            EVENT_NAMES.USER.UPDATED,
-            {
+          try {
+            this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
               userId: user._id.toString(),
               email,
               status,
               verifiedAt,
-            },
-          );
+            });
+          } catch (error) {
+            this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+          }
 
           return updatedUser;
         } catch (error) {
@@ -266,16 +263,15 @@ export class UserService {
           );
 
           // Publish user updated event
-          await this.rabbitMQClient.publishEvent(
-            RABBITMQ_EXCHANGES.EVENTS,
-            RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-            EVENT_NAMES.USER.UPDATED,
-            {
+          try {
+            this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
               userId: user._id.toString(),
               email,
               passwordChanged: true,
-            },
-          );
+            });
+          } catch (error) {
+            this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+          }
 
           return updatedUser;
         } catch (error) {
