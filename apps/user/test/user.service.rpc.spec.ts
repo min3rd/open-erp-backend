@@ -2,6 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { UserService } from '../src/user.service';
 import { UserRepository } from '../src/repositories/user.repository';
 import { RPCMessage } from '@shared/types/rabbitmq.types';
+import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 
 // Mock RabbitMQ client
 const mockRabbitMQClient = {
@@ -61,14 +62,15 @@ describe('UserService - RPC Handler Tests', () => {
       mockUserRepository.update.mockResolvedValue(updatedUser);
 
       const message: RPCMessage<any> = {
-        method: 'updateUserStatus',
+        method: RPC_METHODS.USER.UPDATE_USER_STATUS,
         params: {
           email: 'test@example.com',
           status: 'active',
           verifiedAt: new Date(),
         },
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       const result = await service.handleRPC(message);
@@ -87,7 +89,7 @@ describe('UserService - RPC Handler Tests', () => {
       expect(mockRabbitMQClient.publishEvent).toHaveBeenCalledWith(
         expect.any(String),
         expect.any(String),
-        'user.updated',
+        EVENT_NAMES.USER.UPDATED,
         expect.objectContaining({
           userId: 'user123',
           email: 'test@example.com',
@@ -112,13 +114,14 @@ describe('UserService - RPC Handler Tests', () => {
       mockUserRepository.update.mockResolvedValue(updatedUser);
 
       const message: RPCMessage<any> = {
-        method: 'updateUserStatus',
+        method: RPC_METHODS.USER.UPDATE_USER_STATUS,
         params: {
           email: 'test@example.com',
           status: 'active',
         },
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       const result = await service.handleRPC(message);
@@ -133,13 +136,14 @@ describe('UserService - RPC Handler Tests', () => {
       mockUserRepository.findByEmail.mockResolvedValue(null);
 
       const message: RPCMessage<any> = {
-        method: 'updateUserStatus',
+        method: RPC_METHODS.USER.UPDATE_USER_STATUS,
         params: {
           email: 'nonexistent@example.com',
           status: 'active',
         },
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       await expect(service.handleRPC(message)).rejects.toThrow(
@@ -159,12 +163,13 @@ describe('UserService - RPC Handler Tests', () => {
       mockUserRepository.updateLastLogin.mockResolvedValue(mockUser);
 
       const message: RPCMessage<any> = {
-        method: 'updateLastLogin',
+        method: RPC_METHODS.USER.UPDATE_LAST_LOGIN,
         params: {
           userId: 'user123',
         },
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       const result = await service.handleRPC(message);
@@ -179,12 +184,13 @@ describe('UserService - RPC Handler Tests', () => {
       mockUserRepository.updateLastLogin.mockResolvedValue(null);
 
       const message: RPCMessage<any> = {
-        method: 'updateLastLogin',
+        method: RPC_METHODS.USER.UPDATE_LAST_LOGIN,
         params: {
           userId: 'nonexistent-id',
         },
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       await expect(service.handleRPC(message)).rejects.toThrow(
@@ -203,12 +209,13 @@ describe('UserService - RPC Handler Tests', () => {
       mockUserRepository.findByEmail.mockResolvedValue(mockUser);
 
       const message: RPCMessage<any> = {
-        method: 'findUserByEmail',
+        method: RPC_METHODS.USER.FIND_USER_BY_EMAIL,
         params: {
           email: 'test@example.com',
         },
         correlationId: 'test-correlation-id',
-        replyTo: 'test-queue',
+        messageId: 'test-message-id',
+        timestamp: Date.now(),
       };
 
       const result = await service.handleRPC(message);

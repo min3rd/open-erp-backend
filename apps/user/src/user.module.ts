@@ -1,6 +1,8 @@
 import { Module, OnModuleInit, Inject } from '@nestjs/common';
 import { UserController } from './user.controller';
 import { HealthController } from './health.controller';
+import { UserRpcController } from './user-rpc.controller';
+import { UserEventHandler } from './user-event.handler';
 import { UserService } from './user.service';
 import {
   RabbitMQModule,
@@ -31,7 +33,7 @@ import { UserRepository } from './repositories/user.repository';
     }),
     MongooseModule.forFeature([{ name: User.name, schema: UserSchema }]),
   ],
-  controllers: [UserController, HealthController],
+  controllers: [UserController, HealthController, UserRpcController, UserEventHandler],
   providers: [UserService, UserRepository],
 })
 export class UserModule implements OnModuleInit {

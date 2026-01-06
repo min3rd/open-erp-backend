@@ -5,6 +5,7 @@ import {
   RABBITMQ_EXCHANGES,
   RABBITMQ_ROUTING_KEYS,
 } from '@shared/config/rabbitmq.config';
+import { EVENT_NAMES, RPC_METHODS } from '@shared/constants/message.constants';
 import { EmailService } from './email.service';
 
 @Injectable()
@@ -26,7 +27,7 @@ export class NotificationService {
     await this.rabbitMQClient.publishEvent(
       RABBITMQ_EXCHANGES.EVENTS,
       RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-      'notification.email.sent',
+      EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
       {
         to: data.to,
         subject: data.subject,
@@ -58,7 +59,7 @@ export class NotificationService {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        'notification.email.sent',
+        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
         {
           to: data.to,
           subject: 'Email Verification',
@@ -87,7 +88,7 @@ export class NotificationService {
     await this.rabbitMQClient.publishEvent(
       RABBITMQ_EXCHANGES.EVENTS,
       RABBITMQ_ROUTING_KEYS.NOTIFICATION_SMS_SENT,
-      'notification.sms.sent',
+      EVENT_NAMES.NOTIFICATION.SMS_SENT,
       {
         to: data.to,
         sentAt: new Date(),
@@ -107,7 +108,7 @@ export class NotificationService {
     this.logger.log(`Received event: ${message.eventName}`);
 
     switch (message.eventName) {
-      case 'user.registered':
+      case EVENT_NAMES.AUTH.USER_REGISTERED:
         // Send welcome email when user registers (different from verification email)
         this.logger.log(
           `Sending welcome email to new user: ${message.data.email}`,
@@ -115,20 +116,20 @@ export class NotificationService {
         // Note: This is different from verification email, can be implemented later
         break;
 
-      case 'user.login':
+      case EVENT_NAMES.AUTH.USER_LOGIN:
         this.logger.log(`User login notification: ${message.data.userId}`);
         // Could send notification about login activity
         break;
 
-      case 'user.created':
+      case EVENT_NAMES.USER.CREATED:
         this.logger.log(`New user created: ${message.data.id}`);
         break;
 
-      case 'user.updated':
+      case EVENT_NAMES.USER.UPDATED:
         this.logger.log(`User updated: ${message.data.userId}`);
         break;
 
-      case 'user.deleted':
+      case EVENT_NAMES.USER.DELETED:
         this.logger.log(`User deleted: ${message.data.userId}`);
         break;
 
@@ -144,7 +145,7 @@ export class NotificationService {
     this.logger.log(`Received RPC: ${message.method}`);
 
     switch (message.method) {
-      case 'sendNotification':
+      case RPC_METHODS.NOTIFICATION.SEND_NOTIFICATION:
         const { type, data } = message.params;
         if (type === 'email') {
           return await this.sendEmail(data);
@@ -153,13 +154,13 @@ export class NotificationService {
         }
         throw new Error(`Unknown notification type: ${type}`);
 
-      case 'sendVerificationEmail':
+      case RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL:
         return await this.sendVerificationEmail(message.params);
 
-      case 'sendPasswordResetEmail':
+      case RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL:
         return await this.sendPasswordResetEmail(message.params);
 
-      case 'sendPasswordChangedEmail':
+      case RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL:
         return await this.sendPasswordChangedEmail(message.params);
 
       default:
@@ -185,7 +186,7 @@ export class NotificationService {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        'notification.email.sent',
+        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
         {
           to: data.to,
           subject: 'Password Reset Request',
@@ -224,7 +225,7 @@ export class NotificationService {
       await this.rabbitMQClient.publishEvent(
         RABBITMQ_EXCHANGES.EVENTS,
         RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        'notification.email.sent',
+        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
         {
           to: data.to,
           subject: 'Password Changed Successfully',
