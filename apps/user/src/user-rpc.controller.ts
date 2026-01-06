@@ -57,8 +57,12 @@ export class UserRpcController {
     try {
       const user = await this.userRepository.create(params);
       
-      // Publish event using NestJS ClientProxy
-      this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
+      // Publish event using NestJS ClientProxy (fire-and-forget with error logging)
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
+      } catch (error) {
+        this.logger.warn(`Failed to emit user created event: ${error.message}`);
+      }
       
       return user;
     } catch (error) {
@@ -97,13 +101,17 @@ export class UserRpcController {
         updateData,
       );
 
-      // Publish event using NestJS ClientProxy
-      this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
-        userId: user._id.toString(),
-        email,
-        status,
-        verifiedAt,
-      });
+      // Publish event using NestJS ClientProxy (fire-and-forget with error logging)
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+          userId: user._id.toString(),
+          email,
+          status,
+          verifiedAt,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+      }
 
       return updatedUser;
     } catch (error) {
@@ -151,12 +159,16 @@ export class UserRpcController {
         { password: password },
       );
 
-      // Publish event using NestJS ClientProxy
-      this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
-        userId: user._id.toString(),
-        email,
-        passwordChanged: true,
-      });
+      // Publish event using NestJS ClientProxy (fire-and-forget with error logging)
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+          userId: user._id.toString(),
+          email,
+          passwordChanged: true,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+      }
 
       return updatedUser;
     } catch (error) {
