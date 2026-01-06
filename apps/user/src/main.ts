@@ -13,6 +13,14 @@ async function bootstrap() {
 
   // Connect RabbitMQ microservice
   const rabbitMQConfig = getRabbitMQConfig();
+
+  if (rabbitMQConfig.user && rabbitMQConfig.password) {
+    rabbitMQConfig.url = rabbitMQConfig.url.replace(
+      '//',
+      `//${rabbitMQConfig.user}:${rabbitMQConfig.password}@`,
+    );
+  }
+
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {

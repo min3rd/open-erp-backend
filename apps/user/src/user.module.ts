@@ -39,7 +39,6 @@ import { UserRepository } from './repositories/user.repository';
 export class UserModule implements OnModuleInit {
   constructor(
     @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
-    private readonly userService: UserService,
   ) {}
 
   async onModuleInit() {
