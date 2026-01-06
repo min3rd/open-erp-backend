@@ -1,13 +1,8 @@
 import { Controller, Logger, Inject } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
-import { RPC_METHODS } from '@shared/constants/message.constants';
+import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
+import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { EmailService } from './email.service';
-import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
-import {
-  RABBITMQ_EXCHANGES,
-  RABBITMQ_ROUTING_KEYS,
-} from '@shared/config/rabbitmq.config';
-import { EVENT_NAMES } from '@shared/constants/message.constants';
+import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
 
 /**
  * NotificationRpcController handles RPC requests for the Notification service
@@ -19,7 +14,7 @@ export class NotificationRpcController {
 
   constructor(
     private readonly emailService: EmailService,
-    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
   ) {}
 
   @MessagePattern(RPC_METHODS.NOTIFICATION.SEND_NOTIFICATION)
@@ -51,17 +46,12 @@ export class NotificationRpcController {
         params.verificationCode,
       );
 
-      // Publish email sent event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-        {
-          to: params.to,
-          subject: 'Email Verification',
-          sentAt: new Date(),
-        },
-      );
+      // Publish event using NestJS ClientProxy
+      this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
+        to: params.to,
+        subject: 'Email Verification',
+        sentAt: new Date(),
+      });
 
       return {
         success: true,
@@ -95,17 +85,12 @@ export class NotificationRpcController {
         params.resetLink,
       );
 
-      // Publish email sent event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-        {
-          to: params.to,
-          subject: 'Password Reset Request',
-          sentAt: new Date(),
-        },
-      );
+      // Publish event using NestJS ClientProxy
+      this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
+        to: params.to,
+        subject: 'Password Reset Request',
+        sentAt: new Date(),
+      });
 
       return {
         success: true,
@@ -139,17 +124,12 @@ export class NotificationRpcController {
         params.timestamp,
       );
 
-      // Publish email sent event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-        EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-        {
-          to: params.to,
-          subject: 'Password Changed Successfully',
-          sentAt: new Date(),
-        },
-      );
+      // Publish event using NestJS ClientProxy
+      this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
+        to: params.to,
+        subject: 'Password Changed Successfully',
+        sentAt: new Date(),
+      });
 
       return {
         success: true,
@@ -170,17 +150,12 @@ export class NotificationRpcController {
     // Use actual email service implementation
     await this.emailService.sendVerificationEmail(data.to, '', ''); // Will be customized based on data
 
-    // Publish email sent event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.NOTIFICATION_EMAIL_SENT,
-      EVENT_NAMES.NOTIFICATION.EMAIL_SENT,
-      {
-        to: data.to,
-        subject: data.subject,
-        sentAt: new Date(),
-      },
-    );
+    // Publish event using NestJS ClientProxy
+    this.userClient.emit(EVENT_NAMES.NOTIFICATION.EMAIL_SENT, {
+      to: data.to,
+      subject: data.subject,
+      sentAt: new Date(),
+    });
 
     return {
       success: true,
@@ -192,16 +167,11 @@ export class NotificationRpcController {
     // TODO: Implement actual SMS sending logic
     this.logger.log(`Sending SMS to ${data.to}: ${data.message}`);
 
-    // Publish SMS sent event
-    await this.rabbitMQClient.publishEvent(
-      RABBITMQ_EXCHANGES.EVENTS,
-      RABBITMQ_ROUTING_KEYS.NOTIFICATION_SMS_SENT,
-      EVENT_NAMES.NOTIFICATION.SMS_SENT,
-      {
-        to: data.to,
-        sentAt: new Date(),
-      },
-    );
+    // Publish event using NestJS ClientProxy
+    this.userClient.emit(EVENT_NAMES.NOTIFICATION.SMS_SENT, {
+      to: data.to,
+      sentAt: new Date(),
+    });
 
     return {
       success: true,

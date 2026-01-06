@@ -1,12 +1,8 @@
 import { Controller, Logger, Inject } from '@nestjs/common';
-import { MessagePattern, Payload } from '@nestjs/microservices';
+import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
 import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
-import { RabbitMQClient, RABBITMQ_CLIENT } from '@shared/rabbitmq';
-import {
-  RABBITMQ_EXCHANGES,
-  RABBITMQ_ROUTING_KEYS,
-} from '@shared/config/rabbitmq.config';
+import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 
 /**
  * UserRpcController handles RPC requests for the User service
@@ -18,7 +14,7 @@ export class UserRpcController {
 
   constructor(
     private readonly userRepository: UserRepository,
-    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
+    @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
   ) {}
 
   @MessagePattern(RPC_METHODS.USER.GET_USER)
@@ -60,12 +56,10 @@ export class UserRpcController {
     this.logger.log(`RPC: ${RPC_METHODS.USER.CREATE_USER}`);
     try {
       const user = await this.userRepository.create(params);
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.USER_CREATED,
-        EVENT_NAMES.USER.CREATED,
-        user,
-      );
+      
+      // Publish event using NestJS ClientProxy
+      this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
+      
       return user;
     } catch (error) {
       this.logger.error(
@@ -103,18 +97,13 @@ export class UserRpcController {
         updateData,
       );
 
-      // Publish user updated event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-        EVENT_NAMES.USER.UPDATED,
-        {
-          userId: user._id.toString(),
-          email,
-          status,
-          verifiedAt,
-        },
-      );
+      // Publish event using NestJS ClientProxy
+      this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+        userId: user._id.toString(),
+        email,
+        status,
+        verifiedAt,
+      });
 
       return updatedUser;
     } catch (error) {
@@ -162,17 +151,12 @@ export class UserRpcController {
         { password: password },
       );
 
-      // Publish user updated event
-      await this.rabbitMQClient.publishEvent(
-        RABBITMQ_EXCHANGES.EVENTS,
-        RABBITMQ_ROUTING_KEYS.USER_UPDATED,
-        EVENT_NAMES.USER.UPDATED,
-        {
-          userId: user._id.toString(),
-          email,
-          passwordChanged: true,
-        },
-      );
+      // Publish event using NestJS ClientProxy
+      this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+        userId: user._id.toString(),
+        email,
+        passwordChanged: true,
+      });
 
       return updatedUser;
     } catch (error) {

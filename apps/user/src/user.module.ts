@@ -8,6 +8,7 @@ import {
   RabbitMQModule,
   RABBITMQ_CLIENT,
   RabbitMQClient,
+  RabbitMQClientModule,
 } from '@shared/rabbitmq';
 import {
   getRabbitMQConfig,
@@ -25,6 +26,7 @@ import { UserRepository } from './repositories/user.repository';
   imports: [
     ConfigModule.forRoot(),
     RabbitMQModule.forRoot(getRabbitMQConfig()),
+    RabbitMQClientModule.forRoot(), // Add NestJS ClientProxy module
     MongooseModule.forRootAsync({
       useFactory: () => {
         const config = getDatabaseConfig();

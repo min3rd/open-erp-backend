@@ -8,6 +8,7 @@ import {
   RabbitMQModule,
   RABBITMQ_CLIENT,
   RabbitMQClient,
+  RabbitMQClientModule,
 } from '@shared/rabbitmq';
 import {
   getRabbitMQConfig,
@@ -21,6 +22,7 @@ import { ConfigModule } from '@nestjs/config';
   imports: [
     ConfigModule.forRoot(),
     RabbitMQModule.forRoot(getRabbitMQConfig()),
+    RabbitMQClientModule.forRoot(), // Add NestJS ClientProxy module
   ],
   controllers: [NotificationController, NotificationRpcController, NotificationEventController],
   providers: [NotificationService, EmailService],

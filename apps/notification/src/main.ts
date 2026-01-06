@@ -5,6 +5,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
 import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
+import { formatRabbitMQUrl } from '@shared/rabbitmq';
 
 async function bootstrap() {
   const logger = new Logger('NotificationService');
@@ -13,18 +14,12 @@ async function bootstrap() {
 
   // Connect RabbitMQ microservice
   const rabbitMQConfig = getRabbitMQConfig();
-
-  if (rabbitMQConfig.user && rabbitMQConfig.password) {
-    rabbitMQConfig.url = rabbitMQConfig.url.replace(
-      '//',
-      `//${rabbitMQConfig.user}:${rabbitMQConfig.password}@`,
-    );
-  }
+  const url = formatRabbitMQUrl(rabbitMQConfig);
 
   app.connectMicroservice<MicroserviceOptions>({
     transport: Transport.RMQ,
     options: {
-      urls: [rabbitMQConfig.url],
+      urls: [url],
       queue: 'notification_queue',
       queueOptions: {
         durable: true,
