@@ -29,6 +29,11 @@ export const RABBITMQ_QUEUES = {
   NOTIFICATION_EVENTS: 'notification.events',
   NOTIFICATION_RPC: 'notification.rpc',
   NOTIFICATION_DLX: 'notification.dlx',
+
+  // Tenant service queues
+  TENANT_EVENTS: 'tenant.events',
+  TENANT_RPC: 'tenant.rpc',
+  TENANT_DLX: 'tenant.dlx',
 } as const;
 
 export const RABBITMQ_ROUTING_KEYS = {
@@ -51,10 +56,22 @@ export const RABBITMQ_ROUTING_KEYS = {
   NOTIFICATION_SMS_SENT: 'notification.sms.sent',
   NOTIFICATION_PUSH_SENT: 'notification.push.sent',
 
+  // Tenant events
+  TENANT_ORG_CREATED: 'tenant.organization.created',
+  TENANT_ORG_UPDATED: 'tenant.organization.updated',
+  TENANT_ORG_DELETED: 'tenant.organization.deleted',
+  TENANT_MEMBER_INVITED: 'tenant.member.invited',
+  TENANT_MEMBER_JOINED: 'tenant.member.joined',
+  TENANT_MEMBER_REMOVED: 'tenant.member.removed',
+  TENANT_INVITATION_ACCEPTED: 'tenant.invitation.accepted',
+  TENANT_RELATION_CREATED: 'tenant.relation.created',
+  TENANT_RELATION_UPDATED: 'tenant.relation.updated',
+
   // RPC routing keys
   RPC_AUTH: 'rpc.auth',
   RPC_USER: 'rpc.user',
   RPC_NOTIFICATION: 'rpc.notification',
+  RPC_TENANT: 'rpc.tenant',
 } as const;
 
 export const RABBITMQ_DEFAULT_CONFIG = {
