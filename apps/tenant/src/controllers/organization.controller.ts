@@ -7,6 +7,8 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -19,10 +21,20 @@ import {
   CreateOrganizationDto,
   UpdateOrganizationDto,
 } from '../dto/organization.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { Permissions } from '@shared/authz/decorators';
+
+interface AuthenticatedRequest {
+  user: {
+    userId: string;
+    email: string;
+  };
+}
 
 @ApiTags('organizations')
 @ApiBearerAuth()
 @Controller('organizations')
+@UseGuards(JwtAuthGuard)
 export class OrganizationController {
   constructor(private readonly organizationService: OrganizationService) {}
 
@@ -32,12 +44,12 @@ export class OrganizationController {
     status: 201,
     description: 'Organization created successfully',
   })
+  @Permissions('organization.create')
   async create(
     @Body() createDto: CreateOrganizationDto,
-    // TODO: Get userId from JWT token after authentication is implemented
+    @Request() req: AuthenticatedRequest,
   ) {
-    const userId = 'temp-user-id'; // Placeholder
-    return this.organizationService.create(createDto as any, userId);
+    return this.organizationService.create(createDto as any, req.user.userId);
   }
 
   @Get()
@@ -46,6 +58,7 @@ export class OrganizationController {
     status: 200,
     description: 'Organizations retrieved successfully',
   })
+  @Permissions('organization.read')
   async findAll(
     @Query('type') type?: string,
     @Query('status') status?: string,
@@ -61,6 +74,7 @@ export class OrganizationController {
     description: 'Organization retrieved successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
+  @Permissions('organization.read')
   async findById(@Param('id') id: string) {
     return this.organizationService.findById(id);
   }
@@ -72,12 +86,13 @@ export class OrganizationController {
     description: 'Organization updated successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
+  @Permissions(['organization.update', 'organization.manage'], { mode: 'any', scope: 'tenant' })
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateOrganizationDto,
+    @Request() req: AuthenticatedRequest,
   ) {
-    const userId = 'temp-user-id'; // Placeholder
-    return this.organizationService.update(id, updateDto as any, userId);
+    return this.organizationService.update(id, updateDto as any, req.user.userId);
   }
 
   @Delete(':id')
@@ -87,8 +102,11 @@ export class OrganizationController {
     description: 'Organization deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  async delete(@Param('id') id: string) {
-    const userId = 'temp-user-id'; // Placeholder
-    return this.organizationService.delete(id, userId);
+  @Permissions(['organization.delete', 'organization.manage'], { mode: 'any', scope: 'tenant' })
+  async delete(
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.organizationService.delete(id, req.user.userId);
   }
 }
