@@ -99,19 +99,13 @@ export class NotificationModule implements OnModuleInit {
       routingKey: 'notification.dlx',
     });
 
-    // Subscribe to events - using new NotificationEventController with @EventPattern
-    // NestJS microservice will handle routing automatically
-    await this.rabbitMQClient.subscribeToEvent(
-      RABBITMQ_QUEUES.NOTIFICATION_EVENTS,
-      this.notificationService.handleEvent.bind(this.notificationService),
-    );
-
-    // Handle RPC requests - using new NotificationRpcController with @MessagePattern
-    // NestJS microservice will handle routing automatically
-    await this.rabbitMQClient.handleRPCRequest(
-      RABBITMQ_QUEUES.NOTIFICATION_RPC,
-      this.notificationService.handleRPC.bind(this.notificationService),
-    );
+    // NestJS microservice transport with @MessagePattern/@EventPattern decorators
+    // will automatically handle message routing to NotificationRpcController and NotificationEventController
+    // No manual binding needed - comment out legacy custom client bindings
+    
+    // Legacy bindings (can be removed after full migration verification)
+    // await this.rabbitMQClient.subscribeToEvent(...);
+    // await this.rabbitMQClient.handleRPCRequest(...);
 
     console.log('Notification service RabbitMQ setup complete');
   }
