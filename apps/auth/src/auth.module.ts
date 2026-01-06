@@ -4,6 +4,7 @@ import { MeController } from './me.controller';
 import { AuthService } from './auth.service';
 import {
   RabbitMQModule,
+  RabbitMQClientModule,
   RABBITMQ_CLIENT,
   RabbitMQClient,
 } from '@shared/rabbitmq';
@@ -39,6 +40,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
     ConfigModule.forRoot(),
     DatabaseModule,
     RabbitMQModule.forRoot(getRabbitMQConfig()),
+    RabbitMQClientModule.forRoot(), // Add NestJS ClientProxy for sending messages
     MongooseModule.forFeature([
       { name: VerificationToken.name, schema: VerificationTokenSchema },
       { name: RefreshToken.name, schema: RefreshTokenSchema },
