@@ -73,7 +73,7 @@ export class OrganizationRelationRepository {
     status?: RelationStatus,
   ): Promise<OrganizationRelationDocument[]> {
     try {
-      const query: any = { parentId: new Types.ObjectId(parentId) };
+      const query: any = { parentId: parentId as any };
       if (status) query.status = status;
 
       return await this.relationModel.find(query).exec();
@@ -111,8 +111,8 @@ export class OrganizationRelationRepository {
     try {
       return await this.relationModel
         .findOne({
-          parentId: new Types.ObjectId(parentId),
-          childId: new Types.ObjectId(childId),
+          parentId: parentId as any,
+          childId: childId as any,
         })
         .exec();
     } catch (error) {
@@ -151,7 +151,7 @@ export class OrganizationRelationRepository {
         return null;
       }
       relation.deletedAt = new Date();
-      relation.updatedBy = deletedBy;
+      relation.updatedBy = deletedBy as any;
       await relation.save();
       return relation;
     } catch (error) {

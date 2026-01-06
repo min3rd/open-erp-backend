@@ -68,7 +68,7 @@ export class OrganizationMemberRepository {
     status?: MemberStatus,
   ): Promise<OrganizationMemberDocument[]> {
     try {
-      const query: any = { organizationId: new Types.ObjectId(organizationId) };
+      const query: any = { organizationId };
       if (status) query.status = status;
 
       return await this.memberModel.find(query).exec();
@@ -106,8 +106,8 @@ export class OrganizationMemberRepository {
     try {
       return await this.memberModel
         .findOne({
-          organizationId: new Types.ObjectId(organizationId),
-          userId: new Types.ObjectId(userId),
+          organizationId: organizationId as any,
+          userId: userId as any,
         })
         .exec();
     } catch (error) {
@@ -119,13 +119,13 @@ export class OrganizationMemberRepository {
     }
   }
 
-  async findPrimaryOwner(
+  async findByPrimaryOwner(
     organizationId: string,
   ): Promise<OrganizationMemberDocument | null> {
     try {
       return await this.memberModel
         .findOne({
-          organizationId: new Types.ObjectId(organizationId),
+          organizationId: organizationId as any,
           isPrimaryOwner: true,
         })
         .exec();
@@ -145,7 +145,7 @@ export class OrganizationMemberRepository {
     try {
       return await this.memberModel
         .find({
-          organizationId: new Types.ObjectId(organizationId),
+          organizationId: organizationId as any,
           roles: role,
         })
         .exec();
@@ -187,7 +187,7 @@ export class OrganizationMemberRepository {
       member.deletedAt = new Date();
       member.leftAt = new Date();
       member.status = MemberStatus.INACTIVE;
-      member.updatedBy = deletedBy;
+      member.updatedBy = deletedBy as any;
       await member.save();
       return member;
     } catch (error) {
@@ -207,9 +207,7 @@ export class OrganizationMemberRepository {
     } = {},
   ): Promise<number> {
     try {
-      const query: any = {
-        organizationId: new Types.ObjectId(organizationId),
-      };
+      const query: any = { organizationId };
       if (filters.status) query.status = filters.status;
       if (filters.role) query.roles = filters.role;
 
