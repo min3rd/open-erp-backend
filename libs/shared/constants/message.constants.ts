@@ -43,6 +43,11 @@ export const RPC_METHODS = {
   TENANT: {
     // Add tenant RPC methods as needed
   },
+  
+  // Config Service RPC Methods (placeholder for future)
+  CONFIG: {
+    // Add config RPC methods as needed
+  },
 } as const;
 
 /**
@@ -90,6 +95,16 @@ export const EVENT_NAMES = {
     RELATION_CREATED: 'tenant.relation.created',
     RELATION_UPDATED: 'tenant.relation.updated',
   },
+  
+  // Config Events
+  CONFIG: {
+    GLOBAL_UPSERTED: 'config.global.upserted',
+    GLOBAL_UPDATED: 'config.global.updated',
+    GLOBAL_DELETED: 'config.global.deleted',
+    USER_UPSERTED: 'config.user.upserted',
+    USER_UPDATED: 'config.user.updated',
+    USER_DELETED: 'config.user.deleted',
+  },
 } as const;
 
 /**
@@ -99,6 +114,7 @@ export type UserRpcMethod = typeof RPC_METHODS.USER[keyof typeof RPC_METHODS.USE
 export type NotificationRpcMethod = typeof RPC_METHODS.NOTIFICATION[keyof typeof RPC_METHODS.NOTIFICATION];
 export type AuthRpcMethod = typeof RPC_METHODS.AUTH[keyof typeof RPC_METHODS.AUTH];
 export type TenantRpcMethod = typeof RPC_METHODS.TENANT[keyof typeof RPC_METHODS.TENANT];
+export type ConfigRpcMethod = typeof RPC_METHODS.CONFIG[keyof typeof RPC_METHODS.CONFIG];
 
 /**
  * Type helpers for event names
@@ -107,3 +123,4 @@ export type UserEvent = typeof EVENT_NAMES.USER[keyof typeof EVENT_NAMES.USER];
 export type AuthEvent = typeof EVENT_NAMES.AUTH[keyof typeof EVENT_NAMES.AUTH];
 export type NotificationEvent = typeof EVENT_NAMES.NOTIFICATION[keyof typeof EVENT_NAMES.NOTIFICATION];
 export type TenantEvent = typeof EVENT_NAMES.TENANT[keyof typeof EVENT_NAMES.TENANT];
+export type ConfigEvent = typeof EVENT_NAMES.CONFIG[keyof typeof EVENT_NAMES.CONFIG];
