@@ -112,12 +112,16 @@ export class UserModule implements OnModuleInit {
     });
 
     // Subscribe to events
+    // @deprecated - Use UserEventController with @EventPattern decorators instead
+    // This binding is kept for backwards compatibility during migration
     await this.rabbitMQClient.subscribeToEvent(
       RABBITMQ_QUEUES.USER_EVENTS,
       this.userService.handleEvent.bind(this.userService),
     );
 
     // Handle RPC requests
+    // @deprecated - Use UserRpcController with @MessagePattern decorators instead
+    // This binding is kept for backwards compatibility during migration
     await this.rabbitMQClient.handleRPCRequest(
       RABBITMQ_QUEUES.USER_RPC,
       this.userService.handleRPC.bind(this.userService),
