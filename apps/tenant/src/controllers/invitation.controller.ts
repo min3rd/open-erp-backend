@@ -6,6 +6,8 @@ import {
   Body,
   Param,
   Query,
+  UseGuards,
+  Request,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -18,26 +20,37 @@ import {
   CreateInvitationDto,
   AcceptInvitationDto,
 } from '../dto/invitation.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { Permissions } from '@shared/authz/decorators';
+
+interface AuthenticatedRequest {
+  user: {
+    userId: string;
+    email: string;
+  };
+}
 
 @ApiTags('invitations')
 @ApiBearerAuth()
 @Controller('invitations')
+@UseGuards(JwtAuthGuard)
 export class InvitationController {
   constructor(private readonly invitationService: InvitationService) {}
 
   @Post('organizations/:organizationId')
   @ApiOperation({ summary: 'Create invitation for organization' })
   @ApiResponse({ status: 201, description: 'Invitation created successfully' })
+  @Permissions(['invitation.create', 'organization.manage'], { mode: 'any' })
   async create(
     @Param('organizationId') organizationId: string,
     @Body() createDto: CreateInvitationDto,
+    @Request() req: AuthenticatedRequest,
   ) {
-    const userId = 'temp-user-id'; // Placeholder
     return this.invitationService.create(
       organizationId,
       createDto.inviteeEmail,
       createDto.roles,
-      userId,
+      req.user.userId,
       {
         scope: createDto.scope,
         message: createDto.message,
@@ -48,9 +61,11 @@ export class InvitationController {
   @Post('accept')
   @ApiOperation({ summary: 'Accept invitation' })
   @ApiResponse({ status: 200, description: 'Invitation accepted successfully' })
-  async accept(@Body() acceptDto: AcceptInvitationDto) {
-    const userId = 'temp-user-id'; // Placeholder
-    return this.invitationService.accept(acceptDto.token, userId);
+  async accept(
+    @Body() acceptDto: AcceptInvitationDto,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.invitationService.accept(acceptDto.token, req.user.userId);
   }
 
   @Get('organizations/:organizationId')
@@ -59,6 +74,7 @@ export class InvitationController {
     status: 200,
     description: 'Invitations retrieved successfully',
   })
+  @Permissions('invitation.read')
   async findByOrganization(
     @Param('organizationId') organizationId: string,
     @Query('status') status?: string,
@@ -72,8 +88,11 @@ export class InvitationController {
   @Delete(':id')
   @ApiOperation({ summary: 'Revoke invitation' })
   @ApiResponse({ status: 200, description: 'Invitation revoked successfully' })
-  async revoke(@Param('id') id: string) {
-    const userId = 'temp-user-id'; // Placeholder
-    return this.invitationService.revoke(id, userId);
+  @Permissions(['invitation.revoke', 'organization.manage'], { mode: 'any' })
+  async revoke(
+    @Param('id') id: string,
+    @Request() req: AuthenticatedRequest,
+  ) {
+    return this.invitationService.revoke(id, req.user.userId);
   }
 }
