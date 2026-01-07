@@ -5,7 +5,7 @@ module.exports = {
    * @returns {Promise<void>}
    */
   async up(db, client) {
-    // Create tenants collection with validation
+    // Create legacy tenants collection with validation (deprecated - use organizations collection instead)
     await db.createCollection('tenants', {
       validator: {
         $jsonSchema: {
@@ -16,7 +16,7 @@ module.exports = {
               bsonType: 'string',
               minLength: 2,
               maxLength: 100,
-              description: 'Tenant name must be a string between 2-100 characters',
+              description: 'Organization name must be a string between 2-100 characters',
             },
             slug: {
               bsonType: 'string',
@@ -80,7 +80,7 @@ module.exports = {
       { expireAfterSeconds: 31536000, name: 'tenant_deleted_ttl' }
     );
 
-    console.log('Tenants collection created with indexes');
+    console.log('Legacy tenants collection created with indexes (deprecated - use organizations collection)');
   },
 
   /**
@@ -91,6 +91,6 @@ module.exports = {
   async down(db, client) {
     // Drop the tenants collection
     await db.collection('tenants').drop();
-    console.log('Tenants collection dropped');
+    console.log('Legacy tenants collection dropped');
   }
 };

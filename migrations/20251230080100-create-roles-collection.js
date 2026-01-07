@@ -30,12 +30,12 @@ module.exports = {
             },
             scope: {
               bsonType: 'string',
-              enum: ['global', 'tenant'],
-              description: 'Scope must be either global or tenant',
+              enum: ['global', 'organization'],
+              description: 'Scope must be either global or organization',
             },
-            tenantId: {
+            organizationId: {
               bsonType: ['objectId', 'null'],
-              description: 'Tenant ID for tenant-scoped roles',
+              description: 'Organization ID for organization-scoped roles',
             },
             permissions: {
               bsonType: 'array',
@@ -77,9 +77,9 @@ module.exports = {
     });
 
     // Create indexes
-    // Unique index for code + scope + tenantId combination
+    // Unique index for code + scope + organizationId combination
     await db.collection('roles').createIndex(
-      { code: 1, scope: 1, tenantId: 1 },
+      { code: 1, scope: 1, organizationId: 1 },
       {
         unique: true,
         partialFilterExpression: { deletedAt: null },
@@ -88,8 +88,8 @@ module.exports = {
     );
 
     await db.collection('roles').createIndex({ scope: 1, status: 1 });
-    await db.collection('roles').createIndex({ tenantId: 1, status: 1 });
-    await db.collection('roles').createIndex({ tenantId: 1, scope: 1 });
+    await db.collection('roles').createIndex({ organizationId: 1, status: 1 });
+    await db.collection('roles').createIndex({ organizationId: 1, scope: 1 });
 
     // Text index for search
     await db.collection('roles').createIndex(

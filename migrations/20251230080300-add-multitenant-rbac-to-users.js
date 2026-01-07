@@ -2,16 +2,16 @@ const { ObjectId } = require('mongodb');
 
 module.exports = {
   /**
-   * Migration to add multi-tenant and RBAC fields to users collection
+   * Migration to add multi-organization and RBAC fields to users collection
    * @param db {import('mongodb').Db}
    * @param client {import('mongodb').MongoClient}
    * @returns {Promise<void>}
    */
   async up(db, client) {
-    console.log('Starting migration: Add multi-tenant and RBAC fields to users...');
+    console.log('Starting migration: Add multi-organization and RBAC fields to users...');
 
     // Update collection validator to include new fields
-    // Note: tenantId is optional - users can create their own tenant or be invited to one
+    // Note: organizationId is optional - users can create their own organization or be invited to one
     await db.command({
       collMod: 'users',
       validator: {
@@ -45,9 +45,9 @@ module.exports = {
               enum: ['pending', 'active', 'inactive', 'suspended'],
               description: 'Status must be one of: pending, active, inactive, suspended',
             },
-            tenantId: {
+            organizationId: {
               bsonType: ['objectId', 'null'],
-              description: 'Tenant ID for multi-tenancy (optional until user creates/joins a tenant)',
+              description: 'Organization ID for multi-organization support (optional until user creates/joins an organization)',
             },
             roleAssignments: {
               bsonType: 'array',
@@ -111,7 +111,7 @@ module.exports = {
 
     console.log('Updated users collection validator');
 
-    // Initialize new fields for existing users (tenantId remains null)
+    // Initialize new fields for existing users (organizationId remains null)
     await db.collection('users').updateMany(
       { 
         $or: [
@@ -125,19 +125,19 @@ module.exports = {
           specialPermissions: [],
         },
         $setOnInsert: {
-          tenantId: null,
+          organizationId: null,
         }
       }
     );
 
     console.log('Initialized roleAssignments and specialPermissions for existing users');
 
-    // Add new indexes for tenant-based queries
-    await db.collection('users').createIndex({ tenantId: 1, status: 1 });
-    await db.collection('users').createIndex({ tenantId: 1, email: 1 });
-    await db.collection('users').createIndex({ tenantId: 1, username: 1 });
+    // Add new indexes for organization-based queries
+    await db.collection('users').createIndex({ organizationId: 1, status: 1 });
+    await db.collection('users').createIndex({ organizationId: 1, email: 1 });
+    await db.collection('users').createIndex({ organizationId: 1, username: 1 });
 
-    console.log('Added tenant-based indexes to users collection');
+    console.log('Added organization-based indexes to users collection');
     console.log('Migration completed successfully!');
   },
 
@@ -147,19 +147,19 @@ module.exports = {
    * @returns {Promise<void>}
    */
   async down(db, client) {
-    console.log('Rolling back: Remove multi-tenant and RBAC fields from users...');
+    console.log('Rolling back: Remove multi-organization and RBAC fields from users...');
 
     // Remove the new indexes
-    await db.collection('users').dropIndex('tenantId_1_status_1');
-    await db.collection('users').dropIndex('tenantId_1_email_1');
-    await db.collection('users').dropIndex('tenantId_1_username_1');
+    await db.collection('users').dropIndex('organizationId_1_status_1');
+    await db.collection('users').dropIndex('organizationId_1_email_1');
+    await db.collection('users').dropIndex('organizationId_1_username_1');
 
     // Remove fields from all users
     await db.collection('users').updateMany(
       {},
       {
         $unset: {
-          tenantId: '',
+          organizationId: '',
           roleAssignments: '',
           specialPermissions: '',
         },
