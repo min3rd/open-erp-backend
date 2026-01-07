@@ -11,12 +11,20 @@ export enum Permission {
   USER_DELETE = 'user.delete',
   USER_MANAGE = 'user.manage', // Full user management
 
-  // Tenant Management
+  // Tenant Management (Legacy - for backward compatibility with old data)
+  // Use ORGANIZATION_* permissions for new code
   TENANT_CREATE = 'tenant.create',
   TENANT_READ = 'tenant.read',
   TENANT_UPDATE = 'tenant.update',
   TENANT_DELETE = 'tenant.delete',
   TENANT_MANAGE = 'tenant.manage', // Full tenant management
+
+  // Organization Management (Preferred)
+  ORGANIZATION_CREATE = 'organization.create',
+  ORGANIZATION_READ = 'organization.read',
+  ORGANIZATION_UPDATE = 'organization.update',
+  ORGANIZATION_DELETE = 'organization.delete',
+  ORGANIZATION_MANAGE = 'organization.manage', // Full organization management
 
   // Role Management
   ROLE_CREATE = 'role.create',
@@ -83,11 +91,19 @@ export const PermissionGroups = {
     Permission.USER_UPDATE,
     Permission.USER_DELETE,
   ],
+  // Legacy - kept for backward compatibility with existing data
   TENANT_FULL: [
     Permission.TENANT_CREATE,
     Permission.TENANT_READ,
     Permission.TENANT_UPDATE,
     Permission.TENANT_DELETE,
+  ],
+  // Preferred for new code
+  ORGANIZATION_FULL: [
+    Permission.ORGANIZATION_CREATE,
+    Permission.ORGANIZATION_READ,
+    Permission.ORGANIZATION_UPDATE,
+    Permission.ORGANIZATION_DELETE,
   ],
   ROLE_FULL: [
     Permission.ROLE_CREATE,
