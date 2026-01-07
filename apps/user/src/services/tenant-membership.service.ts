@@ -1,9 +1,9 @@
 import { Injectable, Logger, BadRequestException, NotFoundException, ForbiddenException, Inject } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { UserRepository } from '../repositories/user.repository';
-import { UserTenantRepository } from '../repositories/user-tenant.repository';
+import { TenantMemberRepository } from '../repositories/tenant-member.repository';
 import { InviteMemberDto, UpdateMembershipDto, ListTenantMembersQueryDto } from '../dto/membership.dto';
-import { TenantRole, MembershipStatus } from '@shared/schemas';
+import { MemberRole, MemberStatus } from '@shared/schemas';
 import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 import { RPC_METHODS } from '@shared/constants/message.constants';
 
@@ -13,7 +13,7 @@ export class TenantMembershipService {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userTenantRepository: UserTenantRepository,
+    private readonly tenantMemberRepository: TenantMemberRepository,
     @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
   ) {}
 
@@ -49,12 +49,12 @@ export class TenantMembershipService {
       }
 
       // Check if user is already a member
-      const existingMembership = await this.userTenantRepository.findByUserAndTenant(
+      const existingMembership = await this.tenantMemberRepository.findByUserAndTenant(
         user._id.toString(),
         tenantId,
       );
 
-      if (existingMembership && existingMembership.status !== MembershipStatus.REVOKED) {
+      if (existingMembership && existingMembership.status !== MemberStatus.REVOKED) {
         throw new BadRequestException('User is already a member of this tenant');
       }
 
@@ -62,21 +62,22 @@ export class TenantMembershipService {
       let membership;
       if (existingMembership) {
         // Reactivate revoked membership
-        membership = await this.userTenantRepository.update(existingMembership._id.toString(), {
+        membership = await this.tenantMemberRepository.update(existingMembership._id.toString(), {
           role,
-          status: MembershipStatus.ACTIVE,
+          status: MemberStatus.ACTIVE,
           joinedAt: new Date(),
         });
       } else {
         // Create new membership
-        membership = await this.userTenantRepository.create({
+        membership = await this.tenantMemberRepository.create({
           userId: user._id.toString(),
           tenantId,
           role,
-          status: MembershipStatus.ACTIVE,
+          status: MemberStatus.ACTIVE,
           invitedBy: invitedById,
           invitedAt: new Date(),
           joinedAt: new Date(),
+          createdBy: invitedById,
         });
       }
 
@@ -105,7 +106,7 @@ export class TenantMembershipService {
     try {
       const { role, status, page = 1, size = 10 } = query;
 
-      const result = await this.userTenantRepository.listTenantMembers({
+      const result = await this.tenantMemberRepository.listTenantMembers({
         tenantId,
         role,
         status,
@@ -127,18 +128,18 @@ export class TenantMembershipService {
     updatedById: string,
   ): Promise<any> {
     try {
-      const membership = await this.userTenantRepository.findByUserAndTenant(userId, tenantId);
+      const membership = await this.tenantMemberRepository.findByUserAndTenant(userId, tenantId);
       
       if (!membership) {
         throw new NotFoundException('Membership not found');
       }
 
       // Prevent removing the last owner
-      if (dto.role && dto.role !== TenantRole.OWNER && membership.role === TenantRole.OWNER) {
-        const ownerCount = await this.userTenantRepository.listTenantMembers({
+      if (dto.role && dto.role !== MemberRole.OWNER && membership.roles?.includes(MemberRole.OWNER)) {
+        const ownerCount = await this.tenantMemberRepository.listTenantMembers({
           tenantId,
-          role: TenantRole.OWNER,
-          status: MembershipStatus.ACTIVE,
+          role: MemberRole.OWNER,
+          status: MemberStatus.ACTIVE,
           page: 1,
           limit: 100,
         });
@@ -152,13 +153,13 @@ export class TenantMembershipService {
       if (dto.role) updateData.role = dto.role;
       if (dto.status) {
         updateData.status = dto.status;
-        if (dto.status === MembershipStatus.REVOKED) {
+        if (dto.status === MemberStatus.REVOKED) {
           updateData.revokedAt = new Date();
           updateData.revokedBy = updatedById;
         }
       }
 
-      const updated = await this.userTenantRepository.update(
+      const updated = await this.tenantMemberRepository.update(
         membership._id.toString(),
         updateData,
       );
@@ -176,18 +177,18 @@ export class TenantMembershipService {
     removedById: string,
   ): Promise<void> {
     try {
-      const membership = await this.userTenantRepository.findByUserAndTenant(userId, tenantId);
+      const membership = await this.tenantMemberRepository.findByUserAndTenant(userId, tenantId);
       
       if (!membership) {
         throw new NotFoundException('Membership not found');
       }
 
       // Prevent removing the last owner
-      if (membership.role === TenantRole.OWNER) {
-        const ownerCount = await this.userTenantRepository.listTenantMembers({
+      if (membership.roles?.includes(MemberRole.OWNER)) {
+        const ownerCount = await this.tenantMemberRepository.listTenantMembers({
           tenantId,
-          role: TenantRole.OWNER,
-          status: MembershipStatus.ACTIVE,
+          role: MemberRole.OWNER,
+          status: MemberStatus.ACTIVE,
           page: 1,
           limit: 100,
         });
@@ -198,7 +199,7 @@ export class TenantMembershipService {
       }
 
       // Soft delete the membership
-      await this.userTenantRepository.delete(membership._id.toString());
+      await this.tenantMemberRepository.delete(membership._id.toString());
 
       this.logger.log(`Removed user ${userId} from tenant ${tenantId}`);
     } catch (error) {
@@ -209,7 +210,7 @@ export class TenantMembershipService {
 
   async getMembershipDetails(tenantId: string, userId: string): Promise<any> {
     try {
-      const membership = await this.userTenantRepository.findByUserAndTenant(userId, tenantId);
+      const membership = await this.tenantMemberRepository.findByUserAndTenant(userId, tenantId);
       
       if (!membership) {
         throw new NotFoundException('Membership not found');

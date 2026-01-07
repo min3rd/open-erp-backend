@@ -12,6 +12,8 @@ export enum MemberRole {
 
 export enum MemberStatus {
   ACTIVE = 'active',
+  INVITED = 'invited',
+  REVOKED = 'revoked',
   INACTIVE = 'inactive',
   SUSPENDED = 'suspended',
 }
@@ -56,10 +58,35 @@ export class OrganizationMember extends Document {
 
   @Prop({
     type: Date,
-    required: true,
-    default: Date.now,
+    default: null,
   })
-  joinedAt: Date;
+  joinedAt?: Date;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  invitedAt?: Date;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+  })
+  invitedBy?: MongooseSchema.Types.ObjectId;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  revokedAt?: Date;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    index: true,
+  })
+  revokedBy?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: Date,

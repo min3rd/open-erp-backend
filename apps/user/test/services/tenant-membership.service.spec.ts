@@ -2,14 +2,14 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { TenantMembershipService } from '../../src/services/tenant-membership.service';
 import { UserRepository } from '../../src/repositories/user.repository';
-import { UserTenantRepository } from '../../src/repositories/user-tenant.repository';
+import { TenantMemberRepository } from '../../src/repositories/tenant-member.repository';
 import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 import { TenantRole, MembershipStatus } from '@shared/schemas';
 
 describe('TenantMembershipService', () => {
   let service: TenantMembershipService;
   let userRepository: jest.Mocked<UserRepository>;
-  let userTenantRepository: jest.Mocked<UserTenantRepository>;
+  let tenantMemberRepository: jest.Mocked<TenantMemberRepository>;
   let notificationClient: jest.Mocked<any>;
 
   const mockUser = {
@@ -33,7 +33,7 @@ describe('TenantMembershipService', () => {
       findByUsername: jest.fn(),
     };
 
-    const mockUserTenantRepository = {
+    const mockTenantMemberRepository = {
       findByUserAndTenant: jest.fn(),
       create: jest.fn(),
       update: jest.fn(),
@@ -53,8 +53,8 @@ describe('TenantMembershipService', () => {
           useValue: mockUserRepository,
         },
         {
-          provide: UserTenantRepository,
-          useValue: mockUserTenantRepository,
+          provide: TenantMemberRepository,
+          useValue: mockTenantMemberRepository,
         },
         {
           provide: RABBITMQ_NOTIFICATION_CLIENT,
@@ -65,7 +65,7 @@ describe('TenantMembershipService', () => {
 
     service = module.get<TenantMembershipService>(TenantMembershipService);
     userRepository = module.get(UserRepository);
-    userTenantRepository = module.get(UserTenantRepository);
+    tenantMemberRepository = module.get(TenantMemberRepository);
     notificationClient = module.get(RABBITMQ_NOTIFICATION_CLIENT);
   });
 
@@ -78,14 +78,14 @@ describe('TenantMembershipService', () => {
       };
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(null);
-      userTenantRepository.create.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(null);
+      tenantMemberRepository.create.mockResolvedValue(mockMembership as any);
 
       const result = await service.inviteMember('tenant123', inviteDto, 'inviter123');
 
       expect(result).toEqual(mockMembership);
       expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
-      expect(userTenantRepository.create).toHaveBeenCalled();
+      expect(tenantMemberRepository.create).toHaveBeenCalled();
       expect(notificationClient.emit).toHaveBeenCalledWith('tenant.member.invited', expect.any(Object));
     });
 
@@ -98,8 +98,8 @@ describe('TenantMembershipService', () => {
 
       userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findByUsername.mockResolvedValue(mockUser as any);
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(null);
-      userTenantRepository.create.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(null);
+      tenantMemberRepository.create.mockResolvedValue(mockMembership as any);
 
       const result = await service.inviteMember('tenant123', inviteDto, 'inviter123');
 
@@ -115,7 +115,7 @@ describe('TenantMembershipService', () => {
       };
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
 
       await expect(service.inviteMember('tenant123', inviteDto, 'inviter123')).rejects.toThrow(
         BadRequestException,
@@ -134,12 +134,12 @@ describe('TenantMembershipService', () => {
       };
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(revokedMembership as any);
-      userTenantRepository.update.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(revokedMembership as any);
+      tenantMemberRepository.update.mockResolvedValue(mockMembership as any);
 
       const result = await service.inviteMember('tenant123', inviteDto, 'inviter123');
 
-      expect(userTenantRepository.update).toHaveBeenCalled();
+      expect(tenantMemberRepository.update).toHaveBeenCalled();
     });
 
     it('should throw BadRequestException if user not found with username', async () => {
@@ -173,12 +173,12 @@ describe('TenantMembershipService', () => {
         totalPages: 1,
       };
 
-      userTenantRepository.listTenantMembers.mockResolvedValue(mockResult as any);
+      tenantMemberRepository.listTenantMembers.mockResolvedValue(mockResult as any);
 
       const result = await service.listTenantMembers('tenant123', query);
 
       expect(result).toEqual(mockResult);
-      expect(userTenantRepository.listTenantMembers).toHaveBeenCalledWith({
+      expect(tenantMemberRepository.listTenantMembers).toHaveBeenCalledWith({
         tenantId: 'tenant123',
         role: TenantRole.ADMIN,
         status: MembershipStatus.ACTIVE,
@@ -194,21 +194,21 @@ describe('TenantMembershipService', () => {
         role: TenantRole.ADMIN,
       };
 
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
-      userTenantRepository.update.mockResolvedValue({
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.update.mockResolvedValue({
         ...mockMembership,
         role: TenantRole.ADMIN,
       } as any);
 
       const result = await service.updateMembership('tenant123', 'user123', updateDto, 'updater123');
 
-      expect(userTenantRepository.update).toHaveBeenCalled();
+      expect(tenantMemberRepository.update).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if membership not found', async () => {
       const updateDto = { role: TenantRole.ADMIN };
 
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(null);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(null);
 
       await expect(
         service.updateMembership('tenant123', 'user123', updateDto, 'updater123'),
@@ -222,8 +222,8 @@ describe('TenantMembershipService', () => {
         role: TenantRole.OWNER,
       };
 
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(ownerMembership as any);
-      userTenantRepository.listTenantMembers.mockResolvedValue({
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(ownerMembership as any);
+      tenantMemberRepository.listTenantMembers.mockResolvedValue({
         members: [ownerMembership],
         total: 1,
         page: 1,
@@ -238,9 +238,9 @@ describe('TenantMembershipService', () => {
 
   describe('removeMember', () => {
     it('should remove member successfully', async () => {
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
-      userTenantRepository.delete.mockResolvedValue(mockMembership as any);
-      userTenantRepository.listTenantMembers.mockResolvedValue({
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.delete.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.listTenantMembers.mockResolvedValue({
         members: [mockMembership, mockMembership],
         total: 2,
         page: 1,
@@ -249,11 +249,11 @@ describe('TenantMembershipService', () => {
 
       await service.removeMember('tenant123', 'user123', 'remover123');
 
-      expect(userTenantRepository.delete).toHaveBeenCalled();
+      expect(tenantMemberRepository.delete).toHaveBeenCalled();
     });
 
     it('should throw NotFoundException if membership not found', async () => {
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(null);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(null);
 
       await expect(service.removeMember('tenant123', 'user123', 'remover123')).rejects.toThrow(
         NotFoundException,
@@ -266,8 +266,8 @@ describe('TenantMembershipService', () => {
         role: TenantRole.OWNER,
       };
 
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(ownerMembership as any);
-      userTenantRepository.listTenantMembers.mockResolvedValue({
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(ownerMembership as any);
+      tenantMemberRepository.listTenantMembers.mockResolvedValue({
         members: [ownerMembership],
         total: 1,
         page: 1,
@@ -282,7 +282,7 @@ describe('TenantMembershipService', () => {
 
   describe('getMembershipDetails', () => {
     it('should return membership details', async () => {
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(mockMembership as any);
 
       const result = await service.getMembershipDetails('tenant123', 'user123');
 
@@ -290,7 +290,7 @@ describe('TenantMembershipService', () => {
     });
 
     it('should throw NotFoundException if membership not found', async () => {
-      userTenantRepository.findByUserAndTenant.mockResolvedValue(null);
+      tenantMemberRepository.findByUserAndTenant.mockResolvedValue(null);
 
       await expect(service.getMembershipDetails('tenant123', 'user123')).rejects.toThrow(
         NotFoundException,

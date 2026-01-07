@@ -16,9 +16,9 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
-import { User, UserSchema, UserTenant, UserTenantSchema } from '@shared/schemas';
+import { User, UserSchema, OrganizationMember, OrganizationMemberSchema } from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
-import { UserTenantRepository } from './repositories/user-tenant.repository';
+import { TenantMemberRepository } from './repositories/tenant-member.repository';
 
 @Module({
   imports: [
@@ -38,7 +38,7 @@ import { UserTenantRepository } from './repositories/user-tenant.repository';
     }),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
-      { name: UserTenant.name, schema: UserTenantSchema },
+      { name: OrganizationMember.name, schema: OrganizationMemberSchema },
     ]),
   ],
   controllers: [
@@ -54,7 +54,7 @@ import { UserTenantRepository } from './repositories/user-tenant.repository';
     UserManagementService,
     TenantMembershipService,
     UserRepository,
-    UserTenantRepository,
+    TenantMemberRepository,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
