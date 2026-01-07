@@ -71,16 +71,17 @@ export function setupGlobalErrorHandlers(serviceName: string): void {
   const logger = new Logger(`${serviceName}:GlobalErrorHandler`);
 
   process.on('uncaughtException', (error: Error) => {
-    logger.error('Uncaught Exception detected:', error.stack);
-    logger.error('Service will attempt to continue, but consider investigating this error');
-    // Don't exit - let orchestrator handle restarts based on health checks
+    logger.error('Uncaught Exception detected - process will exit:', error.stack);
+    // Exit after logging - orchestrator should restart the process
+    // Continuing after uncaught exception can leave app in undefined state
+    setTimeout(() => process.exit(1), 1000);
   });
 
   process.on('unhandledRejection', (reason: any, promise: Promise<any>) => {
-    logger.error('Unhandled Promise Rejection detected:', reason);
+    logger.error('Unhandled Promise Rejection detected - process will exit:', reason);
     logger.error('Promise:', promise);
-    logger.error('Service will attempt to continue, but consider investigating this error');
-    // Don't exit - let orchestrator handle restarts based on health checks
+    // Exit after logging - orchestrator should restart the process
+    setTimeout(() => process.exit(1), 1000);
   });
 
   // Graceful shutdown handlers

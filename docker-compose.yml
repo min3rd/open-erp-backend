@@ -47,6 +47,7 @@ services:
       retries: 5
 
   # Auth Service
+  # Note: Auth service doesn't use RabbitMQ microservices, so basic health check is sufficient
   auth-service:
     build:
       context: .

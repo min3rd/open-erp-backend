@@ -67,11 +67,23 @@ export function getRabbitMQHealthState(serviceName: string): RabbitMQHealthState
 @Injectable()
 export class RabbitMQHealthIndicator extends HealthIndicator {
   private readonly logger = new Logger(RabbitMQHealthIndicator.name);
+  private initialized = false;
   
   constructor(private readonly serviceName: string) {
     super();
-    // Initialize state as disconnected until first connection
-    updateRabbitMQHealthState(serviceName, false);
+  }
+
+  /**
+   * Initialize the health state
+   * Should be called during module initialization
+   */
+  initialize(): void {
+    if (!this.initialized) {
+      // Initialize state as disconnected until first connection
+      updateRabbitMQHealthState(this.serviceName, false);
+      this.initialized = true;
+      this.logger.log(`Health indicator initialized for ${this.serviceName}`);
+    }
   }
 
   /**
@@ -79,6 +91,11 @@ export class RabbitMQHealthIndicator extends HealthIndicator {
    * This is used by the /health endpoint
    */
   async isHealthy(key: string): Promise<HealthIndicatorResult> {
+    // Ensure initialized
+    if (!this.initialized) {
+      this.initialize();
+    }
+
     const state = getRabbitMQHealthState(this.serviceName);
     
     if (!state) {

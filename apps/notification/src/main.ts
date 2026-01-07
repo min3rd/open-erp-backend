@@ -75,10 +75,16 @@ async function bootstrap() {
   await app.startAllMicroservices();
   logger.log('Notification service microservices started');
 
-  // Mark RabbitMQ as healthy after successful connection
+  // Get the health indicator and initialize it
   const healthIndicator = app.get(RabbitMQHealthIndicator);
-  healthIndicator.markAsHealthy();
-  logger.log('RabbitMQ connection marked as healthy');
+  healthIndicator.initialize();
+
+  // Add a small delay to allow connection to establish
+  // Then mark as healthy
+  setTimeout(() => {
+    healthIndicator.markAsHealthy();
+    logger.log('RabbitMQ connection marked as healthy');
+  }, 2000);
 
   const port = process.env.NOTIFICATION_SERVICE_PORT || 3003;
   await app.listen(port);
