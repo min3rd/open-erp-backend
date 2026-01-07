@@ -3,7 +3,7 @@ version: '3.8'
 services:
   # MongoDB Database
   mongodb:
-    image: mongo:7.0
+    image: mongo
     container_name: erp-mongodb
     hostname: mongodb
     ports:
@@ -26,7 +26,7 @@ services:
 
   # RabbitMQ Message Broker
   rabbitmq:
-    image: rabbitmq:3.12-management-alpine
+    image: rabbitmq:management-alpine
     container_name: erp-rabbitmq
     hostname: rabbitmq
     ports:

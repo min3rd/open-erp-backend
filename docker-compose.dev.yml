@@ -23,7 +23,7 @@ services:
 
   # RabbitMQ Message Broker
   rabbitmq:
-    image: rabbitmq
+    image: rabbitmq:management-alpine
     container_name: erp-rabbitmq
     hostname: rabbitmq
     ports:

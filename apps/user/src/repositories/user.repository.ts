@@ -72,7 +72,7 @@ export class UserRepository {
   ): Promise<User | null> {
     try {
       if (includePassword) {
-        return await this.userModel
+        const user = await this.userModel
           .findOne(
             { email },
             {
@@ -86,8 +86,10 @@ export class UserRepository {
             },
           )
           .exec();
+        return user;
       }
-      return await this.userModel.findOne({ email }).exec();
+       const user = await this.userModel.findOne({ email }).exec();
+       return user;
     } catch (error) {
       this.logger.error(
         `Error finding user by email: ${error.message}`,
