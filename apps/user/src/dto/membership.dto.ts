@@ -6,28 +6,16 @@ import {
   IsOptional,
   IsBoolean,
 } from 'class-validator';
-
-export enum TenantRole {
-  OWNER = 'owner',
-  ADMIN = 'admin',
-  MEMBER = 'member',
-  BILLING = 'billing',
-}
-
-export enum MembershipStatus {
-  ACTIVE = 'active',
-  INVITED = 'invited',
-  REVOKED = 'revoked',
-}
+import { MemberRole, MemberStatus } from '@shared/schemas';
 
 export class InviteMemberDto {
   @ApiProperty({ description: 'User identifier (email or username)', example: 'john@example.com' })
   @IsString()
   identifier: string;
 
-  @ApiProperty({ description: 'Role to assign', enum: TenantRole, default: TenantRole.MEMBER })
-  @IsEnum(TenantRole)
-  role: TenantRole;
+  @ApiProperty({ description: 'Role to assign', enum: MemberRole, default: MemberRole.MEMBER })
+  @IsEnum(MemberRole)
+  role: MemberRole;
 
   @ApiPropertyOptional({ description: 'Send invitation email', default: true })
   @IsBoolean()
@@ -36,15 +24,15 @@ export class InviteMemberDto {
 }
 
 export class UpdateMembershipDto {
-  @ApiPropertyOptional({ description: 'Update role', enum: TenantRole })
-  @IsEnum(TenantRole)
+  @ApiPropertyOptional({ description: 'Update role', enum: MemberRole })
+  @IsEnum(MemberRole)
   @IsOptional()
-  role?: TenantRole;
+  role?: MemberRole;
 
-  @ApiPropertyOptional({ description: 'Update status', enum: MembershipStatus })
-  @IsEnum(MembershipStatus)
+  @ApiPropertyOptional({ description: 'Update status', enum: MemberStatus })
+  @IsEnum(MemberStatus)
   @IsOptional()
-  status?: MembershipStatus;
+  status?: MemberStatus;
 }
 
 export class MembershipResponseDto {
@@ -57,11 +45,11 @@ export class MembershipResponseDto {
   @ApiProperty()
   tenantId: string;
 
-  @ApiProperty({ enum: TenantRole })
-  role: TenantRole;
+  @ApiProperty({ enum: MemberRole })
+  role: MemberRole;
 
-  @ApiProperty({ enum: MembershipStatus })
-  status: MembershipStatus;
+  @ApiProperty({ enum: MemberStatus })
+  status: MemberStatus;
 
   @ApiPropertyOptional()
   joinedAt?: Date;
@@ -86,15 +74,15 @@ export class MembershipResponseDto {
 }
 
 export class ListTenantMembersQueryDto {
-  @ApiPropertyOptional({ description: 'Filter by role', enum: TenantRole })
-  @IsEnum(TenantRole)
+  @ApiPropertyOptional({ description: 'Filter by role', enum: MemberRole })
+  @IsEnum(MemberRole)
   @IsOptional()
-  role?: TenantRole;
+  role?: MemberRole;
 
-  @ApiPropertyOptional({ description: 'Filter by status', enum: MembershipStatus })
-  @IsEnum(MembershipStatus)
+  @ApiPropertyOptional({ description: 'Filter by status', enum: MemberStatus })
+  @IsEnum(MemberStatus)
   @IsOptional()
-  status?: MembershipStatus;
+  status?: MemberStatus;
 
   @ApiPropertyOptional({ description: 'Page number', default: 1, minimum: 1 })
   @IsOptional()
@@ -104,3 +92,4 @@ export class ListTenantMembersQueryDto {
   @IsOptional()
   size?: number;
 }
+

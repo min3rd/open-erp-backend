@@ -2,12 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserManagementService } from '../../src/services/user-management.service';
 import { UserRepository } from '../../src/repositories/user.repository';
-import { UserTenantRepository } from '../../src/repositories/user-tenant.repository';
+import { TenantMemberRepository } from '../../src/repositories/tenant-member.repository';
 
 describe('UserManagementService', () => {
   let service: UserManagementService;
   let userRepository: jest.Mocked<UserRepository>;
-  let userTenantRepository: jest.Mocked<UserTenantRepository>;
+  let tenantMemberRepository: jest.Mocked<TenantMemberRepository>;
 
   const mockUser = {
     _id: { toString: () => 'user123' },
@@ -28,7 +28,7 @@ describe('UserManagementService', () => {
       searchUsers: jest.fn(),
     };
 
-    const mockUserTenantRepository = {
+    const mockTenantMemberRepository = {
       findUserTenants: jest.fn(),
       listTenantMembers: jest.fn(),
     };
@@ -41,15 +41,15 @@ describe('UserManagementService', () => {
           useValue: mockUserRepository,
         },
         {
-          provide: UserTenantRepository,
-          useValue: mockUserTenantRepository,
+          provide: TenantMemberRepository,
+          useValue: mockTenantMemberRepository,
         },
       ],
     }).compile();
 
     service = module.get<UserManagementService>(UserManagementService);
     userRepository = module.get(UserRepository);
-    userTenantRepository = module.get(UserTenantRepository);
+    tenantMemberRepository = module.get(TenantMemberRepository);
   });
 
   describe('createUser', () => {
@@ -110,7 +110,7 @@ describe('UserManagementService', () => {
 
       expect(result).toEqual(mockUser);
       expect(userRepository.findById).toHaveBeenCalledWith('user123');
-      expect(userTenantRepository.findUserTenants).not.toHaveBeenCalled();
+      expect(tenantMemberRepository.findUserTenants).not.toHaveBeenCalled();
     });
 
     it('should return user with memberships when requested', async () => {
@@ -119,12 +119,12 @@ describe('UserManagementService', () => {
       ];
 
       userRepository.findById.mockResolvedValue(mockUser as any);
-      userTenantRepository.findUserTenants.mockResolvedValue(mockMemberships as any);
+      tenantMemberRepository.findUserTenants.mockResolvedValue(mockMemberships as any);
 
       const result = await service.findUserById('user123', true);
 
       expect(result.memberships).toEqual(mockMemberships);
-      expect(userTenantRepository.findUserTenants).toHaveBeenCalledWith('user123');
+      expect(tenantMemberRepository.findUserTenants).toHaveBeenCalledWith('user123');
     });
 
     it('should throw NotFoundException if user not found', async () => {
@@ -221,12 +221,12 @@ describe('UserManagementService', () => {
         totalPages: 1,
       };
 
-      userTenantRepository.listTenantMembers.mockResolvedValue(mockResult as any);
+      tenantMemberRepository.listTenantMembers.mockResolvedValue(mockResult as any);
 
       const result = await service.listUsers(query);
 
       expect(result.users).toBeDefined();
-      expect(userTenantRepository.listTenantMembers).toHaveBeenCalledWith({
+      expect(tenantMemberRepository.listTenantMembers).toHaveBeenCalledWith({
         tenantId: 'tenant123',
         page: 1,
         limit: 10,

@@ -2,7 +2,7 @@ import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
 import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
-import { UserTenantRepository } from './repositories/user-tenant.repository';
+import { TenantMemberRepository } from './repositories/tenant-member.repository';
 import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 
 /**
@@ -15,7 +15,7 @@ export class UserRpcController {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userTenantRepository: UserTenantRepository,
+    private readonly tenantMemberRepository: TenantMemberRepository,
     @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
   ) {}
 
@@ -56,7 +56,7 @@ export class UserRpcController {
     
     // If tenantId is provided, check if user is member of that tenant
     if (params.tenantId && user) {
-      const isMember = await this.userTenantRepository.isUserMemberOfTenant(
+      const isMember = await this.tenantMemberRepository.isUserMemberOfTenant(
         user._id.toString(),
         params.tenantId,
       );
@@ -205,7 +205,7 @@ export class UserRpcController {
   async getUserTenants(@Payload() params: { userId: string }) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER_TENANTS}`);
     try {
-      const tenants = await this.userTenantRepository.findUserTenants(params.userId);
+      const tenants = await this.tenantMemberRepository.findUserTenants(params.userId);
       return tenants;
     } catch (error) {
       this.logger.error(
@@ -227,13 +227,14 @@ export class UserRpcController {
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.ADD_USER_TO_TENANT}`);
     try {
-      const membership = await this.userTenantRepository.create({
+      const membership = await this.tenantMemberRepository.create({
         userId: params.userId,
         tenantId: params.tenantId,
         role: params.role as any,
         invitedBy: params.invitedBy,
         invitedAt: new Date(),
         joinedAt: new Date(),
+        createdBy: params.invitedBy || 'system',
       });
       return membership;
     } catch (error) {
@@ -251,14 +252,14 @@ export class UserRpcController {
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.REMOVE_USER_FROM_TENANT}`);
     try {
-      const membership = await this.userTenantRepository.findByUserAndTenant(
+      const membership = await this.tenantMemberRepository.findByUserAndTenant(
         params.userId,
         params.tenantId,
       );
       if (!membership) {
         throw new Error('Membership not found');
       }
-      await this.userTenantRepository.delete(membership._id.toString());
+      await this.tenantMemberRepository.delete(membership._id.toString());
       return { success: true };
     } catch (error) {
       this.logger.error(

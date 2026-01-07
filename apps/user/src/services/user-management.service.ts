@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
-import { UserRepository, CreateUserDto as RepoCreateUserDto, UpdateUserDto as RepoUpdateUserDto } from '../repositories/user.repository';
-import { UserTenantRepository } from '../repositories/user-tenant.repository';
+import { UserRepository } from '../repositories/user.repository';
+import { TenantMemberRepository } from '../repositories/tenant-member.repository';
 import { CreateUserDto, UpdateUserDto, ListUsersQueryDto } from '../dto/user.dto';
 import { User } from '@shared/schemas';
 
@@ -10,7 +10,7 @@ export class UserManagementService {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly userTenantRepository: UserTenantRepository,
+    private readonly tenantMemberRepository: TenantMemberRepository,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<User> {
@@ -28,7 +28,7 @@ export class UserManagementService {
         }
       }
 
-      const createData: RepoCreateUserDto = {
+      const createData: any = {
         username: dto.username,
         email: dto.email,
         password: dto.password,
@@ -62,7 +62,7 @@ export class UserManagementService {
       }
 
       if (includeMemberships) {
-        const memberships = await this.userTenantRepository.findUserTenants(id);
+        const memberships = await this.tenantMemberRepository.findUserTenants(id);
         return {
           ...user.toJSON(),
           memberships,
@@ -98,7 +98,7 @@ export class UserManagementService {
         }
       }
 
-      const updateData: RepoUpdateUserDto = {
+      const updateData: any = {
         ...(dto.username && { username: dto.username }),
         ...(dto.email && { email: dto.email }),
         ...(dto.firstName && { firstName: dto.firstName }),
@@ -147,7 +147,7 @@ export class UserManagementService {
           throw new BadRequestException('tenantId is required when scope is tenant');
         }
 
-        const membersResult = await this.userTenantRepository.listTenantMembers({
+        const membersResult = await this.tenantMemberRepository.listTenantMembers({
           tenantId,
           page,
           limit: size,
@@ -181,7 +181,7 @@ export class UserManagementService {
       if (includeMemberships) {
         const usersWithMemberships = await Promise.all(
           result.users.map(async (user) => {
-            const memberships = await this.userTenantRepository.findUserTenants(user._id.toString());
+            const memberships = await this.tenantMemberRepository.findUserTenants(user._id.toString());
             return {
               ...user.toJSON(),
               memberships,

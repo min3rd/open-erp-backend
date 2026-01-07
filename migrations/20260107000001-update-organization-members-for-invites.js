@@ -1,45 +1,50 @@
 module.exports = {
   /**
-   * Migration: Add user_tenants collection and update user schema with profile fields
+   * Migration: Update organization_members collection with invite/revoke fields
    * @param db {import('mongodb').Db}
    * @param client {import('mongodb').MongoClient}
    * @returns {Promise<void>}
    */
   async up(db, client) {
-    console.log('Creating user_tenants collection...');
+    console.log('Updating organization_members collection with new fields...');
 
-    // Create user_tenants collection with validation
-    await db.createCollection('user_tenants', {
+    // Update the validator to add new fields
+    await db.command({
+      collMod: 'organization_members',
       validator: {
         $jsonSchema: {
           bsonType: 'object',
-          required: ['userId', 'tenantId', 'role', 'status'],
+          required: ['organizationId', 'userId', 'roles', 'status', 'createdBy'],
           properties: {
+            organizationId: {
+              bsonType: 'objectId',
+              description: 'Organization/Tenant ID - required',
+            },
             userId: {
               bsonType: 'objectId',
               description: 'User ID - required',
             },
-            tenantId: {
-              bsonType: 'objectId',
-              description: 'Tenant/Organization ID - required',
-            },
-            role: {
-              bsonType: 'string',
-              enum: ['owner', 'admin', 'member', 'billing'],
-              description: 'Tenant role - required',
+            roles: {
+              bsonType: 'array',
+              items: {
+                bsonType: 'string',
+                enum: ['owner', 'admin', 'member', 'finance'],
+              },
+              minItems: 1,
+              description: 'Member roles - required',
             },
             status: {
               bsonType: 'string',
-              enum: ['active', 'invited', 'revoked'],
-              description: 'Membership status - required',
+              enum: ['active', 'invited', 'revoked', 'inactive', 'suspended'],
+              description: 'Member status - required',
             },
             joinedAt: {
               bsonType: ['date', 'null'],
-              description: 'Date when user joined the tenant',
+              description: 'Date when member joined',
             },
             invitedAt: {
               bsonType: ['date', 'null'],
-              description: 'Date when user was invited',
+              description: 'Date when member was invited',
             },
             invitedBy: {
               bsonType: ['objectId', 'null'],
@@ -53,6 +58,14 @@ module.exports = {
               bsonType: ['objectId', 'null'],
               description: 'User ID who revoked this membership',
             },
+            leftAt: {
+              bsonType: ['date', 'null'],
+              description: 'Date when member left',
+            },
+            isPrimaryOwner: {
+              bsonType: 'bool',
+              description: 'Whether this is the primary owner',
+            },
             metadata: {
               bsonType: ['object', 'null'],
               description: 'Additional metadata',
@@ -60,6 +73,14 @@ module.exports = {
             deletedAt: {
               bsonType: ['date', 'null'],
               description: 'Soft delete timestamp',
+            },
+            createdBy: {
+              bsonType: 'objectId',
+              description: 'User ID who created this membership - required',
+            },
+            updatedBy: {
+              bsonType: ['objectId', 'null'],
+              description: 'User ID who last updated this membership',
             },
             createdAt: {
               bsonType: 'date',
@@ -72,48 +93,8 @@ module.exports = {
           },
         },
       },
+      validationLevel: 'moderate',
     });
-
-    console.log('Creating indexes on user_tenants...');
-
-    // Create indexes
-    await db.collection('user_tenants').createIndexes([
-      {
-        key: { userId: 1, tenantId: 1 },
-        name: 'userId_tenantId_unique',
-        unique: true,
-      },
-      {
-        key: { userId: 1 },
-        name: 'userId_index',
-      },
-      {
-        key: { tenantId: 1 },
-        name: 'tenantId_index',
-      },
-      {
-        key: { tenantId: 1, status: 1 },
-        name: 'tenantId_status_index',
-      },
-      {
-        key: { userId: 1, status: 1 },
-        name: 'userId_status_index',
-      },
-      {
-        key: { tenantId: 1, role: 1 },
-        name: 'tenantId_role_index',
-      },
-      {
-        key: { tenantId: 1, userId: 1, status: 1 },
-        name: 'tenantId_userId_status_index',
-      },
-      {
-        key: { deletedAt: 1 },
-        name: 'deletedAt_ttl_index',
-        expireAfterSeconds: 7776000, // 90 days
-        partialFilterExpression: { deletedAt: { $ne: null } },
-      },
-    ]);
 
     console.log('Updating users collection validator...');
 
@@ -212,8 +193,44 @@ module.exports = {
    * @returns {Promise<void>}
    */
   async down(db, client) {
-    console.log('Dropping user_tenants collection...');
-    await db.collection('user_tenants').drop();
+    console.log('Reverting organization_members collection validator...');
+    // Revert to previous validator (without new fields)
+    await db.command({
+      collMod: 'organization_members',
+      validator: {
+        $jsonSchema: {
+          bsonType: 'object',
+          required: ['organizationId', 'userId', 'roles', 'status', 'joinedAt', 'createdBy'],
+          properties: {
+            organizationId: {
+              bsonType: 'objectId',
+            },
+            userId: {
+              bsonType: 'objectId',
+            },
+            roles: {
+              bsonType: 'array',
+              items: {
+                bsonType: 'string',
+                enum: ['owner', 'admin', 'member', 'finance'],
+              },
+              minItems: 1,
+            },
+            status: {
+              bsonType: 'string',
+              enum: ['active', 'inactive', 'suspended'],
+            },
+            joinedAt: {
+              bsonType: 'date',
+            },
+            createdBy: {
+              bsonType: 'objectId',
+            },
+          },
+        },
+      },
+      validationLevel: 'moderate',
+    });
 
     console.log('Reverting users collection validator...');
     // Revert to previous validator (simplified version)
