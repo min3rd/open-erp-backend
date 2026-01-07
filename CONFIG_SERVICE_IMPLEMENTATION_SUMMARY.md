@@ -70,7 +70,7 @@ Successfully implemented a flexible configuration storage microservice (`config-
 2. **Authorization**:
    - Global configs: `SYSTEM_ADMIN` role required
    - User configs: Owner or System Admin
-   - Cross-tenant access prevention
+   - Cross-organization access prevention
 3. **Rate Limiting**: 20 requests/minute via ThrottlerGuard
 4. **Input Validation**: class-validator DTOs
 5. **Data Sanitization**: Name pattern validation, size limits

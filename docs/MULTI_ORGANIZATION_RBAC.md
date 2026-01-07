@@ -1,19 +1,19 @@
-# Multi-Tenant & RBAC System Documentation
+# Multi-Organization & RBAC System Documentation
 
 ## Overview
 
-This system implements a comprehensive multi-tenant architecture with Role-Based Access Control (RBAC) for the Open ERP backend. Users can belong to a tenant, and permissions are managed through roles that can be either global (system-wide) or tenant-scoped.
+This system implements a comprehensive multi-organization architecture with Role-Based Access Control (RBAC) for the Open ERP backend. Users can belong to a tenant, and permissions are managed through roles that can be either global (system-wide) or organization-scoped.
 
 ## Core Concepts
 
 ### 1. Multi-Tenancy
 
 - **Tenant**: Represents an organization or company using the system
-- Users can optionally belong to a tenant via the `tenantId` field
+- Users can optionally belong to a tenant via the `organizationId` field
 - Users without a tenant can either:
-  1. Create their own tenant
+  1. Create their own organization
   2. Be invited to join an existing tenant by another user
-- Data isolation is enforced at the query level through `tenantId` filtering
+- Data isolation is enforced at the query level through `organizationId` filtering
 - Tenants can be in different states: `active`, `inactive`, `suspended`, or `trial`
 
 ### 2. Roles
@@ -72,7 +72,7 @@ Users can have multiple role assignments, each with:
   code: string;              // Unique code (e.g., SYSTEM_ADMIN)
   description?: string;
   scope: 'global' | 'tenant';
-  tenantId?: ObjectId;       // Required for tenant-scoped roles
+  organizationId?: ObjectId;       // Required for organization-scoped roles
   permissions: string[];     // Array of permission strings
   status: 'active' | 'inactive';
   isSystem: boolean;         // System roles cannot be deleted
@@ -87,7 +87,7 @@ Users can have multiple role assignments, each with:
 
 ```typescript
 {
-  tenantId: ObjectId;        // Parent tenant
+  organizationId: ObjectId;        // Parent tenant
   name: string;
   code: string;              // Unique within tenant
   description?: string;
@@ -114,7 +114,7 @@ Users can have multiple role assignments, each with:
   status: 'pending' | 'active' | 'inactive' | 'suspended';
   
   // Multi-tenant & RBAC fields
-  tenantId?: ObjectId;                   // Optional: user's tenant (null until they create/join one)
+  organizationId?: ObjectId;                   // Optional: user's tenant (null until they create/join one)
   roleAssignments: RoleAssignment[];     // Array of role assignments
   specialPermissions: string[];          // Direct permissions
   
@@ -198,7 +198,7 @@ const systemAdmin = await roleModel.create({
   name: 'System Administrator',
   code: 'SYSTEM_ADMIN',
   scope: 'global',
-  tenantId: null,
+  organizationId: null,
   permissions: [
     Permission.SYSTEM_ADMIN,
     Permission.TENANT_MANAGE,
@@ -213,7 +213,7 @@ const tenantManager = await roleModel.create({
   name: 'Manager',
   code: 'MANAGER',
   scope: 'tenant',
-  tenantId: tenantId,
+  organizationId: organizationId,
   permissions: [
     Permission.USER_READ,
     Permission.ORDER_CREATE,
@@ -271,7 +271,7 @@ await user.save();
 import { Department } from '@shared/schemas';
 
 const salesDept = await departmentModel.create({
-  tenantId: tenant._id,
+  organizationId: tenant._id,
   name: 'Sales',
   code: 'sales',
   description: 'Sales department',
@@ -281,7 +281,7 @@ const salesDept = await departmentModel.create({
 
 // Create sub-department
 const enterpriseSales = await departmentModel.create({
-  tenantId: tenant._id,
+  organizationId: tenant._id,
   name: 'Enterprise Sales',
   code: 'enterprise-sales',
   parentId: salesDept._id,
@@ -352,23 +352,23 @@ node scripts/seed-roles.js
 1. **20251230080000**: Creates tenants collection
 2. **20251230080100**: Creates roles collection
 3. **20251230080200**: Creates departments collection
-4. **20251230080300**: Adds multi-tenant and RBAC fields to users
-   - Makes `tenantId` optional (users without tenant can create one or be invited)
+4. **20251230080300**: Adds multi-organization and RBAC fields to users
+   - Makes `organizationId` optional (users without tenant can create one or be invited)
    - Initializes empty `roleAssignments` and `specialPermissions` for existing users
 
 ## Querying with Tenant Isolation
 
 ### Automatic Filtering
 
-The schemas include middleware that automatically filters by `tenantId`. For user queries:
+The schemas include middleware that automatically filters by `organizationId`. For user queries:
 
 ```typescript
 // This automatically filters by non-deleted users
-const users = await userModel.find({ tenantId: currentTenantId });
+const users = await userModel.find({ organizationId: currentTenantId });
 
 // To include deleted users
 const allUsers = await userModel
-  .find({ tenantId: currentTenantId })
+  .find({ organizationId: currentTenantId })
   .setOptions({ includeDeleted: true });
 ```
 
@@ -378,20 +378,20 @@ const allUsers = await userModel
 class TenantAwareRepository {
   constructor(
     private model: Model<any>,
-    private tenantId: ObjectId
+    private organizationId: ObjectId
   ) {}
 
   async find(filter: any) {
     return this.model.find({
       ...filter,
-      tenantId: this.tenantId,
+      organizationId: this.organizationId,
     });
   }
 
   async findById(id: string) {
     return this.model.findOne({
       _id: id,
-      tenantId: this.tenantId,
+      organizationId: this.organizationId,
     });
   }
 }
@@ -407,8 +407,8 @@ class TenantAwareRepository {
 
 ### 2. Tenant Isolation
 
-- Always include `tenantId` in queries for tenant-scoped resources
-- Never trust client-provided `tenantId` - extract from authenticated session
+- Always include `organizationId` in queries for organization-scoped resources
+- Never trust client-provided `organizationId` - extract from authenticated session
 - Use middleware or guards to enforce tenant context
 
 ### 3. Role Management
@@ -440,7 +440,7 @@ class TenantAwareRepository {
 ### 2. Tenant Isolation
 
 - Never expose data from other tenants
-- Validate `tenantId` matches authenticated user's tenant
+- Validate `organizationId` matches authenticated user's tenant
 - Use database-level constraints where possible
 
 ### 3. Password and Secrets
@@ -452,7 +452,7 @@ class TenantAwareRepository {
 ### 4. Token Security
 
 - Don't include all permissions in JWT tokens (too large)
-- Include minimal claims: userId, tenantId, key roles
+- Include minimal claims: userId, organizationId, key roles
 - Validate permissions on each request, not just from token
 
 ## Testing
@@ -468,7 +468,7 @@ The test suite covers:
 - Special permissions override
 - Role aggregation
 - Tenant isolation for roles
-- Global vs tenant-scoped roles
+- Global vs organization-scoped roles
 - Multiple role assignments
 - Department-scoped roles
 
@@ -534,14 +534,14 @@ export class UsersController {
 ### User cannot access resource despite having role
 
 1. Check role is active: `role.status === 'active'`
-2. Verify role scope matches user's tenant (for tenant-scoped roles)
+2. Verify role scope matches user's tenant (for organization-scoped roles)
 3. Ensure permission is in role's `permissions` array
 4. Check user's `roleAssignments` includes the role
 
 ### Permission denied for global admin
 
 1. Verify role has `scope: 'global'`
-2. Check role does not have `tenantId` set
+2. Check role does not have `organizationId` set
 3. Ensure permission is in the role's permissions list
 
 ### Migration fails

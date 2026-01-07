@@ -1,8 +1,8 @@
-# Tenant Service - Organization & Corporate Hierarchy Management
+# Organization Service - Organization & Corporate Hierarchy Management
 
 ## Overview
 
-The Tenant Service is a microservice that manages organizations and their corporate hierarchies, memberships, and invitations. It supports complex organizational structures including holdings, subsidiaries, joint ventures, partnerships, and branches.
+The Organization Service is a microservice that manages organizations and their corporate hierarchies, memberships, and invitations. It supports complex organizational structures including holdings, subsidiaries, joint ventures, partnerships, and branches.
 
 ## Features
 
@@ -142,17 +142,17 @@ RABBITMQ_PASS=admin123
 
 ### Development
 ```bash
-npm run start:tenant:dev
+npm run start:organization:dev
 ```
 
 ### Build
 ```bash
-npm run build:tenant
+npm run build:organization
 ```
 
 ### Production (Docker)
 ```bash
-docker compose up tenant-service
+docker compose up organization-service
 ```
 
 ## Swagger Documentation
@@ -204,15 +204,15 @@ The service follows standard NestJS architecture:
 **Exchanges**: erp.events, erp.rpc, erp.dlx
 
 **Queues**: 
-- tenant.events - Organization/membership/invitation events
-- tenant.rpc - RPC requests from other services
-- tenant.dlx - Dead letter queue
+- organization.events - Organization/membership/invitation events
+- organization.rpc - RPC requests from other services
+- organization.dlx - Dead letter queue
 
 **Event Types**:
-- `tenant.organization.created/updated/deleted`
-- `tenant.member.invited/joined/removed`
-- `tenant.invitation.accepted`
-- `tenant.relation.created/updated`
+- `organization.organization.created/updated/deleted`
+- `organization.member.invited/joined/removed`
+- `organization.invitation.accepted`
+- `organization.relation.created/updated`
 
 ## License
 
