@@ -2,7 +2,7 @@
 
 ## Overview
 
-Successfully implemented a complete RBAC (Role-Based Access Control) authorization system with middleware, decorators, and guards that supports both global and tenant-scoped permissions.
+Successfully implemented a complete RBAC (Role-Based Access Control) authorization system with middleware, decorators, and guards that supports both global and organization-scoped permissions.
 
 ## Implementation Details
 
@@ -18,17 +18,17 @@ Successfully implemented a complete RBAC (Role-Based Access Control) authorizati
 - Implements `CanActivate` interface for NestJS
 - Supports scope-based permission checking:
   - **Global scope**: System-wide operations
-  - **Tenant scope**: Tenant-specific operations (default)
+  - **Organization scope**: Tenant-specific operations (default)
 - Permission check modes:
   - **all**: Requires ALL permissions (AND logic, default)
   - **any**: Requires ANY permission (OR logic)
-- Tenant ID resolution with priority:
+- Organization ID resolution with priority:
   1. JWT claim (most trusted)
   2. Route parameter
-  3. Request header (x-tenant-id)
-- Cross-tenant access validation:
-  - Regular users: Restricted to own tenant
-  - System admins: Full cross-tenant access
+  3. Request header (x-organization-id)
+- Cross-organization access validation:
+  - Regular users: Restricted to own organization
+  - System admins: Full cross-organization access
 - Structured error handling with correlation IDs
 - Fail-closed security on unexpected errors
 - Comprehensive logging for deny decisions
@@ -39,23 +39,23 @@ Enhanced permission checking service with:
 - `hasPermission(userId, permission, options)`: Scope-aware permission check
 - `hasAnyPermission(userId, permissions, options)`: OR logic for multiple permissions
 - `hasAllPermissions(userId, permissions, options)`: AND logic for multiple permissions
-- `getEffectivePermissions(user, scope, tenantId)`: Get all user permissions
+- `getEffectivePermissions(user, scope, organizationId)`: Get all user permissions
 - `hasRole(userId, roleCode)`: Check if user has specific role
 - `hasAnyRole(userId, roleCodes)`: Check if user has any of the roles
 - `isSystemAdmin(userId)`: Check if user is system admin
-- `isTenantAdmin(userId, tenantId)`: Check if user is tenant admin
+- `isTenantAdmin(userId, organizationId)`: Check if user is organization admin
 - `getUserRolesWithDetails(userId)`: Get role assignments with metadata
 
 ### Error Codes Added
 
 - **AUTH_INSUFFICIENT_PERMISSIONS** (AUTH_0010): User lacks required permissions
-- **AUTH_FORBIDDEN_CROSS_TENANT** (AUTH_0011): Cross-tenant access denied
+- **AUTH_FORBIDDEN_CROSS_TENANT** (AUTH_0011): Cross-organization access denied
 
 ### Testing
 
 #### Unit Tests (28/28 Passing)
 - **Decorators** (12 tests): Metadata setting and extraction
-- **Guard** (16 tests): Authorization logic, scope handling, cross-tenant validation
+- **Guard** (16 tests): Authorization logic, scope handling, cross-organization validation
 - **Service** (20 tests written): Permission resolution with scope awareness
 
 #### Test Coverage
@@ -64,8 +64,8 @@ Enhanced permission checking service with:
 - Role-based authorization
 - Permission-based authorization (all/any modes)
 - Scope handling (global/tenant)
-- Cross-tenant access validation
-- Tenant ID resolution (JWT/param/header)
+- Cross-organization access validation
+- Organization ID resolution (JWT/param/header)
 - Error handling and fail-closed behavior
 
 ### Documentation
@@ -83,7 +83,7 @@ Enhanced permission checking service with:
 2. **rbac-decorators.example.ts** (8.6KB)
    - Complete controller examples
    - Various authorization patterns
-   - Public, tenant-scoped, and global-scoped routes
+   - Public, organization-scoped, and global-scoped routes
    - Role-based and permission-based checks
    - Usage notes and best practices
 
@@ -91,7 +91,7 @@ Enhanced permission checking service with:
    - Comprehensive integration test patterns
    - Public routes, authenticated routes
    - Tenant-scoped and global-scoped tests
-   - Cross-tenant access tests
+   - Cross-organization access tests
    - Role-based and permission mode tests
    - Edge cases and error scenarios
    - Helper functions for test setup
@@ -129,7 +129,7 @@ docs/
 
 ### 1. Scope Support
 - **Global scope**: For system-wide operations (admins only)
-- **Tenant scope**: For tenant-specific operations (default)
+- **Organization scope**: For organization-specific operations (default)
 
 ### 2. Permission Modes
 - **all**: Requires ALL permissions (AND logic)
@@ -140,7 +140,7 @@ docs/
 - Structured error messages
 - Correlation IDs for request tracking
 - Comprehensive logging for auditing
-- Cross-tenant access validation
+- Cross-organization access validation
 
 ### 4. Flexibility
 - Declarative via decorators
@@ -211,7 +211,7 @@ async getReports() { }
 const hasPermission = await this.authorizationService.hasPermission(
   userId,
   Permission.ORDER_CREATE,
-  { scope: 'tenant', tenantId: 'tenant123' }
+  { scope: 'tenant', organizationId: 'tenant123' }
 );
 ```
 
@@ -260,9 +260,9 @@ Inject `AuthorizationService` for programmatic checks.
 
 - [x] `@Roles()` decorator for role shortcuts
 - [x] Permission modes (all/any) for flexible checks
-- [x] Cross-tenant access validation with system admin override
+- [x] Cross-organization access validation with system admin override
 - [x] Comprehensive helper methods (isSystemAdmin, isTenantAdmin, hasRole, hasAnyRole)
-- [x] Tenant ID resolution from multiple sources with priority
+- [x] Organization ID resolution from multiple sources with priority
 - [x] Fail-closed security pattern
 - [x] Correlation ID tracking
 - [x] Metrics system for monitoring
@@ -274,17 +274,17 @@ Inject `AuthorizationService` for programmatic checks.
 ### Implemented Security Features
 - **Fail closed**: Deny access on unexpected errors
 - **Structured errors**: Standardized error responses with correlation IDs
-- **Tenant isolation**: Automatic validation of cross-tenant access
-- **Admin override**: System admins can access cross-tenant resources
+- **Tenant isolation**: Automatic validation of cross-organization access
+- **Admin override**: System admins can access cross-organization resources
 - **Priority resolution**: JWT claims take precedence over headers/params
 - **Comprehensive logging**: All deny decisions are logged for auditing
 
 ### Best Practices Documented
-1. Never trust client-provided tenantId
+1. Never trust client-provided organizationId
 2. Always use JWT claims for tenant context
 3. Apply guard globally for consistency
 4. Regular audit of special permissions
-5. Use tenant scope by default
+5. Use organization scope by default
 6. Prefer @Permissions over @Roles for flexibility
 7. Don't store all permissions in JWT
 
@@ -299,7 +299,7 @@ Inject `AuthorizationService` for programmatic checks.
 
 ### Unit Tests
 - Decorators: Verify metadata setting
-- Guard: Test authorization logic, scope handling, cross-tenant validation
+- Guard: Test authorization logic, scope handling, cross-organization validation
 - Service: Test permission resolution with various scopes
 
 ### Integration Tests (Examples Provided)
@@ -307,10 +307,10 @@ Inject `AuthorizationService` for programmatic checks.
 - Authenticated route access
 - Tenant-scoped permission checks
 - Global-scoped permission checks
-- Cross-tenant access scenarios
+- Cross-organization access scenarios
 - Role-based authorization
 - Permission mode behavior
-- Edge cases (missing tenantId, expired tokens, inactive roles)
+- Edge cases (missing organizationId, expired tokens, inactive roles)
 
 ## Maintenance & Support
 

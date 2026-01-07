@@ -5,10 +5,10 @@ Complete Role-Based Access Control (RBAC) system with decorators, guards, and se
 ## Features
 
 - **Decorators**: `@Public()`, `@Permissions()`, `@Roles()` for declarative authorization
-- **Scope Support**: Global and tenant-scoped permission checking
+- **Scope Support**: Global and organization-scoped permission checking
 - **Guard**: `PermissionsGuard` for automatic route protection
 - **Service**: `AuthorizationService` with helper methods for programmatic checks
-- **Cross-tenant Access**: System admins can access resources across tenants
+- **Cross-organization Access**: System admins can access resources across tenants
 - **Structured Logging**: All authorization decisions are logged with correlation IDs
 - **Metrics**: Track allow/deny/missing_permissions counters
 - **Type-safe**: Full TypeScript support with interfaces and types
@@ -165,7 +165,7 @@ Specifies required permissions for a route.
 **Examples:**
 
 ```typescript
-// Single permission, tenant scope (default)
+// Single permission, organization scope (default)
 @Permissions('order.create')
 
 // Multiple permissions, all required (default)
@@ -213,7 +213,7 @@ Check if a user has a specific permission.
 const hasPermission = await authorizationService.hasPermission(
   'user123',
   'order.create',
-  { scope: 'tenant', tenantId: 'tenant123' },
+  { scope: 'tenant', organizationId: 'tenant123' },
 );
 ```
 
@@ -241,7 +241,7 @@ const hasPermission = await authorizationService.hasAllPermissions(
 );
 ```
 
-#### `getEffectivePermissions(user, scope?, tenantId?)`
+#### `getEffectivePermissions(user, scope?, organizationId?)`
 
 Get all effective permissions for a user.
 
@@ -281,9 +281,9 @@ Check if a user is a system admin (has SYSTEM_ADMIN role).
 const isAdmin = await authorizationService.isSystemAdmin('user123');
 ```
 
-#### `isTenantAdmin(userId, tenantId?)`
+#### `isTenantAdmin(userId, organizationId?)`
 
-Check if a user is a tenant admin for a specific tenant.
+Check if a user is a organization admin for a specific tenant.
 
 ```typescript
 const isAdmin = await authorizationService.isTenantAdmin(
@@ -309,7 +309,7 @@ const roles = await authorizationService.getUserRolesWithDetails('user123');
 - Only considers:
   - User's special permissions
   - Global roles (apply across all tenants)
-  - Tenant roles matching the user's tenantId
+  - Tenant roles matching the user's organizationId
 
 **Use for:** Most application features (orders, products, departments, etc.)
 
@@ -320,7 +320,7 @@ const roles = await authorizationService.getUserRolesWithDetails('user123');
   - User's special permissions
   - Global roles only (tenant roles are excluded)
 
-**Use for:** System administration, cross-tenant operations, global settings
+**Use for:** System administration, cross-organization operations, global settings
 
 ## Mode Behavior
 
@@ -340,19 +340,19 @@ User must have **at least ONE** listed permission (OR logic).
 @Permissions(['order.delete', 'order.manage'], { mode: 'any' }) // Requires either
 ```
 
-## Tenant ID Resolution
+## Organization ID Resolution
 
-The guard resolves `tenantId` from multiple sources in priority order:
+The guard resolves `organizationId` from multiple sources in priority order:
 
-1. **JWT claim** (most trusted): `user.tenantId`
-2. **Route parameter**: `request.params.tenantId`
-3. **Request header**: `request.headers['x-tenant-id']`
+1. **JWT claim** (most trusted): `user.organizationId`
+2. **Route parameter**: `request.params.organizationId`
+3. **Request header**: `request.headers['x-organization-id']`
 
-### Cross-tenant Access
+### Cross-organization Access
 
-- Regular users can only access resources in their own tenant
+- Regular users can only access resources in their own organization
 - System admins (SYSTEM_ADMIN role) can access resources across all tenants
-- Cross-tenant access attempts by non-admins are denied with `AUTH_FORBIDDEN_CROSS_TENANT` error
+- Cross-organization access attempts by non-admins are denied with `AUTH_FORBIDDEN_CROSS_TENANT` error
 
 ## Error Codes
 
@@ -360,7 +360,7 @@ The guard resolves `tenantId` from multiple sources in priority order:
 |------------|-------------|
 | `AUTH_UNAUTHORIZED` (AUTH_0005) | User not authenticated |
 | `AUTH_INSUFFICIENT_PERMISSIONS` (AUTH_0010) | User lacks required permissions |
-| `AUTH_FORBIDDEN_CROSS_TENANT` (AUTH_0011) | Cross-tenant access denied |
+| `AUTH_FORBIDDEN_CROSS_TENANT` (AUTH_0011) | Cross-organization access denied |
 
 ## Logging
 
@@ -376,7 +376,7 @@ All authorization deny decisions are logged with structured format:
   "requiredPermissions": ["order.create"],
   "scope": "tenant",
   "mode": "all",
-  "tenantId": "tenant123"
+  "organizationId": "tenant123"
 }
 ```
 
@@ -403,7 +403,7 @@ The guard expects user information in the request object (set by authentication 
 ```typescript
 interface UserContext {
   userId: string;
-  tenantId?: string;
+  organizationId?: string;
   roles?: string[]; // Optional snapshot
   [key: string]: any;
 }
@@ -435,12 +435,12 @@ See `/libs/shared/authz/*.spec.ts` for test examples.
 
 ## Best Practices
 
-1. **Use tenant scope by default** for application features
+1. **Use organization scope by default** for application features
 2. **Use global scope sparingly** for system-wide operations only
 3. **Prefer @Permissions over @Roles** for flexibility
 4. **Always use @Public()** to mark public routes explicitly
 5. **Don't store all permissions in JWT** - check on each request
-6. **Never trust client-provided tenantId** - use JWT claim
+6. **Never trust client-provided organizationId** - use JWT claim
 7. **Regular audit** special permissions (they override roles)
 8. **Apply guard globally** via APP_GUARD for consistency
 
@@ -464,15 +464,15 @@ If you're using the old PermissionService:
 
 ### Issue: "Tenant context required"
 
-**Cause**: Missing tenantId for tenant-scoped permission check
+**Cause**: Missing organizationId for organization-scoped permission check
 
-**Solution**: Ensure JWT includes tenantId or provide via header/param
+**Solution**: Ensure JWT includes organizationId or provide via header/param
 
-### Issue: "Cross-tenant access denied"
+### Issue: "Cross-organization access denied"
 
 **Cause**: User trying to access resources in another tenant
 
-**Solution**: Grant SYSTEM_ADMIN role for cross-tenant access, or ensure tenantId consistency
+**Solution**: Grant SYSTEM_ADMIN role for cross-organization access, or ensure organizationId consistency
 
 ### Issue: Tests failing with MongoDB errors
 

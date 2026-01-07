@@ -12,10 +12,10 @@ This implementation provides a complete, production-ready multi-tenant architect
   - Automatic tenant isolation middleware
 
 - ✅ **role.schema.ts** (NEW) - 3,945 bytes  
-  - Global and tenant-scoped roles
+  - Global and organization-scoped roles
   - Permission arrays with validation
   - System role protection
-  - Unique constraint: code + scope + tenantId
+  - Unique constraint: code + scope + organizationId
 
 - ✅ **department.schema.ts** (NEW) - 2,812 bytes
   - Organizational units within tenants
@@ -23,7 +23,7 @@ This implementation provides a complete, production-ready multi-tenant architect
   - Manager assignment support
 
 - ✅ **user.schema.ts** (UPDATED)
-  - Added: tenantId (required)
+  - Added: organizationId (required)
   - Added: roleAssignments array
   - Added: specialPermissions array
   - Added: tenant-based indexes
@@ -66,17 +66,17 @@ This implementation provides a complete, production-ready multi-tenant architect
   
 - ✅ **20251230080100-create-roles-collection.js** (NEW) - 3,866 bytes
   - Creates roles collection with validation
-  - Unique index: code + scope + tenantId
-  - Indexes: scope, tenantId, status, text search, TTL
+  - Unique index: code + scope + organizationId
+  - Indexes: scope, organizationId, status, text search, TTL
 
 - ✅ **20251230080200-create-departments-collection.js** (NEW) - 3,455 bytes
   - Creates departments collection
-  - Unique index: tenantId + code
-  - Indexes: tenantId + name, status, parentId, text search, TTL
+  - Unique index: organizationId + code
+  - Indexes: organizationId + name, status, parentId, text search, TTL
 
 - ✅ **20251230080300-add-multitenant-rbac-to-users.js** (NEW) - 8,119 bytes
   - Updates users collection with new fields
-  - Makes tenantId optional (users can create or join tenant later)
+  - Makes organizationId optional (users can create or join tenant later)
   - Initializes empty roleAssignments and specialPermissions
   - Adds tenant-based indexes
   - Includes rollback logic
@@ -139,15 +139,15 @@ For user U with permission P:
 2. Get all roles R assigned to U
 3. For each role in R:
    - If role.scope === 'global' → include permissions
-   - If role.scope === 'tenant' AND role.tenantId === U.tenantId → include permissions
+   - If role.scope === 'tenant' AND role.organizationId === U.organizationId → include permissions
 4. Aggregate all permissions (deduplicate)
 5. If P in aggregated permissions → ALLOW, else DENY
 ```
 
 ### 2. Tenant Isolation
-- Every user has exactly one `tenantId` (required field)
-- Tenant-scoped resources automatically filter by `tenantId`
-- Middleware at schema level prevents cross-tenant access
+- Every user has exactly one `organizationId` (required field)
+- Tenant-scoped resources automatically filter by `organizationId`
+- Middleware at schema level prevents cross-organization access
 - Global roles bypass tenant restrictions
 
 ### 3. Role Assignment
@@ -175,10 +175,10 @@ For user U with permission P:
 2. Run migration 20251230080100 (creates roles)
 3. Run migration 20251230080200 (creates departments)
 4. Run migration 20251230080300 (updates users)
-   - Makes tenantId optional for users
+   - Makes organizationId optional for users
    - Initializes roleAssignments and specialPermissions arrays
 5. Run seed-roles script
-6. Users can then create their own tenants or be invited to existing ones
+6. Users can then create their own organizations or be invited to existing ones
 
 ### Rollback Support
 All migrations include `down()` functions for rollback:
@@ -197,7 +197,7 @@ All migrations include `down()` functions for rollback:
 - Least privilege defaults
 
 ### ⚠️ Important Notes
-1. **Never trust client tenantId** - extract from authenticated session
+1. **Never trust client organizationId** - extract from authenticated session
 2. **Validate permission grants** - users can't grant permissions they don't have
 3. **Don't store all permissions in JWT** - check on each request
 4. **Regular permission audits** - review special permissions
@@ -225,7 +225,7 @@ All migrations include `down()` functions for rollback:
 ## Performance Considerations
 
 ### Indexes Created
-- `tenantId` indexed on all tenant-scoped collections
+- `organizationId` indexed on all organization-scoped collections
 - Compound indexes for common queries
 - Text indexes for search functionality
 - TTL indexes for auto-cleanup
@@ -288,7 +288,7 @@ async performAction(userId: string) {
 ## Acceptance Criteria Status
 
 ### Original Requirements ✅
-- [x] User belongs to one tenant (via `tenantId`)
+- [x] User belongs to one tenant (via `organizationId`)
 - [x] Permissions have 2 scopes (global/tenant)
 - [x] Roles with name, description, scope, permissions
 - [x] Role assignments with departmentId support

@@ -134,7 +134,7 @@ npm run test                   # Run tests
 ✅ Comprehensive documentation
 ✅ User management APIs (global & organization-scoped)
 ✅ Multi-organization membership management
-✅ Role-based access control per tenant
+✅ Role-based access control per organization
 ✅ Rate limiting on invite endpoints
 
 ## 📡 User Management APIs
@@ -167,13 +167,13 @@ DELETE /api/users/:id
 # List/search users
 GET /api/users?q=john&page=1&size=10&scope=global
 GET /api/users?email=john@example.com
-GET /api/users?scope=tenant&organizationId=org123
+GET /api/users?scope=organization&organizationId=org123
 ```
 
-### Tenant-Scoped User Management
+### Organization-Scoped User Management
 
 ```bash
-# Invite/add user to tenant
+# Invite/add user to organization
 POST /api/organizations/:organizationId/users
 {
   "identifier": "john@example.com",  # email or username
@@ -181,7 +181,7 @@ POST /api/organizations/:organizationId/users
   "sendInviteEmail": true
 }
 
-# List tenant members
+# List organization members
 GET /api/organizations/:organizationId/users?role=admin&status=active&page=1&size=10
 
 # Get membership details
@@ -194,7 +194,7 @@ PATCH /api/organizations/:organizationId/users/:userId
   "status": "active"
 }
 
-# Remove user from tenant
+# Remove user from organization
 DELETE /api/organizations/:organizationId/users/:userId
 ```
 
@@ -213,9 +213,9 @@ RPC_METHODS.USER.UPDATE_USER
 RPC_METHODS.USER.UPDATE_USER_STATUS
 
 // Organization membership methods
-RPC_METHODS.USER.GET_USER_TENANTS
-RPC_METHODS.USER.ADD_USER_TO_TENANT
-RPC_METHODS.USER.REMOVE_USER_FROM_TENANT
+RPC_METHODS.USER.GET_USER_ORGANIZATIONS
+RPC_METHODS.USER.ADD_USER_TO_ORGANIZATION
+RPC_METHODS.USER.REMOVE_USER_FROM_ORGANIZATION
 ```
 
 ## 🎯 Acceptance Criteria

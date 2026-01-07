@@ -57,7 +57,7 @@ This implementation adds comprehensive user management APIs to the `user` micros
   - findUserById: Retrieve with optional memberships
   - updateUser: Update with conflict checking
   - deleteUser: Soft delete with audit
-  - listUsers: Search/filter with pagination, supports global and tenant scope
+  - listUsers: Search/filter with pagination, supports global and organization scope
 
 - **TenantMembershipService** (`apps/user/src/services/tenant-membership.service.ts`)
   - inviteMember: Add user to tenant by email/username
@@ -103,7 +103,7 @@ This implementation adds comprehensive user management APIs to the `user` micros
   - Find user (with/without memberships, not found)
   - Update user (success, not found, email conflict)
   - Delete user (success, not found)
-  - List users (global, tenant scope, missing organizationId)
+  - List users (global, organization scope, missing organizationId)
 
 - **TenantMembershipService Tests** (`apps/user/test/services/tenant-membership.service.spec.ts`)
   - 14 test cases covering all scenarios
@@ -159,7 +159,7 @@ This implementation adds comprehensive user management APIs to the `user` micros
 ### 3. Search & Filtering
 - Full-text search across username, email, name fields
 - Filter by email, username, role, status
-- Scope filtering (global vs tenant-specific)
+- Scope filtering (global vs organization-specific)
 - Pagination on all list endpoints
 
 ### 4. Business Rules Enforced
