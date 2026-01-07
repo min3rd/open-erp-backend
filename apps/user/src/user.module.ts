@@ -13,6 +13,8 @@ import {
 } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
 import { User, UserSchema, UserTenant, UserTenantSchema } from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
@@ -22,6 +24,12 @@ import { UserTenantRepository } from './repositories/user-tenant.repository';
   imports: [
     ConfigModule.forRoot(),
     RabbitMQClientModule.forRoot(), // Add NestJS ClientProxy module
+    ThrottlerModule.forRoot([
+      {
+        ttl: 60000, // 60 seconds
+        limit: 10, // 10 requests per minute
+      },
+    ]),
     MongooseModule.forRootAsync({
       useFactory: () => {
         const config = getDatabaseConfig();
@@ -47,6 +55,10 @@ import { UserTenantRepository } from './repositories/user-tenant.repository';
     TenantMembershipService,
     UserRepository,
     UserTenantRepository,
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class UserModule {}
