@@ -10,7 +10,7 @@ import { PermissionScope } from '../authz/decorators';
  */
 export interface PermissionCheckOptions {
   scope?: PermissionScope;
-  tenantId?: string | MongooseSchema.Types.ObjectId;
+  organizationId?: string | MongooseSchema.Types.ObjectId;
 }
 
 /**
@@ -46,8 +46,8 @@ export class AuthorizationService {
         return false;
       }
 
-      const scope = options?.scope || 'tenant';
-      const tenantId = options?.tenantId || user.tenantId;
+      const scope = options?.scope || 'organization';
+      const organizationId = options?.organizationId || user.organizationId;
 
       // Step 1: Check special permissions
       if (
@@ -64,7 +64,7 @@ export class AuthorizationService {
       const effectivePermissions = await this.getEffectivePermissions(
         user,
         scope,
-        tenantId,
+        organizationId,
       );
 
       // Step 3: Check if permission is in aggregated list
@@ -135,16 +135,16 @@ export class AuthorizationService {
    * Aggregates permissions from:
    * 1. Special permissions directly assigned to user
    * 2. Global roles assigned to user (if scope is 'global' or not specified)
-   * 3. Tenant roles assigned to user (if scope is 'tenant' and role.tenantId matches)
+   * 3. Tenant roles assigned to user (if scope is 'organization' and role.organizationId matches)
    *
    * @param user - User document or ID
-   * @param scope - Permission scope ('global' or 'tenant')
+   * @param scope - Permission scope ('global' or 'organization')
    * @param tenantId - Optional tenant ID (defaults to user's tenantId)
    * @returns Promise<string[]> - Array of unique permissions
    */
   async getEffectivePermissions(
     user: UserDocument | string | MongooseSchema.Types.ObjectId,
-    scope: PermissionScope = 'tenant',
+    scope: PermissionScope = 'organization',
     tenantId?: string | MongooseSchema.Types.ObjectId,
   ): Promise<string[]> {
     try {
@@ -186,7 +186,7 @@ export class AuthorizationService {
         .exec();
 
       // Determine the effective tenantId
-      const effectiveTenantId = tenantId || userDoc.tenantId;
+      const effectiveOrganizationId = organizationId || userDoc.organizationId;
 
       // Filter and aggregate permissions based on scope:
       for (const role of roles) {
@@ -200,10 +200,10 @@ export class AuthorizationService {
           if (role.scope === 'global') {
             role.permissions.forEach((p) => permissions.add(p));
           } else if (
-            role.scope === 'tenant' &&
-            role.tenantId &&
-            effectiveTenantId &&
-            role.tenantId.toString() === effectiveTenantId.toString()
+            role.scope === 'organization' &&
+            role.organizationId &&
+            effectiveOrganizationId &&
+            role.organizationId.toString() === effectiveOrganizationId.toString()
           ) {
             role.permissions.forEach((p) => permissions.add(p));
           }
@@ -308,9 +308,9 @@ export class AuthorizationService {
         return false;
       }
 
-      const effectiveTenantId = tenantId || user.tenantId;
+      const effectiveOrganizationId = organizationId || user.organizationId;
 
-      if (!effectiveTenantId) {
+      if (!effectiveOrganizationId) {
         return false;
       }
 
@@ -324,8 +324,8 @@ export class AuthorizationService {
         .findOne({
           _id: { $in: roleIds },
           code: 'TENANT_ADMIN',
-          scope: 'tenant',
-          tenantId: effectiveTenantId,
+          scope: 'organization',
+          organizationId: effectiveOrganizationId,
           status: 'active',
         } as any)
         .exec();
