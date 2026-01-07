@@ -3,32 +3,28 @@ import { NotificationModule } from './notification.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
-import { formatRabbitMQUrl } from '@shared/rabbitmq';
+import {
+  createRabbitMQMicroserviceOptions,
+  setupGlobalErrorHandlers,
+  logMicroserviceEvents,
+} from '@shared/rabbitmq';
 
 async function bootstrap() {
   const logger = new Logger('NotificationService');
 
+  // Setup global error handlers to prevent silent crashes
+  setupGlobalErrorHandlers('NotificationService');
+
   const app = await NestFactory.create(NotificationModule);
 
-  // Connect RabbitMQ microservice
-  const rabbitMQConfig = getRabbitMQConfig();
-  const url = formatRabbitMQUrl(rabbitMQConfig);
-
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [url],
-      queue: 'notification_queue',
-      queueOptions: {
-        durable: true,
-      },
-      // Enable pattern-based routing
-      noAck: false,
-      prefetchCount: 10,
-    },
+  // Connect RabbitMQ microservice with enhanced reliability configuration
+  const microserviceOptions = createRabbitMQMicroserviceOptions({
+    queueName: 'notification_queue',
+    serviceName: 'NotificationService',
   });
+
+  app.connectMicroservice(microserviceOptions);
+  logMicroserviceEvents(app, 'NotificationService');
 
   app.enableVersioning({
     type: VersioningType.URI,

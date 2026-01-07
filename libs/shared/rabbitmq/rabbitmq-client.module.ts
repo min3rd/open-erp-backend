@@ -52,6 +52,24 @@ export class RabbitMQClientModule {
     const rabbitMQConfig = getRabbitMQConfig();
     const url = formatRabbitMQUrl(rabbitMQConfig);
 
+    // Base queue options with reliability features
+    const baseQueueOptions = {
+      durable: true,
+      arguments: {
+        'x-dead-letter-exchange': 'erp.dlx',
+      },
+    };
+
+    // Base options for all clients
+    const baseOptions = {
+      noAck: false,
+      prefetchCount: rabbitMQConfig.prefetch,
+      socketOptions: {
+        heartbeatIntervalInSeconds: rabbitMQConfig.heartbeat,
+        reconnectTimeInSeconds: rabbitMQConfig.socketOptions.reconnectTimeInSeconds,
+      },
+    };
+
     return {
       module: RabbitMQClientModule,
       imports: [
@@ -63,8 +81,13 @@ export class RabbitMQClientModule {
               urls: [url],
               queue: 'user_queue',
               queueOptions: {
-                durable: true,
+                ...baseQueueOptions,
+                arguments: {
+                  ...baseQueueOptions.arguments,
+                  'x-dead-letter-routing-key': 'user_queue.dlx',
+                },
               },
+              ...baseOptions,
             },
           },
           {
@@ -74,8 +97,13 @@ export class RabbitMQClientModule {
               urls: [url],
               queue: 'notification_queue',
               queueOptions: {
-                durable: true,
+                ...baseQueueOptions,
+                arguments: {
+                  ...baseQueueOptions.arguments,
+                  'x-dead-letter-routing-key': 'notification_queue.dlx',
+                },
               },
+              ...baseOptions,
             },
           },
           {
@@ -85,8 +113,13 @@ export class RabbitMQClientModule {
               urls: [url],
               queue: 'auth_queue',
               queueOptions: {
-                durable: true,
+                ...baseQueueOptions,
+                arguments: {
+                  ...baseQueueOptions.arguments,
+                  'x-dead-letter-routing-key': 'auth_queue.dlx',
+                },
               },
+              ...baseOptions,
             },
           },
         ]),

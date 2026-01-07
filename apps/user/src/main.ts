@@ -3,32 +3,28 @@ import { UserModule } from './user.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
-import { MicroserviceOptions, Transport } from '@nestjs/microservices';
-import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
-import { formatRabbitMQUrl } from '@shared/rabbitmq';
+import {
+  createRabbitMQMicroserviceOptions,
+  setupGlobalErrorHandlers,
+  logMicroserviceEvents,
+} from '@shared/rabbitmq';
 
 async function bootstrap() {
   const logger = new Logger('UserService');
 
+  // Setup global error handlers to prevent silent crashes
+  setupGlobalErrorHandlers('UserService');
+
   const app = await NestFactory.create(UserModule);
 
-  // Connect RabbitMQ microservice
-  const rabbitMQConfig = getRabbitMQConfig();
-  const url = formatRabbitMQUrl(rabbitMQConfig);
-
-  app.connectMicroservice<MicroserviceOptions>({
-    transport: Transport.RMQ,
-    options: {
-      urls: [url],
-      queue: 'user_queue',
-      queueOptions: {
-        durable: true,
-      },
-      // Enable pattern-based routing
-      noAck: false,
-      prefetchCount: 10,
-    },
+  // Connect RabbitMQ microservice with enhanced reliability configuration
+  const microserviceOptions = createRabbitMQMicroserviceOptions({
+    queueName: 'user_queue',
+    serviceName: 'UserService',
   });
+
+  app.connectMicroservice(microserviceOptions);
+  logMicroserviceEvents(app, 'UserService');
 
   app.enableVersioning({
     type: VersioningType.URI,

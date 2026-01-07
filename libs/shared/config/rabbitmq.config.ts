@@ -78,6 +78,11 @@ export const RABBITMQ_DEFAULT_CONFIG = {
   heartbeat: 30,
   prefetch: 10,
   connectionTimeout: 10000,
+  socketOptions: {
+    // Connection recovery settings
+    heartbeatIntervalInSeconds: 30,
+    reconnectTimeInSeconds: 5,
+  },
   vhost: '/',
 
   // Retry configuration
@@ -92,27 +97,43 @@ export const RABBITMQ_DEFAULT_CONFIG = {
   deadLetter: {
     ttl: 60000, // 1 minute
   },
+  
+  // Message handler timeout (milliseconds)
+  handlerTimeout: 30000, // 30 seconds
 } as const;
 
 /**
  * Get RabbitMQ configuration from environment variables
  */
 export function getRabbitMQConfig() {
+  const heartbeat = parseInt(
+    process.env.RABBITMQ_HEARTBEAT ||
+      String(RABBITMQ_DEFAULT_CONFIG.heartbeat),
+  );
+  const reconnectTime = parseInt(
+    process.env.RABBITMQ_RECONNECT_TIME || '5',
+  );
+
   return {
     url: process.env.RABBITMQ_URL || 'amqp://localhost:5672',
     user: process.env.RABBITMQ_USER || 'guest',
     password: process.env.RABBITMQ_PASS || 'guest',
     vhost: process.env.RABBITMQ_VHOST || RABBITMQ_DEFAULT_CONFIG.vhost,
-    heartbeat: parseInt(
-      process.env.RABBITMQ_HEARTBEAT ||
-        String(RABBITMQ_DEFAULT_CONFIG.heartbeat),
-    ),
+    heartbeat,
     prefetch: parseInt(
       process.env.RABBITMQ_PREFETCH || String(RABBITMQ_DEFAULT_CONFIG.prefetch),
     ),
     connectionTimeout: parseInt(
       process.env.RABBITMQ_CONNECTION_TIMEOUT ||
         String(RABBITMQ_DEFAULT_CONFIG.connectionTimeout),
+    ),
+    socketOptions: {
+      heartbeatIntervalInSeconds: heartbeat,
+      reconnectTimeInSeconds: reconnectTime,
+    },
+    handlerTimeout: parseInt(
+      process.env.RABBITMQ_HANDLER_TIMEOUT ||
+        String(RABBITMQ_DEFAULT_CONFIG.handlerTimeout),
     ),
   };
 }
