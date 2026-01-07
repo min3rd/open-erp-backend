@@ -44,13 +44,13 @@
         "tsConfigPath": "apps/config-service/tsconfig.json"
       }
     },
-    "tenant": {
+    "organization": {
       "type": "application",
-      "root": "apps/tenant",
+      "root": "apps/organization",
       "entryFile": "main",
-      "sourceRoot": "apps/tenant/src",
+      "sourceRoot": "apps/organization/src",
       "compilerOptions": {
-        "tsConfigPath": "apps/tenant/tsconfig.json"
+        "tsConfigPath": "apps/organization/tsconfig.json"
       }
     }
   }

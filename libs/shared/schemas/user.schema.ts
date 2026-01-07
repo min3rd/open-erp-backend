@@ -104,11 +104,11 @@ export class User extends Document {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Tenant',
+    ref: 'Organization',
     required: false,
     index: true,
   })
-  tenantId?: MongooseSchema.Types.ObjectId;
+  organizationId?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: [

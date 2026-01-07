@@ -1,13 +1,13 @@
 import { NestFactory } from '@nestjs/core';
-import { TenantModule } from './tenant.module';
+import { OrganizationModule } from './organization.module';
 import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
 
 async function bootstrap() {
-  const logger = new Logger('TenantService');
+  const logger = new Logger('OrganizationService');
 
-  const app = await NestFactory.create(TenantModule);
+  const app = await NestFactory.create(OrganizationModule);
 
   app.enableVersioning({
     type: VersioningType.URI,
@@ -35,9 +35,9 @@ async function bootstrap() {
   const enableSwagger = process.env.ENABLE_SWAGGER === 'true';
   if (enableSwagger) {
     const config = new DocumentBuilder()
-      .setTitle('Tenant Service API')
+      .setTitle('Organization Service API')
       .setDescription(
-        'Organization and tenant management service - supports corporate hierarchies, memberships, and invitations',
+        'Organization and corporate hierarchy management service - supports corporate hierarchies, memberships, and invitations',
       )
       .setVersion('1.0.0')
       .addTag('organizations')
@@ -48,7 +48,7 @@ async function bootstrap() {
       .build();
 
     // Add custom property for service identification
-    config['x-service-name'] = 'tenant-service';
+    config['x-service-name'] = 'organization-service';
 
     const document = SwaggerModule.createDocument(app, config);
 
@@ -63,10 +63,10 @@ async function bootstrap() {
     logger.log('Swagger documentation enabled at /docs and /api-docs.json');
   }
 
-  const port = process.env.TENANT_SERVICE_PORT || 3005;
+  const port = process.env.ORGANIZATION_SERVICE_PORT || 3005;
   await app.listen(port);
 
-  logger.log(`Tenant service is running on port ${port}`);
+  logger.log(`Organization service is running on port ${port}`);
 }
 
 bootstrap();
