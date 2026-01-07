@@ -86,7 +86,7 @@ export class OrganizationController {
     description: 'Organization updated successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @Permissions(['organization.update', 'organization.manage'], { mode: 'any', scope: 'tenant' })
+  @Permissions(['organization.update', 'organization.manage'], { mode: 'any', scope: 'organization' })
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateOrganizationDto,
@@ -102,7 +102,7 @@ export class OrganizationController {
     description: 'Organization deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @Permissions(['organization.delete', 'organization.manage'], { mode: 'any', scope: 'tenant' })
+  @Permissions(['organization.delete', 'organization.manage'], { mode: 'any', scope: 'organization' })
   async delete(
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,

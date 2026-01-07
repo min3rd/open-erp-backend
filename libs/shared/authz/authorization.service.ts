@@ -139,13 +139,13 @@ export class AuthorizationService {
    *
    * @param user - User document or ID
    * @param scope - Permission scope ('global' or 'organization')
-   * @param tenantId - Optional tenant ID (defaults to user's tenantId)
+   * @param organizationId - Optional organization ID (defaults to user's organizationId)
    * @returns Promise<string[]> - Array of unique permissions
    */
   async getEffectivePermissions(
     user: UserDocument | string | MongooseSchema.Types.ObjectId,
     scope: PermissionScope = 'organization',
-    tenantId?: string | MongooseSchema.Types.ObjectId,
+    organizationId?: string | MongooseSchema.Types.ObjectId,
   ): Promise<string[]> {
     try {
       let userDoc: UserDocument | null;
@@ -292,14 +292,14 @@ export class AuthorizationService {
   }
 
   /**
-   * Check if a user is a tenant admin for a specific tenant
+   * Check if a user is an organization admin for a specific organization
    * @param userId - User ID to check
-   * @param tenantId - Optional tenant ID (defaults to user's tenantId)
-   * @returns Promise<boolean> - true if user is tenant admin
+   * @param organizationId - Optional organization ID (defaults to user's organizationId)
+   * @returns Promise<boolean> - true if user is organization admin
    */
-  async isTenantAdmin(
+  async isOrganizationAdmin(
     userId: string | MongooseSchema.Types.ObjectId,
-    tenantId?: string | MongooseSchema.Types.ObjectId,
+    organizationId?: string | MongooseSchema.Types.ObjectId,
   ): Promise<boolean> {
     try {
       const user = await this.userModel.findById(userId).exec();
