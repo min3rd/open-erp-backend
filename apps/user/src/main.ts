@@ -24,9 +24,6 @@ async function bootstrap() {
       queueOptions: {
         durable: true,
       },
-      // Enable pattern-based routing
-      noAck: false,
-      prefetchCount: 10,
     },
   });
 
