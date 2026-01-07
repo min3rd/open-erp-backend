@@ -50,10 +50,6 @@ describe('AuthService - Email Verification Tests', () => {
       providers: [
         AuthService,
         {
-          provide: 'RABBITMQ_CLIENT',
-          useValue: mockRabbitMQClient,
-        },
-        {
           provide: VerificationTokenRepository,
           useValue: mockVerificationTokenRepository,
         },

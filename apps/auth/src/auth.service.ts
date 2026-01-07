@@ -1,12 +1,11 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { firstValueFrom } from 'rxjs';
-import { RabbitMQClient, RABBITMQ_CLIENT, RABBITMQ_USER_CLIENT, RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
-import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import {
-  RABBITMQ_EXCHANGES,
-  RABBITMQ_ROUTING_KEYS,
-} from '@shared/config/rabbitmq.config';
+  RABBITMQ_USER_CLIENT,
+  RABBITMQ_NOTIFICATION_CLIENT,
+} from '@shared/rabbitmq';
+import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import {
   ErrorFactory,
   AUTH_EMAIL_ALREADY_REGISTERED,
@@ -57,9 +56,9 @@ export class AuthService {
   private readonly appUrl: string;
 
   constructor(
-    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
-    @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+    @Inject(RABBITMQ_NOTIFICATION_CLIENT)
+    private readonly notificationClient: ClientProxy,
     private readonly verificationTokenRepository: VerificationTokenRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly passwordResetTokenRepository: PasswordResetTokenRepository,
@@ -103,7 +102,7 @@ export class AuthService {
 
     // Check if user already exists via RPC to user service using NestJS ClientProxy
     const existingUser = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email }),
     );
 
     if (existingUser) {
@@ -146,7 +145,7 @@ export class AuthService {
             fullName,
             password: hashedPassword,
             status: 'pending',
-          })
+          }),
         );
 
         this.logger.log(`New user created: ${email}`);
@@ -176,11 +175,14 @@ export class AuthService {
     // Send verification email via RPC to notification service using NestJS ClientProxy
     try {
       await firstValueFrom(
-        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL, {
-          to: email,
-          fullName,
-          verificationCode,
-        })
+        this.notificationClient.send(
+          RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL,
+          {
+            to: email,
+            fullName,
+            verificationCode,
+          },
+        ),
       );
     } catch (error) {
       this.logger.error(
@@ -225,10 +227,10 @@ export class AuthService {
 
     // Get user via RPC to user service (include password field) using NestJS ClientProxy
     const user = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { 
-        email, 
-        includePassword: true 
-      })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, {
+        email,
+        includePassword: true,
+      }),
     );
 
     // Check if user exists - use AUTH_INVALID_CREDENTIALS to prevent user enumeration
@@ -277,18 +279,17 @@ export class AuthService {
 
     // Update last login timestamp via RPC using NestJS ClientProxy
     await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.UPDATE_LAST_LOGIN, { 
-        userId: user.id.toString() 
-      })
+      this.userClient.send(RPC_METHODS.USER.UPDATE_LAST_LOGIN, {
+        userId: user.id.toString(),
+      }),
     );
 
     // Publish user login event using NestJS ClientProxy
     this.userClient.emit(EVENT_NAMES.AUTH.USER_LOGIN, {
       userId: user.id.toString(),
-        email: user.email,
-        timestamp: new Date(),
-      },
-    );
+      email: user.email,
+      timestamp: new Date(),
+    });
 
     // Log structured event
     this.logger.log({
@@ -314,7 +315,7 @@ export class AuthService {
 
     // Get user via RPC to user service
     const user = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email }),
     );
 
     // Check if user exists
@@ -367,7 +368,7 @@ export class AuthService {
         email,
         status: 'active',
         verifiedAt: new Date(),
-      })
+      }),
     );
     this.logger.log(`User verified: ${JSON.stringify(user)}`);
     // Publish user.verified event using NestJS ClientProxy
@@ -400,7 +401,7 @@ export class AuthService {
 
     // Get user via RPC to user service
     const user = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email }),
     );
 
     // Soft response for security - don't reveal if user exists
@@ -458,11 +459,14 @@ export class AuthService {
     // Send verification email via RPC to notification service
     try {
       await firstValueFrom(
-        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL, {
-          to: email,
-          fullName: user.fullName || user.username,
-          verificationCode,
-        }),
+        this.notificationClient.send(
+          RPC_METHODS.NOTIFICATION.SEND_VERIFICATION_EMAIL,
+          {
+            to: email,
+            fullName: user.fullName || user.username,
+            verificationCode,
+          },
+        ),
       );
     } catch (error) {
       this.logger.error(
@@ -495,7 +499,7 @@ export class AuthService {
 
     // Get user via RPC to user service
     const user = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email }),
     );
 
     // Always return success to prevent user enumeration
@@ -550,12 +554,15 @@ export class AuthService {
     // Send password reset email via RPC to notification service
     try {
       await firstValueFrom(
-        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL, {
-          to: email,
-          fullName: user.fullName || user.username,
-          resetLink,
-        },
-      ));
+        this.notificationClient.send(
+          RPC_METHODS.NOTIFICATION.SEND_PASSWORD_RESET_EMAIL,
+          {
+            to: email,
+            fullName: user.fullName || user.username,
+            resetLink,
+          },
+        ),
+      );
     } catch (error) {
       this.logger.error(
         `Failed to send password reset email: ${error.message}`,
@@ -650,7 +657,7 @@ export class AuthService {
 
     // Get user via RPC
     const user = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_EMAIL, { email }),
     );
 
     if (!user) {
@@ -668,7 +675,7 @@ export class AuthService {
       this.userClient.send(RPC_METHODS.USER.UPDATE_USER_PASSWORD, {
         email,
         password: hashedPassword,
-      })
+      }),
     );
 
     // Mark token as used
@@ -679,11 +686,14 @@ export class AuthService {
     // Send password changed notification email
     try {
       await firstValueFrom(
-        this.notificationClient.send(RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL, {
-          to: email,
-          fullName: user.fullName || user.username,
-          timestamp: new Date().toISOString(),
-        })
+        this.notificationClient.send(
+          RPC_METHODS.NOTIFICATION.SEND_PASSWORD_CHANGED_EMAIL,
+          {
+            to: email,
+            fullName: user.fullName || user.username,
+            timestamp: new Date().toISOString(),
+          },
+        ),
       );
     } catch (error) {
       this.logger.error(
@@ -701,7 +711,9 @@ export class AuthService {
         timestamp: new Date(),
       });
     } catch (error) {
-      this.logger.warn(`Failed to emit password changed event: ${error.message}`);
+      this.logger.warn(
+        `Failed to emit password changed event: ${error.message}`,
+      );
     }
 
     // Log structured event
@@ -722,7 +734,7 @@ export class AuthService {
   async getMe(userId: string) {
     // Get user via RPC to user service
     const user = await firstValueFrom(
-      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_ID, { userId })
+      this.userClient.send(RPC_METHODS.USER.FIND_USER_BY_ID, { userId }),
     );
 
     if (!user) {

@@ -27,10 +27,6 @@ describe('UserService - RPC Handler Tests', () => {
       providers: [
         UserService,
         {
-          provide: 'RABBITMQ_CLIENT',
-          useValue: mockRabbitMQClient,
-        },
-        {
           provide: UserRepository,
           useValue: mockUserRepository,
         },

@@ -90,7 +90,7 @@ export const Permissions = (
   const scope = options?.scope || 'tenant';
   const mode = options?.mode || 'all';
 
-  return (target: any, key?: string, descriptor?: PropertyDescriptor) => {
+  return (target: any, key: string, descriptor: PropertyDescriptor) => {
     SetMetadata(REQUIRED_PERMISSIONS_KEY, permissionArray)(
       target,
       key,

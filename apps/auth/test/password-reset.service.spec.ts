@@ -52,10 +52,6 @@ describe('AuthService - Password Reset Tests', () => {
       providers: [
         AuthService,
         {
-          provide: 'RABBITMQ_CLIENT',
-          useValue: mockRabbitMQClient,
-        },
-        {
           provide: VerificationTokenRepository,
           useValue: mockVerificationTokenRepository,
         },

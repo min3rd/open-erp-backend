@@ -1,11 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { RabbitMQClient, RABBITMQ_CLIENT, RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
+import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
-import {
-  RABBITMQ_EXCHANGES,
-  RABBITMQ_ROUTING_KEYS,
-} from '@shared/config/rabbitmq.config';
 import { EVENT_NAMES, RPC_METHODS } from '@shared/constants/message.constants';
 import { EmailService } from './email.service';
 
@@ -14,7 +10,6 @@ export class NotificationService {
   private readonly logger = new Logger(NotificationService.name);
 
   constructor(
-    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
     @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
     private readonly emailService: EmailService,
   ) {}

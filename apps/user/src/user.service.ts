@@ -1,11 +1,7 @@
 import { Injectable, Inject, Logger } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
-import { RabbitMQClient, RABBITMQ_CLIENT, RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
+import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 import { EventMessage, RPCMessage } from '@shared/types/rabbitmq.types';
-import {
-  RABBITMQ_EXCHANGES,
-  RABBITMQ_ROUTING_KEYS,
-} from '@shared/config/rabbitmq.config';
 import { EVENT_NAMES, RPC_METHODS } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
 
@@ -14,8 +10,8 @@ export class UserService {
   private readonly logger = new Logger(UserService.name);
 
   constructor(
-    @Inject(RABBITMQ_CLIENT) private readonly rabbitMQClient: RabbitMQClient,
-    @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+    @Inject(RABBITMQ_NOTIFICATION_CLIENT)
+    private readonly notificationClient: ClientProxy,
     private readonly userRepository: UserRepository,
   ) {}
 
@@ -81,7 +77,10 @@ export class UserService {
 
       // Publish user updated event
       try {
-        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, { userId: id, changes: data });
+        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+          userId: id,
+          changes: data,
+        });
       } catch (error) {
         this.logger.warn(`Failed to emit user updated event: ${error.message}`);
       }
@@ -183,7 +182,9 @@ export class UserService {
           try {
             this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
           } catch (error) {
-            this.logger.warn(`Failed to emit user created event: ${error.message}`);
+            this.logger.warn(
+              `Failed to emit user created event: ${error.message}`,
+            );
           }
           return user;
         } catch (error) {
@@ -221,7 +222,9 @@ export class UserService {
               verifiedAt,
             });
           } catch (error) {
-            this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+            this.logger.warn(
+              `Failed to emit user updated event: ${error.message}`,
+            );
           }
 
           return updatedUser;
@@ -270,7 +273,9 @@ export class UserService {
               passwordChanged: true,
             });
           } catch (error) {
-            this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+            this.logger.warn(
+              `Failed to emit user updated event: ${error.message}`,
+            );
           }
 
           return updatedUser;

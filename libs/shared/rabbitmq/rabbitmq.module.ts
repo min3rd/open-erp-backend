@@ -2,8 +2,17 @@ import { DynamicModule, Module, Global } from '@nestjs/common';
 import { RabbitMQClient } from './rabbitmq.client';
 import { RabbitMQConfig } from '../types/rabbitmq.types';
 
+/**
+ * @deprecated Use RabbitMQClientModule instead for NestJS ClientProxy instances
+ */
 export const RABBITMQ_CLIENT = 'RABBITMQ_CLIENT';
 
+/**
+ * RabbitMQModule provides a singleton RabbitMQClient instance
+ * for sending messages to RabbitMQ.
+ *
+ * @deprecated Use RabbitMQClientModule instead for NestJS ClientProxy instances
+ */
 @Global()
 @Module({})
 export class RabbitMQModule {

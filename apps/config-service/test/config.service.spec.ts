@@ -29,10 +29,6 @@ describe('ConfigService', () => {
           provide: ConfigRepository,
           useValue: mockConfigRepository,
         },
-        {
-          provide: 'RABBITMQ_CLIENT',
-          useValue: mockRabbitMQClient,
-        },
       ],
     }).compile();
 

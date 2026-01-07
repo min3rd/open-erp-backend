@@ -26,10 +26,6 @@ describe('UserRpcController', () => {
       controllers: [UserRpcController],
       providers: [
         {
-          provide: 'RABBITMQ_CLIENT',
-          useValue: mockRabbitMQClient,
-        },
-        {
           provide: UserRepository,
           useValue: mockUserRepository,
         },

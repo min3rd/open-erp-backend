@@ -47,10 +47,6 @@ describe('AuthService - GetMe Integration Tests', () => {
       providers: [
         AuthService,
         {
-          provide: 'RABBITMQ_CLIENT',
-          useValue: mockRabbitMQClient,
-        },
-        {
           provide: VerificationTokenRepository,
           useValue: mockVerificationTokenRepository,
         },
