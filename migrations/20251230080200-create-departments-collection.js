@@ -10,11 +10,11 @@ module.exports = {
       validator: {
         $jsonSchema: {
           bsonType: 'object',
-          required: ['tenantId', 'name', 'code', 'status'],
+          required: ['organizationId', 'name', 'code', 'status'],
           properties: {
-            tenantId: {
+            organizationId: {
               bsonType: 'objectId',
-              description: 'Tenant ID is required',
+              description: 'Organization ID is required',
             },
             name: {
               bsonType: 'string',
@@ -67,15 +67,15 @@ module.exports = {
     });
 
     // Create indexes
-    // Unique index for code within tenant
+    // Unique index for code within organization
     await db.collection('departments').createIndex(
-      { tenantId: 1, code: 1 },
-      { unique: true, name: 'department_tenant_code' }
+      { organizationId: 1, code: 1 },
+      { unique: true, name: 'department_organization_code' }
     );
 
-    await db.collection('departments').createIndex({ tenantId: 1, name: 1 });
-    await db.collection('departments').createIndex({ tenantId: 1, status: 1 });
-    await db.collection('departments').createIndex({ tenantId: 1, parentId: 1 });
+    await db.collection('departments').createIndex({ organizationId: 1, name: 1 });
+    await db.collection('departments').createIndex({ organizationId: 1, status: 1 });
+    await db.collection('departments').createIndex({ organizationId: 1, parentId: 1 });
 
     // Text index for search
     await db.collection('departments').createIndex(
