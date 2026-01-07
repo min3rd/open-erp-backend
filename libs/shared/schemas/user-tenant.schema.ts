@@ -32,7 +32,7 @@ export class UserTenant extends Document {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Organization',
+    ref: 'Tenant',
     required: true,
     index: true,
   })
@@ -119,8 +119,11 @@ UserTenantSchema.index({ tenantId: 1, userId: 1, status: 1 });
 // TTL index for soft-deleted memberships
 UserTenantSchema.index(
   { deletedAt: 1 },
-  { expireAfterSeconds: 7776000 },
-); // 90 days
+  {
+    expireAfterSeconds: 7776000, // 90 days
+    partialFilterExpression: { deletedAt: { $ne: null } },
+  },
+);
 
 // Middleware to exclude soft-deleted documents by default
 UserTenantSchema.pre(/^find/, function (this: any) {
