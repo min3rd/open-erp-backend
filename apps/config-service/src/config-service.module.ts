@@ -3,7 +3,6 @@ import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from '@shared/database';
-import { RabbitMQModule } from '@shared/rabbitmq';
 import { RabbitMQClientModule } from '@shared/rabbitmq/rabbitmq-client.module';
 import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
 import { AuthorizationService } from '@shared/authz/authorization.service';
@@ -20,7 +19,6 @@ import { Config, ConfigSchema } from './schemas/config.schema';
   imports: [
     NestConfigModule.forRoot(),
     DatabaseModule,
-    RabbitMQModule.forRoot(getRabbitMQConfig()),
     RabbitMQClientModule.forRoot(),
     MongooseModule.forFeature([
       { name: Config.name, schema: ConfigSchema },

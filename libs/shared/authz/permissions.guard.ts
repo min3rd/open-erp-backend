@@ -29,7 +29,7 @@ import { getOrCreateCorrelationId } from '../errors/correlation-id.util';
  */
 export interface UserContext {
   userId: string;
-  tenantId?: string;
+  organizationId?: string;
   roles?: string[];
   [key: string]: any;
 }
@@ -105,7 +105,7 @@ export class PermissionsGuard implements CanActivate {
           route,
           reason: 'User not authenticated',
           requiredPermissions: [],
-          scope: 'tenant',
+          scope: 'organization',
         });
         AuthzMetrics.incrementDeny();
         throw new UnauthorizedException({
@@ -134,7 +134,7 @@ export class PermissionsGuard implements CanActivate {
             route,
             reason: 'User does not have required role',
             requiredRoles,
-            scope: 'tenant',
+            scope: 'organization',
           });
           AuthzMetrics.incrementDeny();
           AuthzMetrics.incrementMissingPermissions();
@@ -172,7 +172,7 @@ export class PermissionsGuard implements CanActivate {
         this.reflector.getAllAndOverride<PermissionScope>(
           PERMISSION_SCOPE_KEY,
           [context.getHandler(), context.getClass()],
-        ) || 'tenant';
+        ) || 'organization';
 
       const mode =
         this.reflector.getAllAndOverride<PermissionMode>(PERMISSION_MODE_KEY, [
@@ -180,42 +180,42 @@ export class PermissionsGuard implements CanActivate {
           context.getClass(),
         ]) || 'all';
 
-      // Get tenantId from multiple sources (priority order):
+      // Get organizationId from multiple sources (priority order):
       // 1. JWT claim (most trusted)
       // 2. Route param
       // 3. Request header
-      const tenantId =
-        user.tenantId ||
-        request.params?.tenantId ||
-        request.headers['x-tenant-id'];
+      const organizationId =
+        user.organizationId ||
+        request.params?.organizationId ||
+        request.headers['x-organization-id'];
 
       // For tenant scope, validate tenant context
-      if (scope === 'tenant') {
-        if (!tenantId) {
+      if (scope === 'organization') {
+        if (!organizationId) {
           this.logDenyDecision({
             correlationId,
             userId: user.userId,
             route,
-            reason: 'Tenant ID missing for tenant-scoped permission check',
+            reason: 'Organization ID missing for organization-scoped permission check',
             requiredPermissions,
             scope,
           });
           AuthzMetrics.incrementDeny();
           throw new ForbiddenException({
             errorCode: AUTH_FORBIDDEN_CROSS_TENANT,
-            message: 'Tenant context required for this operation',
+            message: 'Organization context required for this operation',
             correlationId,
           });
         }
 
-        // Validate tenant consistency if tenantId is in URL/header
+        // Validate organization consistency if organizationId is in URL/header
         if (
-          user.tenantId &&
-          (request.params?.tenantId || request.headers['x-tenant-id'])
+          user.organizationId &&
+          (request.params?.organizationId || request.headers['x-organization-id'])
         ) {
-          const requestedTenantId =
-            request.params?.tenantId || request.headers['x-tenant-id'];
-          if (user.tenantId !== requestedTenantId) {
+          const requestedOrganizationId =
+            request.params?.organizationId || request.headers['x-organization-id'];
+          if (user.organizationId !== requestedOrganizationId) {
             // Allow if user is system admin (cross-tenant access)
             const isSystemAdmin = await this.authorizationService.isSystemAdmin(
               user.userId,
@@ -225,11 +225,11 @@ export class PermissionsGuard implements CanActivate {
                 correlationId,
                 userId: user.userId,
                 route,
-                reason: 'Cross-tenant access denied',
+                reason: 'Cross-organization access denied',
                 requiredPermissions,
                 scope,
-                userTenantId: user.tenantId,
-                requestedTenantId,
+                userOrganizationId: user.organizationId,
+                requestedOrganizationId,
               });
               AuthzMetrics.incrementDeny();
               throw new ForbiddenException({
@@ -250,13 +250,13 @@ export class PermissionsGuard implements CanActivate {
         hasPermission = await this.authorizationService.hasAnyPermission(
           user.userId,
           requiredPermissions,
-          { scope, tenantId },
+          { scope, organizationId },
         );
       } else {
         hasPermission = await this.authorizationService.hasAllPermissions(
           user.userId,
           requiredPermissions,
-          { scope, tenantId },
+          { scope, organizationId },
         );
       }
 
@@ -269,7 +269,7 @@ export class PermissionsGuard implements CanActivate {
           requiredPermissions,
           scope,
           mode,
-          tenantId,
+          organizationId,
         });
         AuthzMetrics.incrementDeny();
         AuthzMetrics.incrementMissingPermissions();
@@ -327,9 +327,9 @@ export class PermissionsGuard implements CanActivate {
     requiredRoles?: string[];
     scope?: PermissionScope;
     mode?: PermissionMode;
-    tenantId?: string;
-    userTenantId?: string;
-    requestedTenantId?: string;
+    organizationId?: string;
+    userOrganizationId?: string;
+    requestedOrganizationId?: string;
   }) {
     this.logger.warn({
       message: 'Authorization denied',
