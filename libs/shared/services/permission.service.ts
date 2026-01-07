@@ -116,7 +116,7 @@ export class PermissionService {
    * Aggregates permissions from:
    * 1. Special permissions directly assigned to user
    * 2. Global roles assigned to user
-   * 3. Tenant roles assigned to user (where role.tenantId matches user.tenantId)
+   * 3. Tenant roles assigned to user (where role.organizationId matches user.organizationId)
    *
    * @param user - User document or ID
    * @returns Promise<string[]> - Array of unique permissions
@@ -170,10 +170,10 @@ export class PermissionService {
           // Global roles apply across all tenants
           role.permissions.forEach((p) => permissions.add(p));
         } else if (
-          role.scope === 'tenant' &&
-          role.tenantId &&
-          userDoc.tenantId &&
-          role.tenantId.toString() === userDoc.tenantId.toString()
+          role.scope === 'organization' &&
+          role.organizationId &&
+          userDoc.organizationId &&
+          role.organizationId.toString() === userDoc.organizationId.toString()
         ) {
           // Tenant roles only apply if they match user's tenant
           role.permissions.forEach((p) => permissions.add(p));

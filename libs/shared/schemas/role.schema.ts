@@ -40,7 +40,7 @@ export class Role extends Document {
 
   @Prop({
     type: String,
-    enum: ['global', 'tenant'],
+    enum: ['global', 'organization'],
     required: true,
     index: true,
   })
@@ -48,11 +48,11 @@ export class Role extends Document {
 
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Tenant',
+    ref: 'Organization',
     default: null,
     index: true,
   })
-  tenantId?: MongooseSchema.Types.ObjectId;
+  organizationId?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: [String],

@@ -14,7 +14,7 @@ export const PERMISSION_MODE_KEY = 'permissionMode';
  * - global: Check permissions across all tenants (for system-wide operations)
  * - tenant: Check permissions within the user's tenant context (default)
  */
-export type PermissionScope = 'global' | 'tenant';
+export type PermissionScope = 'global' | 'organization';
 
 /**
  * Permission check mode determines how multiple permissions are evaluated
