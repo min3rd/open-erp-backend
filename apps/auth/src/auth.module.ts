@@ -39,7 +39,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute
-        limit: 5, // 5 requests per minute
+        limit: 100, // 5 requests per minute
       },
     ]),
   ],
