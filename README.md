@@ -132,6 +132,91 @@ npm run test                   # Run tests
 ✅ OpenAPI/Swagger documentation for all services
 ✅ Centralized API documentation aggregator
 ✅ Comprehensive documentation
+✅ User management APIs (global & tenant-scoped)
+✅ Multi-tenant membership management
+✅ Role-based access control per tenant
+✅ Rate limiting on invite endpoints
+
+## 📡 User Management APIs
+
+### Global User Operations
+
+```bash
+# Create a new user
+POST /api/users
+{
+  "username": "john_doe",
+  "email": "john@example.com",
+  "displayName": "John Doe",
+  "password": "secure123"
+}
+
+# Get user by ID
+GET /api/users/:id?include=memberships
+
+# Update user profile
+PATCH /api/users/:id
+{
+  "displayName": "John Smith",
+  "phone": "+1234567890"
+}
+
+# Delete user (soft delete)
+DELETE /api/users/:id
+
+# List/search users
+GET /api/users?q=john&page=1&size=10&scope=global
+GET /api/users?email=john@example.com
+GET /api/users?scope=tenant&tenantId=org123
+```
+
+### Tenant-Scoped User Management
+
+```bash
+# Invite/add user to tenant
+POST /api/tenants/:tenantId/users
+{
+  "identifier": "john@example.com",  # email or username
+  "role": "admin",                   # owner, admin, member, billing
+  "sendInviteEmail": true
+}
+
+# List tenant members
+GET /api/tenants/:tenantId/users?role=admin&status=active&page=1&size=10
+
+# Get membership details
+GET /api/tenants/:tenantId/users/:userId
+
+# Update membership
+PATCH /api/tenants/:tenantId/users/:userId
+{
+  "role": "member",
+  "status": "active"
+}
+
+# Remove user from tenant
+DELETE /api/tenants/:tenantId/users/:userId
+```
+
+### RPC Methods (Internal Services)
+
+```typescript
+// User lookup methods
+RPC_METHODS.USER.GET_USER
+RPC_METHODS.USER.FIND_USER_BY_EMAIL
+RPC_METHODS.USER.FIND_USER_BY_USERNAME
+RPC_METHODS.USER.FIND_USER_BY_ID
+
+// User management methods
+RPC_METHODS.USER.CREATE_USER
+RPC_METHODS.USER.UPDATE_USER
+RPC_METHODS.USER.UPDATE_USER_STATUS
+
+// Tenant membership methods
+RPC_METHODS.USER.GET_USER_TENANTS
+RPC_METHODS.USER.ADD_USER_TO_TENANT
+RPC_METHODS.USER.REMOVE_USER_FROM_TENANT
+```
 
 ## 🎯 Acceptance Criteria
 

@@ -258,9 +258,9 @@ export class UserRepository {
         query.$or = [
           { username: { $regex: searchQuery, $options: 'i' } },
           { email: { $regex: searchQuery, $options: 'i' } },
-          { displayName: { $regex: searchQuery, $options: 'i' } },
           { firstName: { $regex: searchQuery, $options: 'i' } },
           { lastName: { $regex: searchQuery, $options: 'i' } },
+          { fullName: { $regex: searchQuery, $options: 'i' } },
         ];
       }
 

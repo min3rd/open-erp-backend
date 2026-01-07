@@ -40,11 +40,10 @@ export class UserManagementService {
       const user = await this.userRepository.create(createData);
       
       // Update additional fields if provided
-      if (dto.displayName || dto.phone || dto.avatarUrl || dto.metadata) {
+      // Note: avatarUrl is used for now. Phone field will be added to schema in future update
+      if (dto.avatarUrl) {
         return await this.userRepository.update(user._id.toString(), {
-          ...(dto.displayName && { firstName: dto.displayName }), // Store displayName in firstName for now
-          ...(dto.phone && { avatarUrl: dto.phone }), // Store phone in avatarUrl for now (needs schema update)
-          ...(dto.avatarUrl && { avatarUrl: dto.avatarUrl }),
+          avatarUrl: dto.avatarUrl,
         }) || user;
       }
 
@@ -104,9 +103,9 @@ export class UserManagementService {
         ...(dto.email && { email: dto.email }),
         ...(dto.firstName && { firstName: dto.firstName }),
         ...(dto.lastName && { lastName: dto.lastName }),
-        ...(dto.phone && { avatarUrl: dto.phone }), // Temporary until schema updated
         ...(dto.avatarUrl && { avatarUrl: dto.avatarUrl }),
       };
+      // Note: phone and displayName from DTO are not persisted as they don't exist in schema yet
 
       const updatedUser = await this.userRepository.update(id, updateData);
       if (!updatedUser) {
