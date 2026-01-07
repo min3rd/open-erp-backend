@@ -89,6 +89,10 @@ export class CreateOrganizationDto {
   @IsString()
   @IsOptional()
   website?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  businessActivities?: string[];
 }
 
 export class UpdateOrganizationDto {
@@ -153,4 +157,8 @@ export class UpdateOrganizationDto {
   @IsString()
   @IsOptional()
   website?: string;
+
+  @ApiProperty({ required: false })
+  @IsOptional()
+  businessActivities?: string[];
 }
