@@ -11,6 +11,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
+import { Throttle } from '@nestjs/throttler';
 import { TenantMembershipService } from '../services/tenant-membership.service';
 import { 
   InviteMemberDto, 
@@ -25,6 +26,7 @@ export class TenantMembershipController {
   constructor(private readonly membershipService: TenantMembershipService) {}
 
   @Post(':tenantId/users')
+  @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 invites per minute per IP
   @ApiOperation({ summary: 'Invite/create membership for user in tenant' })
   @ApiParam({ name: 'tenantId', description: 'Tenant/Organization ID' })
   @ApiResponse({ 
@@ -33,6 +35,7 @@ export class TenantMembershipController {
     type: MembershipResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Invalid input or user already member' })
+  @ApiResponse({ status: 429, description: 'Too many requests' })
   async inviteMember(
     @Param('tenantId') tenantId: string,
     @Body() inviteDto: InviteMemberDto,
