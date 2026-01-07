@@ -5,10 +5,10 @@ export type RoleDocument = HydratedDocument<Role>;
 
 /**
  * Role scope determines where the role can be applied
- * - global: Can be applied across all tenants (e.g., system admin)
- * - tenant: Only applicable within a specific tenant
+ * - global: Can be applied across all organizations (e.g., system admin)
+ * - organization: Only applicable within a specific organization
  */
-export type RoleScope = 'global' | 'tenant';
+export type RoleScope = 'global' | 'organization';
 
 @Schema({
   timestamps: true,
@@ -101,9 +101,9 @@ export const RoleSchema = SchemaFactory.createForClass(Role);
 
 // Compound indexes
 // Global roles must have unique codes
-// Tenant roles must have unique codes within their tenant
+// Organization roles must have unique codes within their organization
 RoleSchema.index(
-  { code: 1, scope: 1, tenantId: 1 },
+  { code: 1, scope: 1, organizationId: 1 },
   {
     unique: true,
     partialFilterExpression: { deletedAt: null },
@@ -111,8 +111,8 @@ RoleSchema.index(
 );
 
 RoleSchema.index({ scope: 1, status: 1 });
-RoleSchema.index({ tenantId: 1, status: 1 });
-RoleSchema.index({ tenantId: 1, scope: 1 });
+RoleSchema.index({ organizationId: 1, status: 1 });
+RoleSchema.index({ organizationId: 1, scope: 1 });
 
 // Text index for search
 RoleSchema.index({
@@ -124,12 +124,12 @@ RoleSchema.index({
 // TTL index for soft-deleted roles (auto-delete after 90 days)
 RoleSchema.index({ deletedAt: 1 }, { expireAfterSeconds: 7776000 });
 
-// Validation: global roles cannot have tenantId
+// Validation: global roles cannot have organizationId
 RoleSchema.pre('save', function (next: any) {
-  if (this.scope === 'global' && this.tenantId) {
-    return next(new Error('Global roles cannot have a tenantId'));
-  } else if (this.scope === 'tenant' && !this.tenantId) {
-    return next(new Error('Tenant roles must have a tenantId'));
+  if (this.scope === 'global' && this.organizationId) {
+    return next(new Error('Global roles cannot have an organizationId'));
+  } else if (this.scope === 'organization' && !this.organizationId) {
+    return next(new Error('Organization roles must have an organizationId'));
   }
   return next();
 });
@@ -154,8 +154,8 @@ RoleSchema.virtual('isGlobal').get(function () {
   return this.scope === 'global';
 });
 
-RoleSchema.virtual('isTenant').get(function () {
-  return this.scope === 'tenant';
+RoleSchema.virtual('isOrganization').get(function () {
+  return this.scope === 'organization';
 });
 
 // Ensure virtuals are included in JSON output

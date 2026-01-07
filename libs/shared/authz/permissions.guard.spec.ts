@@ -115,7 +115,7 @@ describe('PermissionsGuard', () => {
 
   describe('Role-based authorization', () => {
     it('should allow access when user has required role', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(['SYSTEM_ADMIN']); // requiredRoles
@@ -132,7 +132,7 @@ describe('PermissionsGuard', () => {
     });
 
     it('should deny access when user lacks required role', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(['SYSTEM_ADMIN']); // requiredRoles
@@ -153,7 +153,7 @@ describe('PermissionsGuard', () => {
 
   describe('Permission-based authorization', () => {
     it('should allow access when no permissions are required', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -166,7 +166,7 @@ describe('PermissionsGuard', () => {
     });
 
     it('should check all required permissions by default', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -183,12 +183,12 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(
         'user123',
         ['order.create', 'order.update'],
-        { scope: 'tenant', tenantId: 'tenant123' },
+        { scope: 'tenant', organizationId: 'tenant123' },
       );
     });
 
     it('should check any permission when mode is "any"', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -205,12 +205,12 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAnyPermission).toHaveBeenCalledWith(
         'user123',
         ['order.delete', 'order.manage'],
-        { scope: 'tenant', tenantId: 'tenant123' },
+        { scope: 'tenant', organizationId: 'tenant123' },
       );
     });
 
     it('should deny access when user lacks required permissions', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -235,7 +235,7 @@ describe('PermissionsGuard', () => {
 
   describe('Scope handling', () => {
     it('should use global scope when specified', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -252,12 +252,12 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(
         'user123',
         ['system.admin'],
-        { scope: 'global', tenantId: 'tenant123' },
+        { scope: 'global', organizationId: 'tenant123' },
       );
     });
 
-    it('should deny tenant-scoped access when tenantId is missing', async () => {
-      const user: UserContext = { userId: 'user123' }; // No tenantId
+    it('should deny organization-scoped access when organizationId is missing', async () => {
+      const user: UserContext = { userId: 'user123' }; // No organizationId
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -279,10 +279,10 @@ describe('PermissionsGuard', () => {
 
   describe('Cross-tenant access validation', () => {
     it('should deny cross-tenant access for non-admin users', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
-      request.params = { tenantId: 'tenant456' }; // Different tenant
+      request.params = { organizationId: 'tenant456' }; // Different tenant
 
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
@@ -303,10 +303,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should allow cross-tenant access for system admins', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
-      request.params = { tenantId: 'tenant456' }; // Different tenant
+      request.params = { organizationId: 'tenant456' }; // Different tenant
 
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
@@ -323,11 +323,11 @@ describe('PermissionsGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should allow access when tenantId from JWT matches tenantId in URL', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+    it('should allow access when organizationId from JWT matches organizationId in URL', async () => {
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
-      request.params = { tenantId: 'tenant123' }; // Same tenant
+      request.params = { organizationId: 'tenant123' }; // Same tenant
 
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
@@ -343,12 +343,12 @@ describe('PermissionsGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should get tenantId from x-tenant-id header when not in JWT', async () => {
-      const user: UserContext = { userId: 'user123' }; // No tenantId in JWT
+    it('should get organizationId from x-tenant-id header when not in JWT', async () => {
+      const user: UserContext = { userId: 'user123' }; // No organizationId in JWT
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
       request.headers = { 'x-tenant-id': 'tenant123' };
-      request.params = {}; // No tenantId in params
+      request.params = {}; // No organizationId in params
 
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
@@ -365,14 +365,14 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(
         'user123',
         ['order.create'],
-        { scope: 'tenant', tenantId: 'tenant123' },
+        { scope: 'tenant', organizationId: 'tenant123' },
       );
     });
   });
 
   describe('Error handling', () => {
     it('should fail closed on unexpected errors', async () => {
-      const user: UserContext = { userId: 'user123', tenantId: 'tenant123' };
+      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles

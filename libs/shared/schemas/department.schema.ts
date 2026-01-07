@@ -11,11 +11,11 @@ export type DepartmentDocument = HydratedDocument<Department>;
 export class Department extends Document {
   @Prop({
     type: MongooseSchema.Types.ObjectId,
-    ref: 'Tenant',
+    ref: 'Organization',
     required: true,
     index: true,
   })
-  tenantId: MongooseSchema.Types.ObjectId;
+  organizationId: MongooseSchema.Types.ObjectId;
 
   @Prop({
     required: true,
@@ -78,13 +78,13 @@ export class Department extends Document {
 
 export const DepartmentSchema = SchemaFactory.createForClass(Department);
 
-// Compound indexes for tenant isolation and uniqueness
-DepartmentSchema.index({ tenantId: 1, code: 1 }, { unique: true });
-DepartmentSchema.index({ tenantId: 1, name: 1 });
-DepartmentSchema.index({ tenantId: 1, status: 1 });
-DepartmentSchema.index({ tenantId: 1, parentId: 1 });
+// Compound indexes for organization isolation and uniqueness
+DepartmentSchema.index({ organizationId: 1, code: 1 }, { unique: true });
+DepartmentSchema.index({ organizationId: 1, name: 1 });
+DepartmentSchema.index({ organizationId: 1, status: 1 });
+DepartmentSchema.index({ organizationId: 1, parentId: 1 });
 
-// Text index for search within tenant
+// Text index for search within organization
 DepartmentSchema.index({
   name: 'text',
   description: 'text',

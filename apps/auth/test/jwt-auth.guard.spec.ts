@@ -208,7 +208,7 @@ describe('JwtAuthGuard', () => {
           email,
           type: 'access',
           roles: ['admin'],
-          tenantId: 'tenant-1',
+          organizationId: 'organization-1',
         },
         testSecret,
         { expiresIn: '1h' },
