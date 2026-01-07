@@ -12,32 +12,32 @@ import {
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
-import { TenantMembershipService } from '../services/tenant-membership.service';
+import { OrganizationMembershipService } from '../services/organization-membership.service';
 import { 
   InviteMemberDto, 
   UpdateMembershipDto, 
-  ListTenantMembersQueryDto,
+  ListOrganizationMembersQueryDto,
   MembershipResponseDto,
 } from '../dto/membership.dto';
 
-@ApiTags('tenants')
-@Controller('api/tenants')
-export class TenantMembershipController {
-  constructor(private readonly membershipService: TenantMembershipService) {}
+@ApiTags('organizations')
+@Controller('api/organizations')
+export class OrganizationMembershipController {
+  constructor(private readonly membershipService: OrganizationMembershipService) {}
 
-  @Post(':tenantId/users')
+  @Post(':organizationId/users')
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 invites per minute per IP
-  @ApiOperation({ summary: 'Invite/create membership for user in tenant' })
-  @ApiParam({ name: 'tenantId', description: 'Tenant/Organization ID' })
+  @ApiOperation({ summary: 'Invite/create membership for user in organization' })
+  @ApiParam({ name: 'organizationId', description: 'Organization ID' })
   @ApiResponse({ 
     status: 201, 
-    description: 'User invited/added to tenant',
+    description: 'User invited/added to organization',
     type: MembershipResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Invalid input or user already member' })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async inviteMember(
-    @Param('tenantId') tenantId: string,
+    @Param('organizationId') organizationId: string,
     @Body() inviteDto: InviteMemberDto,
     // TODO: Extract from JWT/Auth context
     // @CurrentUser() currentUser: any,
@@ -46,7 +46,7 @@ export class TenantMembershipController {
     const invitedById = 'system';
     
     const membership = await this.membershipService.inviteMember(
-      tenantId,
+      organizationId,
       inviteDto,
       invitedById,
     );
@@ -57,15 +57,15 @@ export class TenantMembershipController {
     };
   }
 
-  @Get(':tenantId/users')
-  @ApiOperation({ summary: 'List users in tenant' })
-  @ApiParam({ name: 'tenantId', description: 'Tenant/Organization ID' })
-  @ApiResponse({ status: 200, description: 'Return list of tenant members' })
-  async listTenantMembers(
-    @Param('tenantId') tenantId: string,
-    @Query() query: ListTenantMembersQueryDto,
+  @Get(':organizationId/users')
+  @ApiOperation({ summary: 'List users in organization' })
+  @ApiParam({ name: 'organizationId', description: 'Organization ID' })
+  @ApiResponse({ status: 200, description: 'Return list of organization members' })
+  async listOrganizationMembers(
+    @Param('organizationId') organizationId: string,
+    @Query() query: ListOrganizationMembersQueryDto,
   ) {
-    const result = await this.membershipService.listTenantMembers(tenantId, query);
+    const result = await this.membershipService.listOrganizationMembers(organizationId, query);
     return {
       success: true,
       data: result.members,
@@ -77,9 +77,9 @@ export class TenantMembershipController {
     };
   }
 
-  @Get(':tenantId/users/:userId')
-  @ApiOperation({ summary: 'Get membership details for a user in tenant' })
-  @ApiParam({ name: 'tenantId', description: 'Tenant/Organization ID' })
+  @Get(':organizationId/users/:userId')
+  @ApiOperation({ summary: 'Get membership details for a user in organization' })
+  @ApiParam({ name: 'organizationId', description: 'Organization ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiResponse({ 
     status: 200, 
@@ -88,19 +88,19 @@ export class TenantMembershipController {
   })
   @ApiResponse({ status: 404, description: 'Membership not found' })
   async getMembershipDetails(
-    @Param('tenantId') tenantId: string,
+    @Param('organizationId') organizationId: string,
     @Param('userId') userId: string,
   ) {
-    const membership = await this.membershipService.getMembershipDetails(tenantId, userId);
+    const membership = await this.membershipService.getMembershipDetails(organizationId, userId);
     return {
       success: true,
       data: membership,
     };
   }
 
-  @Patch(':tenantId/users/:userId')
+  @Patch(':organizationId/users/:userId')
   @ApiOperation({ summary: 'Update membership (role, status)' })
-  @ApiParam({ name: 'tenantId', description: 'Tenant/Organization ID' })
+  @ApiParam({ name: 'organizationId', description: 'Organization ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
   @ApiResponse({ 
     status: 200, 
@@ -110,7 +110,7 @@ export class TenantMembershipController {
   @ApiResponse({ status: 404, description: 'Membership not found' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
   async updateMembership(
-    @Param('tenantId') tenantId: string,
+    @Param('organizationId') organizationId: string,
     @Param('userId') userId: string,
     @Body() updateDto: UpdateMembershipDto,
     // TODO: Extract from JWT/Auth context
@@ -120,7 +120,7 @@ export class TenantMembershipController {
     const updatedById = 'system';
     
     const membership = await this.membershipService.updateMembership(
-      tenantId,
+      organizationId,
       userId,
       updateDto,
       updatedById,
@@ -132,16 +132,16 @@ export class TenantMembershipController {
     };
   }
 
-  @Delete(':tenantId/users/:userId')
+  @Delete(':organizationId/users/:userId')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Remove/unlink user from tenant' })
-  @ApiParam({ name: 'tenantId', description: 'Tenant/Organization ID' })
+  @ApiOperation({ summary: 'Remove/unlink user from organization' })
+  @ApiParam({ name: 'organizationId', description: 'Organization ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiResponse({ status: 200, description: 'User removed from tenant' })
+  @ApiResponse({ status: 200, description: 'User removed from organization' })
   @ApiResponse({ status: 404, description: 'Membership not found' })
   @ApiResponse({ status: 400, description: 'Cannot remove last owner' })
   async removeMember(
-    @Param('tenantId') tenantId: string,
+    @Param('organizationId') organizationId: string,
     @Param('userId') userId: string,
     // TODO: Extract from JWT/Auth context
     // @CurrentUser() currentUser: any,
@@ -149,11 +149,11 @@ export class TenantMembershipController {
     // Temporary: Use a hardcoded remover ID until auth is integrated
     const removedById = 'system';
     
-    await this.membershipService.removeMember(tenantId, userId, removedById);
+    await this.membershipService.removeMember(organizationId, userId, removedById);
     
     return {
       success: true,
-      message: 'User removed from tenant successfully',
+      message: 'User removed from organization successfully',
     };
   }
 }

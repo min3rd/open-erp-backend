@@ -4,10 +4,10 @@ import { HealthController } from './health.controller';
 import { UserRpcController } from './user-rpc.controller';
 import { UserEventController } from './user-event.controller';
 import { UserManagementController } from './controllers/user-management.controller';
-import { TenantMembershipController } from './controllers/tenant-membership.controller';
+import { OrganizationMembershipController } from './controllers/organization-membership.controller';
 import { UserService } from './user.service';
 import { UserManagementService } from './services/user-management.service';
-import { TenantMembershipService } from './services/tenant-membership.service';
+import { OrganizationMembershipService } from './services/organization-membership.service';
 import {
   RabbitMQClientModule,
 } from '@shared/rabbitmq';
@@ -18,7 +18,7 @@ import { APP_GUARD } from '@nestjs/core';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
 import { User, UserSchema, OrganizationMember, OrganizationMemberSchema } from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
-import { TenantMemberRepository } from './repositories/tenant-member.repository';
+import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 
 @Module({
   imports: [
@@ -47,14 +47,14 @@ import { TenantMemberRepository } from './repositories/tenant-member.repository'
     UserRpcController,
     UserEventController,
     UserManagementController,
-    TenantMembershipController,
+    OrganizationMembershipController,
   ],
   providers: [
     UserService,
     UserManagementService,
-    TenantMembershipService,
+    OrganizationMembershipService,
     UserRepository,
-    TenantMemberRepository,
+    OrganizationMemberRepository,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

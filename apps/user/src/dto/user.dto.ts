@@ -126,15 +126,15 @@ export class ListUsersQueryDto {
   @IsOptional()
   username?: string;
 
-  @ApiPropertyOptional({ description: 'Scope: global or tenant', enum: ['global', 'tenant'] })
+  @ApiPropertyOptional({ description: 'Scope: global or organization', enum: ['global', 'organization'] })
   @IsString()
   @IsOptional()
-  scope?: 'global' | 'tenant';
+  scope?: 'global' | 'organization';
 
-  @ApiPropertyOptional({ description: 'Tenant ID (required if scope=tenant)' })
+  @ApiPropertyOptional({ description: 'Organization ID (required if scope=organization)' })
   @IsString()
   @IsOptional()
-  tenantId?: string;
+  organizationId?: string;
 
   @ApiPropertyOptional({ description: 'Page number', default: 1, minimum: 1 })
   @IsOptional()

@@ -132,8 +132,8 @@ npm run test                   # Run tests
 ✅ OpenAPI/Swagger documentation for all services
 ✅ Centralized API documentation aggregator
 ✅ Comprehensive documentation
-✅ User management APIs (global & tenant-scoped)
-✅ Multi-tenant membership management
+✅ User management APIs (global & organization-scoped)
+✅ Multi-organization membership management
 ✅ Role-based access control per tenant
 ✅ Rate limiting on invite endpoints
 
@@ -167,14 +167,14 @@ DELETE /api/users/:id
 # List/search users
 GET /api/users?q=john&page=1&size=10&scope=global
 GET /api/users?email=john@example.com
-GET /api/users?scope=tenant&tenantId=org123
+GET /api/users?scope=tenant&organizationId=org123
 ```
 
 ### Tenant-Scoped User Management
 
 ```bash
 # Invite/add user to tenant
-POST /api/tenants/:tenantId/users
+POST /api/organizations/:organizationId/users
 {
   "identifier": "john@example.com",  # email or username
   "role": "admin",                   # owner, admin, member, billing
@@ -182,20 +182,20 @@ POST /api/tenants/:tenantId/users
 }
 
 # List tenant members
-GET /api/tenants/:tenantId/users?role=admin&status=active&page=1&size=10
+GET /api/organizations/:organizationId/users?role=admin&status=active&page=1&size=10
 
 # Get membership details
-GET /api/tenants/:tenantId/users/:userId
+GET /api/organizations/:organizationId/users/:userId
 
 # Update membership
-PATCH /api/tenants/:tenantId/users/:userId
+PATCH /api/organizations/:organizationId/users/:userId
 {
   "role": "member",
   "status": "active"
 }
 
 # Remove user from tenant
-DELETE /api/tenants/:tenantId/users/:userId
+DELETE /api/organizations/:organizationId/users/:userId
 ```
 
 ### RPC Methods (Internal Services)
@@ -212,7 +212,7 @@ RPC_METHODS.USER.CREATE_USER
 RPC_METHODS.USER.UPDATE_USER
 RPC_METHODS.USER.UPDATE_USER_STATUS
 
-// Tenant membership methods
+// Organization membership methods
 RPC_METHODS.USER.GET_USER_TENANTS
 RPC_METHODS.USER.ADD_USER_TO_TENANT
 RPC_METHODS.USER.REMOVE_USER_FROM_TENANT

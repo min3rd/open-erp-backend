@@ -2,12 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserManagementService } from '../../src/services/user-management.service';
 import { UserRepository } from '../../src/repositories/user.repository';
-import { TenantMemberRepository } from '../../src/repositories/tenant-member.repository';
+import { OrganizationMemberRepository } from '../../src/repositories/organization-member.repository';
 
 describe('UserManagementService', () => {
   let service: UserManagementService;
   let userRepository: jest.Mocked<UserRepository>;
-  let tenantMemberRepository: jest.Mocked<TenantMemberRepository>;
+  let organizationMemberRepository: jest.Mocked<OrganizationMemberRepository>;
 
   const mockUser = {
     _id: { toString: () => 'user123' },
@@ -28,9 +28,9 @@ describe('UserManagementService', () => {
       searchUsers: jest.fn(),
     };
 
-    const mockTenantMemberRepository = {
-      findUserTenants: jest.fn(),
-      listTenantMembers: jest.fn(),
+    const mockOrganizationMemberRepository = {
+      findUserOrganizations: jest.fn(),
+      listOrganizationMembers: jest.fn(),
     };
 
     const module: TestingModule = await Test.createTestingModule({
@@ -41,15 +41,15 @@ describe('UserManagementService', () => {
           useValue: mockUserRepository,
         },
         {
-          provide: TenantMemberRepository,
-          useValue: mockTenantMemberRepository,
+          provide: OrganizationMemberRepository,
+          useValue: mockOrganizationMemberRepository,
         },
       ],
     }).compile();
 
     service = module.get<UserManagementService>(UserManagementService);
     userRepository = module.get(UserRepository);
-    tenantMemberRepository = module.get(TenantMemberRepository);
+    organizationMemberRepository = module.get(OrganizationMemberRepository);
   });
 
   describe('createUser', () => {
@@ -110,21 +110,21 @@ describe('UserManagementService', () => {
 
       expect(result).toEqual(mockUser);
       expect(userRepository.findById).toHaveBeenCalledWith('user123');
-      expect(tenantMemberRepository.findUserTenants).not.toHaveBeenCalled();
+      expect(organizationMemberRepository.findUserOrganizations).not.toHaveBeenCalled();
     });
 
     it('should return user with memberships when requested', async () => {
       const mockMemberships = [
-        { tenantId: 'tenant1', role: 'admin', status: 'active' },
+        { organizationId: 'tenant1', role: 'admin', status: 'active' },
       ];
 
       userRepository.findById.mockResolvedValue(mockUser as any);
-      tenantMemberRepository.findUserTenants.mockResolvedValue(mockMemberships as any);
+      organizationMemberRepository.findUserOrganizations.mockResolvedValue(mockMemberships as any);
 
       const result = await service.findUserById('user123', true);
 
       expect(result.memberships).toEqual(mockMemberships);
-      expect(tenantMemberRepository.findUserTenants).toHaveBeenCalledWith('user123');
+      expect(organizationMemberRepository.findUserOrganizations).toHaveBeenCalledWith('user123');
     });
 
     it('should throw NotFoundException if user not found', async () => {
@@ -206,8 +206,8 @@ describe('UserManagementService', () => {
       expect(userRepository.searchUsers).toHaveBeenCalled();
     });
 
-    it('should list users with tenant scope', async () => {
-      const query = { page: 1, size: 10, scope: 'tenant' as const, tenantId: 'tenant123' };
+    it('should list users with organization scope', async () => {
+      const query = { page: 1, size: 10, scope: 'organization' as const, organizationId: 'org123' };
       const mockResult = {
         members: [{
           _id: { toString: () => 'membership123' },
@@ -221,20 +221,20 @@ describe('UserManagementService', () => {
         totalPages: 1,
       };
 
-      tenantMemberRepository.listTenantMembers.mockResolvedValue(mockResult as any);
+      organizationMemberRepository.listOrganizationMembers.mockResolvedValue(mockResult as any);
 
       const result = await service.listUsers(query);
 
       expect(result.users).toBeDefined();
-      expect(tenantMemberRepository.listTenantMembers).toHaveBeenCalledWith({
-        tenantId: 'tenant123',
+      expect(organizationMemberRepository.listOrganizationMembers).toHaveBeenCalledWith({
+        organizationId: 'org123',
         page: 1,
         limit: 10,
       });
     });
 
-    it('should throw BadRequestException if tenantId missing for tenant scope', async () => {
-      const query = { page: 1, size: 10, scope: 'tenant' as const };
+    it('should throw BadRequestException if organizationId missing for organization scope', async () => {
+      const query = { page: 1, size: 10, scope: 'organization' as const };
 
       await expect(service.listUsers(query)).rejects.toThrow(BadRequestException);
     });

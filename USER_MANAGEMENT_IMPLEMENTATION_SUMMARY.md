@@ -1,17 +1,17 @@
 # User Management APIs Implementation Summary
 
 ## Overview
-This implementation adds comprehensive user management APIs to the `user` microservice, supporting both global (system-wide) and tenant-scoped operations as specified in the requirements.
+This implementation adds comprehensive user management APIs to the `user` microservice, supporting both global (system-wide) and organization-scoped operations as specified in the requirements.
 
 ## Implementation Status ✅
 
 ### ✅ Phase 1: Schema & Database Setup
 - **UserTenant Schema** (`libs/shared/schemas/user-tenant.schema.ts`)
   - Collection: `user_tenants`
-  - Fields: userId, tenantId, role, status, joinedAt, invitedAt, invitedBy, revokedAt, revokedBy, metadata
+  - Fields: userId, organizationId, role, status, joinedAt, invitedAt, invitedBy, revokedAt, revokedBy, metadata
   - Roles: owner, admin, member, billing
   - Status: active, invited, revoked
-  - Indexes: compound unique on (userId, tenantId), indexes on status, role
+  - Indexes: compound unique on (userId, organizationId), indexes on status, role
   - TTL index for soft-deleted records (90 days with partial filter)
 
 - **User Schema Extensions** (`libs/shared/schemas/user.schema.ts`)
@@ -73,19 +73,19 @@ This implementation adds comprehensive user management APIs to the `user` micros
   - GET `/api/users/:id` - Get user (with ?include=memberships)
   - PATCH `/api/users/:id` - Update user
   - DELETE `/api/users/:id` - Delete user
-  - GET `/api/users` - List/search users (supports ?q, ?email, ?username, ?scope, ?tenantId)
+  - GET `/api/users` - List/search users (supports ?q, ?email, ?username, ?scope, ?organizationId)
 
 - **TenantMembershipController** (`apps/user/src/controllers/tenant-membership.controller.ts`)
-  - POST `/api/tenants/:tenantId/users` - Invite member (rate limited: 5/min)
-  - GET `/api/tenants/:tenantId/users` - List members (with ?role, ?status)
-  - GET `/api/tenants/:tenantId/users/:userId` - Get membership
-  - PATCH `/api/tenants/:tenantId/users/:userId` - Update membership
-  - DELETE `/api/tenants/:tenantId/users/:userId` - Remove member
+  - POST `/api/organizations/:organizationId/users` - Invite member (rate limited: 5/min)
+  - GET `/api/organizations/:organizationId/users` - List members (with ?role, ?status)
+  - GET `/api/organizations/:organizationId/users/:userId` - Get membership
+  - PATCH `/api/organizations/:organizationId/users/:userId` - Update membership
+  - DELETE `/api/organizations/:organizationId/users/:userId` - Remove member
 
 ### ✅ Phase 6: RPC Methods
 - **Extended UserRpcController** (`apps/user/src/user-rpc.controller.ts`)
-  - findUserByUsername: With optional tenantId filter
-  - getUserTenants: Get user's tenant memberships
+  - findUserByUsername: With optional organizationId filter
+  - getUserTenants: Get user's organization memberships
   - addUserToTenant: Add user to tenant via RPC
   - removeUserFromTenant: Remove user from tenant via RPC
 
@@ -103,7 +103,7 @@ This implementation adds comprehensive user management APIs to the `user` micros
   - Find user (with/without memberships, not found)
   - Update user (success, not found, email conflict)
   - Delete user (success, not found)
-  - List users (global, tenant scope, missing tenantId)
+  - List users (global, tenant scope, missing organizationId)
 
 - **TenantMembershipService Tests** (`apps/user/test/services/tenant-membership.service.spec.ts`)
   - 14 test cases covering all scenarios
@@ -124,7 +124,7 @@ This implementation adds comprehensive user management APIs to the `user` micros
 
 - **Postman Collection** (`docs/postman/user-management-api.postman_collection.json`)
   - Complete collection with 15+ requests
-  - Environment variables for baseUrl, userId, tenantId
+  - Environment variables for baseUrl, userId, organizationId
   - Automated variable extraction from responses
   - Organized into logical folders
 
@@ -211,7 +211,7 @@ POST /api/users
 
 ### Invite to Tenant
 ```bash
-POST /api/tenants/:tenantId/users
+POST /api/organizations/:organizationId/users
 {
   "identifier": "john@example.com",
   "role": "admin",
@@ -221,12 +221,12 @@ POST /api/tenants/:tenantId/users
 
 ### Search Users in Tenant
 ```bash
-GET /api/users?scope=tenant&tenantId=org123&page=1&size=10
+GET /api/users?scope=tenant&organizationId=org123&page=1&size=10
 ```
 
 ### List Tenant Admins
 ```bash
-GET /api/tenants/:tenantId/users?role=admin&status=active
+GET /api/organizations/:organizationId/users?role=admin&status=active
 ```
 
 ## Testing
@@ -335,4 +335,4 @@ GET /api/tenants/:tenantId/users?role=admin&status=active
 
 ## Conclusion
 
-This implementation successfully delivers all required functionality for user management with both global and tenant-scoped operations. The code is well-tested, documented, secure, and follows NestJS best practices. All acceptance criteria from the original issue have been met.
+This implementation successfully delivers all required functionality for user management with both global and organization-scoped operations. The code is well-tested, documented, secure, and follows NestJS best practices. All acceptance criteria from the original issue have been met.
