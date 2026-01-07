@@ -7,6 +7,7 @@ import {
   createRabbitMQMicroserviceOptions,
   setupGlobalErrorHandlers,
   logMicroserviceEvents,
+  RabbitMQHealthIndicator,
 } from '@shared/rabbitmq';
 
 async function bootstrap() {
@@ -74,6 +75,11 @@ async function bootstrap() {
   await app.startAllMicroservices();
   logger.log('Notification service microservices started');
 
+  // Mark RabbitMQ as healthy after successful connection
+  const healthIndicator = app.get(RabbitMQHealthIndicator);
+  healthIndicator.markAsHealthy();
+  logger.log('RabbitMQ connection marked as healthy');
+
   const port = process.env.NOTIFICATION_SERVICE_PORT || 3003;
   await app.listen(port);
 
@@ -81,3 +87,4 @@ async function bootstrap() {
 }
 
 bootstrap();
+

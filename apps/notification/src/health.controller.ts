@@ -22,7 +22,7 @@ export class HealthController {
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   healthCheck() {
-    return { status: 'ok', service: 'user' };
+    return { status: 'ok', service: 'notification' };
   }
 
   /**
@@ -52,4 +52,3 @@ export class HealthController {
     ]);
   }
 }
-
