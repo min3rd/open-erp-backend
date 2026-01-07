@@ -81,4 +81,4 @@ import { AuditEventRepository } from './repositories/audit-event.repository';
     AuditEventRepository,
   ],
 })
-export class TenantModule {}
+export class OrganizationModule {}

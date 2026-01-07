@@ -44,9 +44,9 @@ export const RPC_METHODS = {
     // Add auth RPC methods as needed
   },
   
-  // Tenant Service RPC Methods (placeholder for future)
-  TENANT: {
-    // Add tenant RPC methods as needed
+  // Organization Service RPC Methods (placeholder for future)
+  ORGANIZATION: {
+    // Add organization RPC methods as needed
   },
   
   // Config Service RPC Methods (placeholder for future)
@@ -88,17 +88,17 @@ export const EVENT_NAMES = {
     PUSH_SENT: 'notification.push.sent',
   },
   
-  // Tenant Events
-  TENANT: {
-    ORG_CREATED: 'tenant.organization.created',
-    ORG_UPDATED: 'tenant.organization.updated',
-    ORG_DELETED: 'tenant.organization.deleted',
-    MEMBER_INVITED: 'tenant.member.invited',
-    MEMBER_JOINED: 'tenant.member.joined',
-    MEMBER_REMOVED: 'tenant.member.removed',
-    INVITATION_ACCEPTED: 'tenant.invitation.accepted',
-    RELATION_CREATED: 'tenant.relation.created',
-    RELATION_UPDATED: 'tenant.relation.updated',
+  // Organization Events
+  ORGANIZATION: {
+    ORG_CREATED: 'organization.organization.created',
+    ORG_UPDATED: 'organization.organization.updated',
+    ORG_DELETED: 'organization.organization.deleted',
+    MEMBER_INVITED: 'organization.member.invited',
+    MEMBER_JOINED: 'organization.member.joined',
+    MEMBER_REMOVED: 'organization.member.removed',
+    INVITATION_ACCEPTED: 'organization.invitation.accepted',
+    RELATION_CREATED: 'organization.relation.created',
+    RELATION_UPDATED: 'organization.relation.updated',
   },
   
   // Config Events
@@ -118,7 +118,7 @@ export const EVENT_NAMES = {
 export type UserRpcMethod = typeof RPC_METHODS.USER[keyof typeof RPC_METHODS.USER];
 export type NotificationRpcMethod = typeof RPC_METHODS.NOTIFICATION[keyof typeof RPC_METHODS.NOTIFICATION];
 export type AuthRpcMethod = typeof RPC_METHODS.AUTH[keyof typeof RPC_METHODS.AUTH];
-export type TenantRpcMethod = typeof RPC_METHODS.TENANT[keyof typeof RPC_METHODS.TENANT];
+export type OrganizationRpcMethod = typeof RPC_METHODS.ORGANIZATION[keyof typeof RPC_METHODS.ORGANIZATION];
 export type ConfigRpcMethod = typeof RPC_METHODS.CONFIG[keyof typeof RPC_METHODS.CONFIG];
 
 /**
@@ -127,5 +127,5 @@ export type ConfigRpcMethod = typeof RPC_METHODS.CONFIG[keyof typeof RPC_METHODS
 export type UserEvent = typeof EVENT_NAMES.USER[keyof typeof EVENT_NAMES.USER];
 export type AuthEvent = typeof EVENT_NAMES.AUTH[keyof typeof EVENT_NAMES.AUTH];
 export type NotificationEvent = typeof EVENT_NAMES.NOTIFICATION[keyof typeof EVENT_NAMES.NOTIFICATION];
-export type TenantEvent = typeof EVENT_NAMES.TENANT[keyof typeof EVENT_NAMES.TENANT];
+export type OrganizationEvent = typeof EVENT_NAMES.ORGANIZATION[keyof typeof EVENT_NAMES.ORGANIZATION];
 export type ConfigEvent = typeof EVENT_NAMES.CONFIG[keyof typeof EVENT_NAMES.CONFIG];

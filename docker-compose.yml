@@ -122,6 +122,39 @@ services:
       - erp-network
     restart: unless-stopped
 
+  # Organization Service
+  organization-service:
+    build:
+      context: .
+      dockerfile: apps/organization/Dockerfile
+    container_name: erp-organization-service
+    ports:
+      - "3005:3005"
+    environment:
+      NODE_ENV: production
+      ORGANIZATION_SERVICE_PORT: 3005
+      ENABLE_SWAGGER: ${ENABLE_SWAGGER:-true}
+      RABBITMQ_URL: amqp://rabbitmq:5672
+      RABBITMQ_USER: ${RABBITMQ_USER:-admin}
+      RABBITMQ_PASS: ${RABBITMQ_PASS:-admin123}
+      RABBITMQ_VHOST: ${RABBITMQ_VHOST:-/}
+      MONGODB_URI: mongodb://mongodb:27017
+      MONGODB_USER: ${MONGODB_USER:-erp_user}
+      MONGODB_PASS: ${MONGODB_PASS:-erp_password}
+      MONGODB_DB: ${MONGODB_DB:-open_erp}
+      MONGODB_AUTH_SOURCE: admin
+      INVITE_EXPIRY_DAYS: ${INVITE_EXPIRY_DAYS:-7}
+      INVITE_SECRET: ${INVITE_SECRET:-your-invite-secret-change-in-production}
+      MAX_INVITES_PER_DAY: ${MAX_INVITES_PER_DAY:-50}
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+    networks:
+      - erp-network
+    restart: unless-stopped
+
   # API Docs Aggregator
   docs-aggregator:
     build:
@@ -133,11 +166,12 @@ services:
     environment:
       NODE_ENV: production
       PORT: 3000
-      SWAGGER_AGGREGATOR_SERVICES: '[{"name":"Auth Service","url":"http://auth-service:3001/api-docs.json"},{"name":"User Service","url":"http://user-service:3002/api-docs.json"},{"name":"Notification Service","url":"http://notification-service:3003/api-docs.json"}]'
+      SWAGGER_AGGREGATOR_SERVICES: '[{"name":"Auth Service","url":"http://auth-service:3001/api-docs.json"},{"name":"User Service","url":"http://user-service:3002/api-docs.json"},{"name":"Notification Service","url":"http://notification-service:3003/api-docs.json"},{"name":"Organization Service","url":"http://organization-service:3005/api-docs.json"}]'
     depends_on:
       - auth-service
       - user-service
       - notification-service
+      - organization-service
     networks:
       - erp-network
     restart: unless-stopped
