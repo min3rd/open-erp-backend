@@ -19,11 +19,16 @@ export const RPC_METHODS = {
     GET_USER: 'getUser',
     GET_USER_BY_EMAIL: 'getUserByEmail',
     FIND_USER_BY_EMAIL: 'findUserByEmail',
+    FIND_USER_BY_USERNAME: 'findUserByUsername',
     FIND_USER_BY_ID: 'findUserById',
     CREATE_USER: 'createUser',
+    UPDATE_USER: 'updateUser',
     UPDATE_USER_STATUS: 'updateUserStatus',
     UPDATE_LAST_LOGIN: 'updateLastLogin',
     UPDATE_USER_PASSWORD: 'updateUserPassword',
+    GET_USER_TENANTS: 'getUserTenants',
+    ADD_USER_TO_TENANT: 'addUserToTenant',
+    REMOVE_USER_FROM_TENANT: 'removeUserFromTenant',
   },
   
   // Notification Service RPC Methods

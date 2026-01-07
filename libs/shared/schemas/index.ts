@@ -7,3 +7,4 @@ export * from './organization-relation.schema';
 export * from './organization-member.schema';
 export * from './organization-invitation.schema';
 export * from './organization-audit-event.schema';
+export * from './user-tenant.schema';

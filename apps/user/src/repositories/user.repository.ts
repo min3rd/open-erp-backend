@@ -1,7 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { User, UserDocument } from '../schemas/user.schema';
+import { User, UserDocument } from '@shared/schemas';
 
 export interface CreateUserDto {
   username?: string;
@@ -208,6 +208,73 @@ export class UserRepository {
         `Error updating last login: ${error.message}`,
         error.stack,
       );
+      throw error;
+    }
+  }
+
+  async findWithPagination(options: {
+    query?: any;
+    page?: number;
+    limit?: number;
+    sort?: any;
+  }): Promise<{ users: User[]; total: number; page: number; totalPages: number }> {
+    try {
+      const { query = {}, page = 1, limit = 10, sort = { createdAt: -1 } } = options;
+      const skip = (page - 1) * limit;
+
+      const [users, total] = await Promise.all([
+        this.userModel.find(query).skip(skip).limit(limit).sort(sort).exec(),
+        this.userModel.countDocuments(query).exec(),
+      ]);
+
+      return {
+        users,
+        total,
+        page,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error finding users with pagination: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  async searchUsers(options: {
+    searchQuery?: string;
+    email?: string;
+    username?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{ users: User[]; total: number; page: number; totalPages: number }> {
+    try {
+      const { searchQuery, email, username, page = 1, limit = 10 } = options;
+      
+      const query: any = {};
+
+      if (searchQuery) {
+        query.$or = [
+          { username: { $regex: searchQuery, $options: 'i' } },
+          { email: { $regex: searchQuery, $options: 'i' } },
+          { displayName: { $regex: searchQuery, $options: 'i' } },
+          { firstName: { $regex: searchQuery, $options: 'i' } },
+          { lastName: { $regex: searchQuery, $options: 'i' } },
+        ];
+      }
+
+      if (email) {
+        query.email = email;
+      }
+
+      if (username) {
+        query.username = username;
+      }
+
+      return await this.findWithPagination({ query, page, limit });
+    } catch (error) {
+      this.logger.error(`Error searching users: ${error.message}`, error.stack);
       throw error;
     }
   }

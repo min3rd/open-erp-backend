@@ -66,6 +66,23 @@ export class User extends Document {
   fullName?: string;
 
   @Prop({
+    trim: true,
+    maxlength: 200,
+  })
+  displayName?: string;
+
+  @Prop({
+    trim: true,
+    match: /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
+  })
+  phone?: string;
+
+  @Prop({
+    trim: true,
+  })
+  avatarUrl?: string;
+
+  @Prop({
     required: false,
     select: false, // Don't include password in queries by default
   })
