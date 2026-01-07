@@ -24,7 +24,7 @@ export class HealthController {
    */
   @Get('live')
   @HealthCheck()
-  checkLiveness(): HealthCheckResult {
+  checkLiveness(): Promise<HealthCheckResult> {
     return this.health.check([
       // Just check if the service is alive (always passes unless process is dead)
       () => Promise.resolve({ liveness: { status: 'up' } }),
