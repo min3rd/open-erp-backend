@@ -1,6 +1,6 @@
 import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
-import { TenantMemberRepository } from '../repositories/tenant-member.repository';
+import { OrganizationMemberRepository } from '../repositories/organization-member.repository';
 import { CreateUserDto, UpdateUserDto, ListUsersQueryDto } from '../dto/user.dto';
 import { User } from '@shared/schemas';
 
@@ -10,7 +10,7 @@ export class UserManagementService {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly tenantMemberRepository: TenantMemberRepository,
+    private readonly organizationMemberRepository: OrganizationMemberRepository,
   ) {}
 
   async createUser(dto: CreateUserDto): Promise<User> {
@@ -62,7 +62,7 @@ export class UserManagementService {
       }
 
       if (includeMemberships) {
-        const memberships = await this.tenantMemberRepository.findUserTenants(id);
+        const memberships = await this.organizationMemberRepository.findUserOrganizations(id);
         return {
           ...user.toJSON(),
           memberships,
@@ -139,16 +139,16 @@ export class UserManagementService {
 
   async listUsers(query: ListUsersQueryDto): Promise<any> {
     try {
-      const { q, email, username, scope, tenantId, page = 1, size = 10, includeMemberships = false } = query;
+      const { q, email, username, scope, organizationId, page = 1, size = 10, includeMemberships = false } = query;
 
-      // If tenant scope is requested, we need to filter by tenant membership
-      if (scope === 'tenant') {
-        if (!tenantId) {
-          throw new BadRequestException('tenantId is required when scope is tenant');
+      // If organization scope is requested, we need to filter by organization membership
+      if (scope === 'organization') {
+        if (!organizationId) {
+          throw new BadRequestException('organizationId is required when scope is organization');
         }
 
-        const membersResult = await this.tenantMemberRepository.listTenantMembers({
-          tenantId,
+        const membersResult = await this.organizationMemberRepository.listOrganizationMembers({
+          organizationId,
           page,
           limit: size,
         });
@@ -181,7 +181,7 @@ export class UserManagementService {
       if (includeMemberships) {
         const usersWithMemberships = await Promise.all(
           result.users.map(async (user) => {
-            const memberships = await this.tenantMemberRepository.findUserTenants(user._id.toString());
+            const memberships = await this.organizationMemberRepository.findUserOrganizations(user._id.toString());
             return {
               ...user.toJSON(),
               memberships,

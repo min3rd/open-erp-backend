@@ -43,7 +43,7 @@ export class MembershipResponseDto {
   userId: string;
 
   @ApiProperty()
-  tenantId: string;
+  organizationId: string;
 
   @ApiProperty({ enum: MemberRole })
   role: MemberRole;
@@ -73,7 +73,7 @@ export class MembershipResponseDto {
   updatedAt: Date;
 }
 
-export class ListTenantMembersQueryDto {
+export class ListOrganizationMembersQueryDto {
   @ApiPropertyOptional({ description: 'Filter by role', enum: MemberRole })
   @IsEnum(MemberRole)
   @IsOptional()

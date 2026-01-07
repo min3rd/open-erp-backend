@@ -3,9 +3,9 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { OrganizationMember, OrganizationMemberDocument, MemberRole, MemberStatus } from '@shared/schemas';
 
-export interface CreateTenantMemberDto {
+export interface CreateOrganizationMemberDto {
   userId: string;
-  tenantId: string;
+  organizationId: string;
   role: MemberRole;
   status?: MemberStatus;
   invitedBy?: string;
@@ -14,7 +14,7 @@ export interface CreateTenantMemberDto {
   createdBy: string;
 }
 
-export interface UpdateTenantMemberDto {
+export interface UpdateOrganizationMemberDto {
   role?: MemberRole;
   status?: MemberStatus;
   joinedAt?: Date;
@@ -24,7 +24,7 @@ export interface UpdateTenantMemberDto {
 }
 
 export interface ListMembersOptions {
-  tenantId: string;
+  organizationId: string;
   role?: MemberRole;
   status?: MemberStatus;
   page?: number;
@@ -32,19 +32,19 @@ export interface ListMembersOptions {
 }
 
 @Injectable()
-export class TenantMemberRepository {
-  private readonly logger = new Logger(TenantMemberRepository.name);
+export class OrganizationMemberRepository {
+  private readonly logger = new Logger(OrganizationMemberRepository.name);
 
   constructor(
     @InjectModel(OrganizationMember.name)
     private memberModel: Model<OrganizationMemberDocument>,
   ) {}
 
-  async create(dto: CreateTenantMemberDto): Promise<OrganizationMember> {
+  async create(dto: CreateOrganizationMemberDto): Promise<OrganizationMember> {
     try {
       const membership = new this.memberModel({
         userId: dto.userId,
-        organizationId: dto.tenantId,
+        organizationId: dto.organizationId,
         roles: [dto.role],
         status: dto.status || MemberStatus.ACTIVE,
         invitedBy: dto.invitedBy,
@@ -68,12 +68,12 @@ export class TenantMemberRepository {
     }
   }
 
-  async findByUserAndTenant(userId: string, tenantId: string): Promise<OrganizationMember | null> {
+  async findByUserAndOrganization(userId: string, organizationId: string): Promise<OrganizationMember | null> {
     try {
       return await this.memberModel
         .findOne({
           userId: userId as any,
-          organizationId: tenantId as any,
+          organizationId: organizationId as any,
         })
         .exec();
     } catch (error) {
@@ -82,27 +82,27 @@ export class TenantMemberRepository {
     }
   }
 
-  async findUserTenants(userId: string): Promise<OrganizationMember[]> {
+  async findUserOrganizations(userId: string): Promise<OrganizationMember[]> {
     try {
       return await this.memberModel
         .find({ userId: userId as any })
         .exec();
     } catch (error) {
-      this.logger.error(`Error finding user tenants: ${error.message}`, error.stack);
+      this.logger.error(`Error finding user organizations: ${error.message}`, error.stack);
       throw error;
     }
   }
 
-  async listTenantMembers(options: ListMembersOptions): Promise<{
+  async listOrganizationMembers(options: ListMembersOptions): Promise<{
     members: OrganizationMember[];
     total: number;
     page: number;
     totalPages: number;
   }> {
     try {
-      const { tenantId, role, status, page = 1, limit = 10 } = options;
+      const { organizationId, role, status, page = 1, limit = 10 } = options;
       
-      const query: any = { organizationId: tenantId as any };
+      const query: any = { organizationId: organizationId as any };
       if (role) query.roles = role;
       if (status) query.status = status;
 
@@ -125,12 +125,12 @@ export class TenantMemberRepository {
         totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
-      this.logger.error(`Error listing tenant members: ${error.message}`, error.stack);
+      this.logger.error(`Error listing organization members: ${error.message}`, error.stack);
       throw error;
     }
   }
 
-  async update(id: string, dto: UpdateTenantMemberDto): Promise<OrganizationMember | null> {
+  async update(id: string, dto: UpdateOrganizationMemberDto): Promise<OrganizationMember | null> {
     try {
       const updateData: any = {};
       if (dto.role) updateData.roles = [dto.role];
@@ -175,9 +175,9 @@ export class TenantMemberRepository {
     }
   }
 
-  async isUserMemberOfTenant(userId: string, tenantId: string): Promise<boolean> {
+  async isUserMemberOfOrganization(userId: string, organizationId: string): Promise<boolean> {
     try {
-      const membership = await this.findByUserAndTenant(userId, tenantId);
+      const membership = await this.findByUserAndOrganization(userId, organizationId);
       return !!membership && membership.status === MemberStatus.ACTIVE;
     } catch (error) {
       this.logger.error(`Error checking membership: ${error.message}`, error.stack);
@@ -185,9 +185,9 @@ export class TenantMemberRepository {
     }
   }
 
-  async getUserRole(userId: string, tenantId: string): Promise<MemberRole | null> {
+  async getUserRole(userId: string, organizationId: string): Promise<MemberRole | null> {
     try {
-      const membership = await this.findByUserAndTenant(userId, tenantId);
+      const membership = await this.findByUserAndOrganization(userId, organizationId);
       return membership?.roles?.[0] || null;
     } catch (error) {
       this.logger.error(`Error getting user role: ${error.message}`, error.stack);

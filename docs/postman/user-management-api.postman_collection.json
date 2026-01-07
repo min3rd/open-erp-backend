@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "User Management APIs",
-    "description": "Complete collection for testing user management and tenant membership APIs",
+    "description": "Complete collection for testing user management and organization membership APIs",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -16,7 +16,7 @@
       "type": "string"
     },
     {
-      "key": "tenantId",
+      "key": "organizationId",
       "value": "",
       "type": "string"
     }
@@ -219,9 +219,9 @@
               "raw": "{\n  \"identifier\": \"john.doe@example.com\",\n  \"role\": \"admin\",\n  \"sendInviteEmail\": true\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users"]
+              "path": ["api", "tenants", "{{organizationId}}", "users"]
             }
           },
           "response": []
@@ -232,9 +232,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users?page=1&size=10",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users?page=1&size=10",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users"],
+              "path": ["api", "tenants", "{{organizationId}}", "users"],
               "query": [
                 {
                   "key": "page",
@@ -255,9 +255,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users?role=admin&status=active",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users?role=admin&status=active",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users"],
+              "path": ["api", "tenants", "{{organizationId}}", "users"],
               "query": [
                 {
                   "key": "role",
@@ -278,9 +278,9 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users/{{userId}}",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users/{{userId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users", "{{userId}}"]
+              "path": ["api", "tenants", "{{organizationId}}", "users", "{{userId}}"]
             }
           },
           "response": []
@@ -300,9 +300,9 @@
               "raw": "{\n  \"role\": \"member\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users/{{userId}}",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users/{{userId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users", "{{userId}}"]
+              "path": ["api", "tenants", "{{organizationId}}", "users", "{{userId}}"]
             }
           },
           "response": []
@@ -322,9 +322,9 @@
               "raw": "{\n  \"status\": \"revoked\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users/{{userId}}",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users/{{userId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users", "{{userId}}"]
+              "path": ["api", "tenants", "{{organizationId}}", "users", "{{userId}}"]
             }
           },
           "response": []
@@ -335,9 +335,9 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/tenants/{{tenantId}}/users/{{userId}}",
+              "raw": "{{baseUrl}}/api/organizations/{{organizationId}}/users/{{userId}}",
               "host": ["{{baseUrl}}"],
-              "path": ["api", "tenants", "{{tenantId}}", "users", "{{userId}}"]
+              "path": ["api", "tenants", "{{organizationId}}", "users", "{{userId}}"]
             }
           },
           "response": []
@@ -353,7 +353,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users?scope=tenant&tenantId={{tenantId}}&page=1&size=10",
+              "raw": "{{baseUrl}}/api/users?scope=tenant&organizationId={{organizationId}}&page=1&size=10",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users"],
               "query": [
@@ -362,8 +362,8 @@
                   "value": "tenant"
                 },
                 {
-                  "key": "tenantId",
-                  "value": "{{tenantId}}"
+                  "key": "organizationId",
+                  "value": "{{organizationId}}"
                 },
                 {
                   "key": "page",

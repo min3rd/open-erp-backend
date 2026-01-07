@@ -2,7 +2,7 @@ import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
 import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
-import { TenantMemberRepository } from './repositories/tenant-member.repository';
+import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 
 /**
@@ -15,7 +15,7 @@ export class UserRpcController {
 
   constructor(
     private readonly userRepository: UserRepository,
-    private readonly tenantMemberRepository: TenantMemberRepository,
+    private readonly organizationMemberRepository: OrganizationMemberRepository,
     @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
   ) {}
 
@@ -49,16 +49,16 @@ export class UserRpcController {
 
   @MessagePattern(RPC_METHODS.USER.FIND_USER_BY_USERNAME)
   async findUserByUsername(
-    @Payload() params: { username: string; tenantId?: string },
+    @Payload() params: { username: string; organizationId?: string },
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.FIND_USER_BY_USERNAME}`);
     const user = await this.userRepository.findByUsername(params.username);
     
-    // If tenantId is provided, check if user is member of that tenant
-    if (params.tenantId && user) {
-      const isMember = await this.tenantMemberRepository.isUserMemberOfTenant(
+    // If organizationId is provided, check if user is member of that organization
+    if (params.organizationId && user) {
+      const isMember = await this.organizationMemberRepository.isUserMemberOfOrganization(
         user._id.toString(),
-        params.tenantId,
+        params.organizationId,
       );
       return isMember ? user : null;
     }
@@ -201,35 +201,35 @@ export class UserRpcController {
     }
   }
 
-  @MessagePattern(RPC_METHODS.USER.GET_USER_TENANTS)
-  async getUserTenants(@Payload() params: { userId: string }) {
-    this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER_TENANTS}`);
+  @MessagePattern(RPC_METHODS.USER.GET_USER_ORGANIZATIONS)
+  async getUserOrganizations(@Payload() params: { userId: string }) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER_ORGANIZATIONS}`);
     try {
-      const tenants = await this.tenantMemberRepository.findUserTenants(params.userId);
-      return tenants;
+      const organizations = await this.organizationMemberRepository.findUserOrganizations(params.userId);
+      return organizations;
     } catch (error) {
       this.logger.error(
-        `Error getting user tenants via RPC: ${error.message}`,
+        `Error getting user organizations via RPC: ${error.message}`,
         error.stack,
       );
       throw error;
     }
   }
 
-  @MessagePattern(RPC_METHODS.USER.ADD_USER_TO_TENANT)
-  async addUserToTenant(
+  @MessagePattern(RPC_METHODS.USER.ADD_USER_TO_ORGANIZATION)
+  async addUserToOrganization(
     @Payload() params: { 
       userId: string; 
-      tenantId: string; 
+      organizationId: string; 
       role: string;
       invitedBy?: string;
     },
   ) {
-    this.logger.log(`RPC: ${RPC_METHODS.USER.ADD_USER_TO_TENANT}`);
+    this.logger.log(`RPC: ${RPC_METHODS.USER.ADD_USER_TO_ORGANIZATION}`);
     try {
-      const membership = await this.tenantMemberRepository.create({
+      const membership = await this.organizationMemberRepository.create({
         userId: params.userId,
-        tenantId: params.tenantId,
+        organizationId: params.organizationId,
         role: params.role as any,
         invitedBy: params.invitedBy,
         invitedAt: new Date(),
@@ -239,31 +239,31 @@ export class UserRpcController {
       return membership;
     } catch (error) {
       this.logger.error(
-        `Error adding user to tenant via RPC: ${error.message}`,
+        `Error adding user to organization via RPC: ${error.message}`,
         error.stack,
       );
       throw error;
     }
   }
 
-  @MessagePattern(RPC_METHODS.USER.REMOVE_USER_FROM_TENANT)
-  async removeUserFromTenant(
-    @Payload() params: { userId: string; tenantId: string },
+  @MessagePattern(RPC_METHODS.USER.REMOVE_USER_FROM_ORGANIZATION)
+  async removeUserFromOrganization(
+    @Payload() params: { userId: string; organizationId: string },
   ) {
-    this.logger.log(`RPC: ${RPC_METHODS.USER.REMOVE_USER_FROM_TENANT}`);
+    this.logger.log(`RPC: ${RPC_METHODS.USER.REMOVE_USER_FROM_ORGANIZATION}`);
     try {
-      const membership = await this.tenantMemberRepository.findByUserAndTenant(
+      const membership = await this.organizationMemberRepository.findByUserAndOrganization(
         params.userId,
-        params.tenantId,
+        params.organizationId,
       );
       if (!membership) {
         throw new Error('Membership not found');
       }
-      await this.tenantMemberRepository.delete(membership._id.toString());
+      await this.organizationMemberRepository.delete(membership._id.toString());
       return { success: true };
     } catch (error) {
       this.logger.error(
-        `Error removing user from tenant via RPC: ${error.message}`,
+        `Error removing user from organization via RPC: ${error.message}`,
         error.stack,
       );
       throw error;

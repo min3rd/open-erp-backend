@@ -26,9 +26,9 @@ export const RPC_METHODS = {
     UPDATE_USER_STATUS: 'updateUserStatus',
     UPDATE_LAST_LOGIN: 'updateLastLogin',
     UPDATE_USER_PASSWORD: 'updateUserPassword',
-    GET_USER_TENANTS: 'getUserTenants',
-    ADD_USER_TO_TENANT: 'addUserToTenant',
-    REMOVE_USER_FROM_TENANT: 'removeUserFromTenant',
+    GET_USER_ORGANIZATIONS: 'getUserOrganizations',
+    ADD_USER_TO_ORGANIZATION: 'addUserToOrganization',
+    REMOVE_USER_FROM_ORGANIZATION: 'removeUserFromOrganization',
   },
   
   // Notification Service RPC Methods
