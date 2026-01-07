@@ -56,7 +56,8 @@ export class UserRepository {
 
   async findById(id: string): Promise<User | null> {
     try {
-      return await this.userModel.findById(id).exec();
+      const user = await this.userModel.findById(id).exec();
+      return user;
     } catch (error) {
       this.logger.error(
         `Error finding user by id: ${error.message}`,
@@ -88,8 +89,8 @@ export class UserRepository {
           .exec();
         return user;
       }
-       const user = await this.userModel.findOne({ email }).exec();
-       return user;
+      const user = await this.userModel.findOne({ email }).exec();
+      return user;
     } catch (error) {
       this.logger.error(
         `Error finding user by email: ${error.message}`,
