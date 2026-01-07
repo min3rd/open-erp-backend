@@ -78,7 +78,7 @@ describe('AuthorizationService', () => {
       name: 'Tenant Admin',
       code: 'TENANT_ADMIN',
       scope: 'tenant',
-      tenantId: testTenant._id as any,
+      organizationId: testTenant._id as any,
       permissions: [
         Permission.USER_CREATE,
         Permission.USER_READ,
@@ -93,7 +93,7 @@ describe('AuthorizationService', () => {
       name: 'Manager',
       code: 'MANAGER',
       scope: 'tenant',
-      tenantId: testTenant._id as any,
+      organizationId: testTenant._id as any,
       permissions: [Permission.ORDER_READ, Permission.ORDER_APPROVE],
       status: 'active',
       isSystem: false,
@@ -103,7 +103,7 @@ describe('AuthorizationService', () => {
     testUser = await userModel.create({
       username: 'testuser',
       email: 'test@example.com',
-      tenantId: testTenant._id as any,
+      organizationId: testTenant._id as any,
       status: 'active',
       roleAssignments: [],
       specialPermissions: [],
@@ -124,7 +124,7 @@ describe('AuthorizationService', () => {
   });
 
   describe('hasPermission with scope', () => {
-    it('should check tenant-scoped permission correctly', async () => {
+    it('should check organization-scoped permission correctly', async () => {
       testUser.roleAssignments = [
         {
           roleId: tenantAdminRole._id as any,
@@ -175,7 +175,7 @@ describe('AuthorizationService', () => {
       expect(result).toBe(true);
     });
 
-    it('should grant tenant-scoped permission from global role', async () => {
+    it('should grant organization-scoped permission from global role', async () => {
       testUser.roleAssignments = [
         {
           roleId: globalAdminRole._id as any,
@@ -217,7 +217,7 @@ describe('AuthorizationService', () => {
       expect(permissions).not.toContain(Permission.USER_CREATE); // tenant role permission
     });
 
-    it('should return both global and tenant permissions for tenant scope', async () => {
+    it('should return both global and tenant permissions for organization scope', async () => {
       testUser.roleAssignments = [
         {
           roleId: globalAdminRole._id as any,
@@ -241,7 +241,7 @@ describe('AuthorizationService', () => {
       expect(permissions).toContain(Permission.ORDER_MANAGE); // tenant
     });
 
-    it('should respect custom tenantId parameter', async () => {
+    it('should respect custom organizationId parameter', async () => {
       const otherTenant = await tenantModel.create({
         name: 'Other Tenant',
         slug: 'other-tenant',
@@ -252,7 +252,7 @@ describe('AuthorizationService', () => {
         name: 'Other Tenant Role',
         code: 'OTHER_ROLE',
         scope: 'tenant',
-        tenantId: otherTenant._id as any,
+        organizationId: otherTenant._id as any,
         permissions: [Permission.PRODUCT_CREATE],
         status: 'active',
         isSystem: false,
@@ -407,7 +407,7 @@ describe('AuthorizationService', () => {
         name: 'Other Tenant Admin',
         code: 'TENANT_ADMIN',
         scope: 'tenant',
-        tenantId: otherTenant._id as any,
+        organizationId: otherTenant._id as any,
         permissions: [Permission.USER_CREATE],
         status: 'active',
         isSystem: false,
@@ -427,7 +427,7 @@ describe('AuthorizationService', () => {
   });
 
   describe('hasAnyPermission with scope', () => {
-    it('should return true if user has at least one permission in tenant scope', async () => {
+    it('should return true if user has at least one permission in organization scope', async () => {
       testUser.specialPermissions = [Permission.USER_READ];
       await testUser.save();
 
@@ -455,7 +455,7 @@ describe('AuthorizationService', () => {
   });
 
   describe('hasAllPermissions with scope', () => {
-    it('should return true if user has all permissions in tenant scope', async () => {
+    it('should return true if user has all permissions in organization scope', async () => {
       testUser.specialPermissions = [
         Permission.USER_READ,
         Permission.USER_CREATE,
@@ -472,7 +472,7 @@ describe('AuthorizationService', () => {
       expect(result).toBe(true);
     });
 
-    it('should return false if user is missing any permission in tenant scope', async () => {
+    it('should return false if user is missing any permission in organization scope', async () => {
       testUser.specialPermissions = [Permission.USER_READ];
       await testUser.save();
 

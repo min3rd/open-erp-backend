@@ -22,7 +22,7 @@ describe('OrganizationMembershipService', () => {
   const mockMembership = {
     _id: { toString: () => 'membership123' },
     userId: 'user123',
-    organizationId: 'tenant123',
+    organizationId: 'org123',
     role: TenantRole.MEMBER,
     status: MembershipStatus.ACTIVE,
   };
@@ -81,7 +81,7 @@ describe('OrganizationMembershipService', () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
       organizationMemberRepository.create.mockResolvedValue(mockMembership as any);
 
-      const result = await service.inviteMember('tenant123', inviteDto, 'inviter123');
+      const result = await service.inviteMember('org123', inviteDto, 'inviter123');
 
       expect(result).toEqual(mockMembership);
       expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
@@ -101,7 +101,7 @@ describe('OrganizationMembershipService', () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
       organizationMemberRepository.create.mockResolvedValue(mockMembership as any);
 
-      const result = await service.inviteMember('tenant123', inviteDto, 'inviter123');
+      const result = await service.inviteMember('org123', inviteDto, 'inviter123');
 
       expect(result).toEqual(mockMembership);
       expect(userRepository.findByUsername).toHaveBeenCalledWith('testuser');
@@ -117,7 +117,7 @@ describe('OrganizationMembershipService', () => {
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(mockMembership as any);
 
-      await expect(service.inviteMember('tenant123', inviteDto, 'inviter123')).rejects.toThrow(
+      await expect(service.inviteMember('org123', inviteDto, 'inviter123')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -137,7 +137,7 @@ describe('OrganizationMembershipService', () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(revokedMembership as any);
       organizationMemberRepository.update.mockResolvedValue(mockMembership as any);
 
-      const result = await service.inviteMember('tenant123', inviteDto, 'inviter123');
+      const result = await service.inviteMember('org123', inviteDto, 'inviter123');
 
       expect(organizationMemberRepository.update).toHaveBeenCalled();
     });
@@ -151,7 +151,7 @@ describe('OrganizationMembershipService', () => {
       userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findByUsername.mockResolvedValue(null);
 
-      await expect(service.inviteMember('tenant123', inviteDto, 'inviter123')).rejects.toThrow(
+      await expect(service.inviteMember('org123', inviteDto, 'inviter123')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -175,11 +175,11 @@ describe('OrganizationMembershipService', () => {
 
       organizationMemberRepository.listOrganizationMembers.mockResolvedValue(mockResult as any);
 
-      const result = await service.listOrganizationMembers('tenant123', query);
+      const result = await service.listOrganizationMembers('org123', query);
 
       expect(result).toEqual(mockResult);
       expect(organizationMemberRepository.listOrganizationMembers).toHaveBeenCalledWith({
-        organizationId: 'tenant123',
+        organizationId: 'org123',
         role: TenantRole.ADMIN,
         status: MembershipStatus.ACTIVE,
         page: 1,
@@ -200,7 +200,7 @@ describe('OrganizationMembershipService', () => {
         role: TenantRole.ADMIN,
       } as any);
 
-      const result = await service.updateMembership('tenant123', 'user123', updateDto, 'updater123');
+      const result = await service.updateMembership('org123', 'user123', updateDto, 'updater123');
 
       expect(organizationMemberRepository.update).toHaveBeenCalled();
     });
@@ -211,7 +211,7 @@ describe('OrganizationMembershipService', () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
 
       await expect(
-        service.updateMembership('tenant123', 'user123', updateDto, 'updater123'),
+        service.updateMembership('org123', 'user123', updateDto, 'updater123'),
       ).rejects.toThrow(NotFoundException);
     });
 
@@ -231,7 +231,7 @@ describe('OrganizationMembershipService', () => {
       } as any);
 
       await expect(
-        service.updateMembership('tenant123', 'user123', updateDto, 'updater123'),
+        service.updateMembership('org123', 'user123', updateDto, 'updater123'),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -247,7 +247,7 @@ describe('OrganizationMembershipService', () => {
         totalPages: 1,
       } as any);
 
-      await service.removeMember('tenant123', 'user123', 'remover123');
+      await service.removeMember('org123', 'user123', 'remover123');
 
       expect(organizationMemberRepository.delete).toHaveBeenCalled();
     });
@@ -255,7 +255,7 @@ describe('OrganizationMembershipService', () => {
     it('should throw NotFoundException if membership not found', async () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
 
-      await expect(service.removeMember('tenant123', 'user123', 'remover123')).rejects.toThrow(
+      await expect(service.removeMember('org123', 'user123', 'remover123')).rejects.toThrow(
         NotFoundException,
       );
     });
@@ -274,7 +274,7 @@ describe('OrganizationMembershipService', () => {
         totalPages: 1,
       } as any);
 
-      await expect(service.removeMember('tenant123', 'user123', 'remover123')).rejects.toThrow(
+      await expect(service.removeMember('org123', 'user123', 'remover123')).rejects.toThrow(
         BadRequestException,
       );
     });
@@ -284,7 +284,7 @@ describe('OrganizationMembershipService', () => {
     it('should return membership details', async () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(mockMembership as any);
 
-      const result = await service.getMembershipDetails('tenant123', 'user123');
+      const result = await service.getMembershipDetails('org123', 'user123');
 
       expect(result).toEqual(mockMembership);
     });
@@ -292,7 +292,7 @@ describe('OrganizationMembershipService', () => {
     it('should throw NotFoundException if membership not found', async () => {
       organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
 
-      await expect(service.getMembershipDetails('tenant123', 'user123')).rejects.toThrow(
+      await expect(service.getMembershipDetails('org123', 'user123')).rejects.toThrow(
         NotFoundException,
       );
     });
