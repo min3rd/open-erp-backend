@@ -92,7 +92,7 @@ export class Navigation extends Document {
   @Prop({ index: true })
   module?: string; // Module key when scope='module'
 
-  @Prop({ index: true })
+  @Prop()
   parentId?: string; // Reference to parent navigation item
 
   @Prop({ type: Object })

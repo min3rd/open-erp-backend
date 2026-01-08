@@ -302,7 +302,13 @@ export class NavigationController {
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
   ): Promise<NavigationItemDto[]> {
     const results = await this.navigationService.searchNavigation(query, limit);
-    return results.map((nav) => this.navigationService.getNavigationById(nav.id));
+    // Map navigation entities to DTOs
+    const dtos: NavigationItemDto[] = [];
+    for (const nav of results) {
+      const dto = await this.navigationService.getNavigationById(nav.id);
+      dtos.push(dto);
+    }
+    return dtos;
   }
 
   // ========================================
