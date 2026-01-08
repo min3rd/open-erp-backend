@@ -26,10 +26,8 @@ import {
   ListUsersQueryDto,
   UserResponseDto,
 } from '../dto/user.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
-import { Permissions } from '@shared/authz/decorators';
+import { JwtAuthGuard, PermissionsGuard, Permissions } from '@shared/authz';
 import { Permission } from '@shared/types/permission.enum';
-import { PermissionsGuard } from '@shared/authz';
 
 @ApiTags('users')
 @ApiBearerAuth()
