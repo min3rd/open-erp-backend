@@ -87,7 +87,7 @@ export const Permissions = (
   const permissionArray = Array.isArray(permissions)
     ? permissions
     : [permissions];
-  const scope = options?.scope || 'organization';
+  const scope = options?.scope || 'tenant';
   const mode = options?.mode || 'all';
 
   return (target: any, key: string, descriptor: PropertyDescriptor) => {

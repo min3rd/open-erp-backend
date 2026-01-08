@@ -234,18 +234,6 @@ export class UserRpcController {
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.ADD_USER_TO_ORGANIZATION}`);
     try {
-      // Use the provided createdBy, fallback to invitedBy, and only use 'system' as last resort
-      // The 'system' fallback is only for backwards compatibility with older RPC callers
-      // that don't provide user IDs. New callers should always provide createdBy or invitedBy.
-      const createdBy = params.createdBy || params.invitedBy;
-      
-      if (!createdBy) {
-        this.logger.warn(
-          `No createdBy or invitedBy provided for addUserToOrganization. ` +
-          `Using 'system' as fallback. Please update RPC caller to provide user ID.`
-        );
-      }
-      
       const membership = await this.organizationMemberRepository.create({
         userId: params.userId,
         organizationId: params.organizationId,
@@ -253,7 +241,7 @@ export class UserRpcController {
         invitedBy: params.invitedBy,
         invitedAt: new Date(),
         joinedAt: new Date(),
-        createdBy: createdBy || 'system',
+        createdBy: params.invitedBy || params.createdBy || 'system',
       });
       return membership;
     } catch (error) {
