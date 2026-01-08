@@ -25,6 +25,9 @@ export enum Permission {
   ORGANIZATION_UPDATE = 'organization.update',
   ORGANIZATION_DELETE = 'organization.delete',
   ORGANIZATION_MANAGE = 'organization.manage', // Full organization management
+  ORGANIZATION_INVITE = 'organization.invite', // Invite users to organization
+  ORGANIZATION_MEMBER_UPDATE = 'organization.member.update', // Update member roles/status
+  ORGANIZATION_MEMBER_REMOVE = 'organization.member.remove', // Remove members from organization
 
   // Role Management
   ROLE_CREATE = 'role.create',
@@ -118,6 +121,9 @@ export const PermissionGroups = {
     Permission.ORGANIZATION_READ,
     Permission.ORGANIZATION_UPDATE,
     Permission.ORGANIZATION_DELETE,
+    Permission.ORGANIZATION_INVITE,
+    Permission.ORGANIZATION_MEMBER_UPDATE,
+    Permission.ORGANIZATION_MEMBER_REMOVE,
   ],
   ROLE_FULL: [
     Permission.ROLE_CREATE,

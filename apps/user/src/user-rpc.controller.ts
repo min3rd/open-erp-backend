@@ -229,6 +229,7 @@ export class UserRpcController {
       organizationId: string;
       role: string;
       invitedBy?: string;
+      createdBy?: string;
     },
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.ADD_USER_TO_ORGANIZATION}`);
@@ -240,7 +241,7 @@ export class UserRpcController {
         invitedBy: params.invitedBy,
         invitedAt: new Date(),
         joinedAt: new Date(),
-        createdBy: params.invitedBy || 'system',
+        createdBy: params.invitedBy || params.createdBy || 'system',
       });
       return membership;
     } catch (error) {

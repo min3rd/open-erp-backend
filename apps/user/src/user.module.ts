@@ -19,9 +19,12 @@ import {
   UserSchema,
   OrganizationMember,
   OrganizationMemberSchema,
+  Role,
+  RoleSchema,
 } from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
+import { AuthorizationService } from '@shared/authz';
 
 @Module({
   imports: [
@@ -42,6 +45,7 @@ import { OrganizationMemberRepository } from './repositories/organization-member
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: OrganizationMember.name, schema: OrganizationMemberSchema },
+      { name: Role.name, schema: RoleSchema },
     ]),
   ],
   controllers: [
@@ -58,6 +62,7 @@ import { OrganizationMemberRepository } from './repositories/organization-member
     OrganizationMembershipService,
     UserRepository,
     OrganizationMemberRepository,
+    AuthorizationService,
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,
