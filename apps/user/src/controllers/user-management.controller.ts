@@ -29,11 +29,12 @@ import {
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types/permission.enum';
+import { PermissionsGuard } from '@shared/authz';
 
 @ApiTags('users')
 @ApiBearerAuth()
 @Controller('users')
-@UseGuards(JwtAuthGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard)
 export class UserManagementController {
   constructor(private readonly userManagementService: UserManagementService) {}
 
