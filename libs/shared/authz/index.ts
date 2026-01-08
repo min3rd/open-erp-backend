@@ -23,7 +23,7 @@ export { CurrentUser } from './current-user.decorator';
 
 // Guards
 export { PermissionsGuard, UserContext } from './permissions.guard';
-export { JwtAuthGuard, JwtPayload } from './jwt-auth.guard';
+export { JwtAuthGuard } from './jwt-auth.guard';
 
 // Service
 export {
