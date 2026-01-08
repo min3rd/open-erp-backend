@@ -339,7 +339,10 @@ export class UserRepository {
   /**
    * Remove a role from a user
    */
-  async removeRoleFromUser(userId: string, roleId: string): Promise<User | null> {
+  async removeRoleFromUser(
+    userId: string,
+    roleId: string,
+  ): Promise<User | null> {
     try {
       const user = await this.userModel.findById(userId).exec();
       if (!user) {

@@ -435,7 +435,7 @@ describe('PermissionsGuard', () => {
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
-        .mockReturnValueOnce(['order.create']) // requiredPermissions
+        .mockReturnValueOnce(['order.create']); // requiredPermissions
 
       const context = createMockExecutionContext(user);
       const result = await guard.canActivate(context);
@@ -453,7 +453,7 @@ describe('PermissionsGuard', () => {
       };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
-        .mockReturnValueOnce(['ORGANIZATION_ADMIN']) // requiredRoles
+        .mockReturnValueOnce(['ORGANIZATION_ADMIN']); // requiredRoles
 
       const context = createMockExecutionContext(user);
       const result = await guard.canActivate(context);
@@ -471,7 +471,7 @@ describe('PermissionsGuard', () => {
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
-        .mockReturnValueOnce(['order.create']) // requiredPermissions
+        .mockReturnValueOnce(['order.create']); // requiredPermissions
 
       const context = createMockExecutionContext(user);
       const result = await guard.canActivate(context);

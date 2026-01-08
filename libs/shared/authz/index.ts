@@ -45,4 +45,7 @@ export {
 export type { JwtPayload } from './utils/token.util';
 
 // Interfaces
-export type { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';
+export type {
+  ITokenResolver,
+  IUserResolver,
+} from './interfaces/resolver.interface';

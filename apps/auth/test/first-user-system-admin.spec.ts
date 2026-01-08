@@ -93,7 +93,10 @@ describe('AuthService - First User SYSTEM_ADMIN Assignment', () => {
         return of(systemAdminRole);
       }
       if (pattern === RPC_METHODS.USER.ADD_ROLE_TO_USER) {
-        return of({ ...newUser, roleAssignments: [{ roleId: systemAdminRole._id }] });
+        return of({
+          ...newUser,
+          roleAssignments: [{ roleId: systemAdminRole._id }],
+        });
       }
       return of(null);
     });
@@ -104,7 +107,10 @@ describe('AuthService - First User SYSTEM_ADMIN Assignment', () => {
     const result = await service.register(registerDto);
 
     // Verify user count was checked
-    expect(mockUserClient.send).toHaveBeenCalledWith(RPC_METHODS.USER.COUNT_USERS, {});
+    expect(mockUserClient.send).toHaveBeenCalledWith(
+      RPC_METHODS.USER.COUNT_USERS,
+      {},
+    );
 
     // Verify SYSTEM_ADMIN role was ensured to exist
     expect(mockUserClient.send).toHaveBeenCalledWith(
@@ -160,7 +166,10 @@ describe('AuthService - First User SYSTEM_ADMIN Assignment', () => {
     const result = await service.register(registerDto);
 
     // Verify user count was checked
-    expect(mockUserClient.send).toHaveBeenCalledWith(RPC_METHODS.USER.COUNT_USERS, {});
+    expect(mockUserClient.send).toHaveBeenCalledWith(
+      RPC_METHODS.USER.COUNT_USERS,
+      {},
+    );
 
     // Verify SYSTEM_ADMIN role was NOT ensured/added
     expect(mockUserClient.send).not.toHaveBeenCalledWith(

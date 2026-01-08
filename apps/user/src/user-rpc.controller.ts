@@ -382,7 +382,9 @@ export class UserRpcController {
         throw new Error(`User not found with id: ${params.userId}`);
       }
 
-      this.logger.log(`Role ${params.roleId} removed from user ${params.userId}`);
+      this.logger.log(
+        `Role ${params.roleId} removed from user ${params.userId}`,
+      );
 
       // Emit event
       try {

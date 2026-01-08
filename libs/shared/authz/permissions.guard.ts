@@ -25,7 +25,10 @@ import {
 } from '../errors/error-codes';
 import { getOrCreateCorrelationId } from '../errors/correlation-id.util';
 import { extractBearerToken, verifyToken } from './utils/token.util';
-import type { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';
+import type {
+  ITokenResolver,
+  IUserResolver,
+} from './interfaces/resolver.interface';
 import { Role } from '@shared/types/role.enum';
 
 /**

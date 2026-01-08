@@ -64,11 +64,13 @@ export class RoleRepository {
     }
   }
 
-  async findAll(filter: {
-    scope?: 'global' | 'organization';
-    organizationId?: string;
-    status?: string;
-  } = {}): Promise<Role[]> {
+  async findAll(
+    filter: {
+      scope?: 'global' | 'organization';
+      organizationId?: string;
+      status?: string;
+    } = {},
+  ): Promise<Role[]> {
     try {
       const query: any = {};
       if (filter.scope) {
@@ -82,10 +84,7 @@ export class RoleRepository {
       }
       return await this.roleModel.find(query).exec();
     } catch (error) {
-      this.logger.error(
-        `Error finding roles: ${error.message}`,
-        error.stack,
-      );
+      this.logger.error(`Error finding roles: ${error.message}`, error.stack);
       throw error;
     }
   }
