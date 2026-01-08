@@ -153,9 +153,13 @@ export class CreateNavigationDto {
   })
   @IsOptional()
   @IsString()
-  @Matches(/^(Ctrl|Alt|Shift|Meta)(\+(Ctrl|Alt|Shift|Meta))*\+([A-Za-z0-9]|F\d{1,2})$/, {
-    message: 'Invalid shortcut format (e.g., Ctrl+D, Alt+Shift+S, F1, Ctrl+Shift+Delete)',
-  })
+  @Matches(
+    /^(Ctrl|Alt|Shift|Meta)(\+(Ctrl|Alt|Shift|Meta))*\+([A-Za-z0-9]|F\d{1,2})$/,
+    {
+      message:
+        'Invalid shortcut format (e.g., Ctrl+D, Alt+Shift+S, F1, Ctrl+Shift+Delete)',
+    },
+  )
   @MaxLength(50)
   shortcut?: string;
 

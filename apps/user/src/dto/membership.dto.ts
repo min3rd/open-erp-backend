@@ -9,11 +9,18 @@ import {
 import { MemberRole, MemberStatus } from '@shared/schemas';
 
 export class InviteMemberDto {
-  @ApiProperty({ description: 'User identifier (email or username)', example: 'john@example.com' })
+  @ApiProperty({
+    description: 'User identifier (email or username)',
+    example: 'john@example.com',
+  })
   @IsString()
   identifier: string;
 
-  @ApiProperty({ description: 'Role to assign', enum: MemberRole, default: MemberRole.MEMBER })
+  @ApiProperty({
+    description: 'Role to assign',
+    enum: MemberRole,
+    default: MemberRole.MEMBER,
+  })
   @IsEnum(MemberRole)
   role: MemberRole;
 
@@ -88,8 +95,12 @@ export class ListOrganizationMembersQueryDto {
   @IsOptional()
   page?: number;
 
-  @ApiPropertyOptional({ description: 'Page size', default: 10, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Page size',
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   size?: number;
 }
-

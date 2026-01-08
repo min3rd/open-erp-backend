@@ -14,7 +14,11 @@ describe('UserManagementService', () => {
     username: 'testuser',
     email: 'test@example.com',
     status: 'active',
-    toJSON: () => ({ id: 'user123', username: 'testuser', email: 'test@example.com' }),
+    toJSON: () => ({
+      id: 'user123',
+      username: 'testuser',
+      email: 'test@example.com',
+    }),
   };
 
   beforeEach(async () => {
@@ -67,7 +71,9 @@ describe('UserManagementService', () => {
       const result = await service.createUser(createDto);
 
       expect(result).toEqual(mockUser);
-      expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
       expect(userRepository.findByUsername).toHaveBeenCalledWith('testuser');
       expect(userRepository.create).toHaveBeenCalled();
     });
@@ -81,8 +87,12 @@ describe('UserManagementService', () => {
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
 
-      await expect(service.createUser(createDto)).rejects.toThrow(BadRequestException);
-      expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      await expect(service.createUser(createDto)).rejects.toThrow(
+        BadRequestException,
+      );
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
       expect(userRepository.create).not.toHaveBeenCalled();
     });
 
@@ -96,7 +106,9 @@ describe('UserManagementService', () => {
       userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findByUsername.mockResolvedValue(mockUser as any);
 
-      await expect(service.createUser(createDto)).rejects.toThrow(BadRequestException);
+      await expect(service.createUser(createDto)).rejects.toThrow(
+        BadRequestException,
+      );
       expect(userRepository.findByUsername).toHaveBeenCalledWith('testuser');
       expect(userRepository.create).not.toHaveBeenCalled();
     });
@@ -110,7 +122,9 @@ describe('UserManagementService', () => {
 
       expect(result).toEqual(mockUser);
       expect(userRepository.findById).toHaveBeenCalledWith('user123');
-      expect(organizationMemberRepository.findUserOrganizations).not.toHaveBeenCalled();
+      expect(
+        organizationMemberRepository.findUserOrganizations,
+      ).not.toHaveBeenCalled();
     });
 
     it('should return user with memberships when requested', async () => {
@@ -119,18 +133,24 @@ describe('UserManagementService', () => {
       ];
 
       userRepository.findById.mockResolvedValue(mockUser as any);
-      organizationMemberRepository.findUserOrganizations.mockResolvedValue(mockMemberships as any);
+      organizationMemberRepository.findUserOrganizations.mockResolvedValue(
+        mockMemberships as any,
+      );
 
       const result = await service.findUserById('user123', true);
 
       expect(result.memberships).toEqual(mockMemberships);
-      expect(organizationMemberRepository.findUserOrganizations).toHaveBeenCalledWith('user123');
+      expect(
+        organizationMemberRepository.findUserOrganizations,
+      ).toHaveBeenCalledWith('user123');
     });
 
     it('should throw NotFoundException if user not found', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(service.findUserById('nonexistent', false)).rejects.toThrow(NotFoundException);
+      await expect(service.findUserById('nonexistent', false)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -157,7 +177,9 @@ describe('UserManagementService', () => {
     it('should throw NotFoundException if user not found', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(service.updateUser('nonexistent', {})).rejects.toThrow(NotFoundException);
+      await expect(service.updateUser('nonexistent', {})).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should throw BadRequestException if email already in use', async () => {
@@ -167,7 +189,9 @@ describe('UserManagementService', () => {
       userRepository.findById.mockResolvedValue(mockUser as any);
       userRepository.findByEmail.mockResolvedValue(existingUser as any);
 
-      await expect(service.updateUser('user123', updateDto)).rejects.toThrow(BadRequestException);
+      await expect(service.updateUser('user123', updateDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -184,7 +208,9 @@ describe('UserManagementService', () => {
     it('should throw NotFoundException if user not found', async () => {
       userRepository.findById.mockResolvedValue(null);
 
-      await expect(service.deleteUser('nonexistent')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteUser('nonexistent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -207,26 +233,37 @@ describe('UserManagementService', () => {
     });
 
     it('should list users with organization scope', async () => {
-      const query = { page: 1, size: 10, scope: 'organization' as const, organizationId: 'org123' };
+      const query = {
+        page: 1,
+        size: 10,
+        scope: 'organization' as const,
+        organizationId: 'org123',
+      };
       const mockResult = {
-        members: [{
-          _id: { toString: () => 'membership123' },
-          userId: mockUser,
-          role: 'member',
-          status: 'active',
-          joinedAt: new Date(),
-        }],
+        members: [
+          {
+            _id: { toString: () => 'membership123' },
+            userId: mockUser,
+            role: 'member',
+            status: 'active',
+            joinedAt: new Date(),
+          },
+        ],
         total: 1,
         page: 1,
         totalPages: 1,
       };
 
-      organizationMemberRepository.listOrganizationMembers.mockResolvedValue(mockResult as any);
+      organizationMemberRepository.listOrganizationMembers.mockResolvedValue(
+        mockResult as any,
+      );
 
       const result = await service.listUsers(query);
 
       expect(result.users).toBeDefined();
-      expect(organizationMemberRepository.listOrganizationMembers).toHaveBeenCalledWith({
+      expect(
+        organizationMemberRepository.listOrganizationMembers,
+      ).toHaveBeenCalledWith({
         organizationId: 'org123',
         page: 1,
         limit: 10,
@@ -236,7 +273,9 @@ describe('UserManagementService', () => {
     it('should throw BadRequestException if organizationId missing for organization scope', async () => {
       const query = { page: 1, size: 10, scope: 'organization' as const };
 
-      await expect(service.listUsers(query)).rejects.toThrow(BadRequestException);
+      await expect(service.listUsers(query)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 });

@@ -4,7 +4,6 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
 import { DatabaseModule } from '@shared/database';
 import { RabbitMQClientModule } from '@shared/rabbitmq/rabbitmq-client.module';
-import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
 import { AuthorizationService } from '@shared/authz/authorization.service';
 import { PermissionService } from '@shared/services/permission.service';
 import { User, UserSchema, Role, RoleSchema } from '@shared/schemas';
@@ -37,7 +36,12 @@ import { Navigation, NavigationSchema } from './schemas/navigation.schema';
       },
     ]),
   ],
-  controllers: [ConfigController, UserConfigController, NavigationController, HealthController],
+  controllers: [
+    ConfigController,
+    UserConfigController,
+    NavigationController,
+    HealthController,
+  ],
   providers: [
     ConfigService,
     NavigationService,
@@ -46,6 +50,11 @@ import { Navigation, NavigationSchema } from './schemas/navigation.schema';
     AuthorizationService,
     PermissionService,
   ],
-  exports: [ConfigService, NavigationService, ConfigRepository, NavigationRepository],
+  exports: [
+    ConfigService,
+    NavigationService,
+    ConfigRepository,
+    NavigationRepository,
+  ],
 })
 export class ConfigServiceModule {}

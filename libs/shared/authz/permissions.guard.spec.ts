@@ -115,7 +115,10 @@ describe('PermissionsGuard', () => {
 
   describe('Role-based authorization', () => {
     it('should allow access when user has required role', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(['SYSTEM_ADMIN']); // requiredRoles
@@ -132,7 +135,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should deny access when user lacks required role', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(['SYSTEM_ADMIN']); // requiredRoles
@@ -153,7 +159,10 @@ describe('PermissionsGuard', () => {
 
   describe('Permission-based authorization', () => {
     it('should allow access when no permissions are required', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -166,7 +175,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should check all required permissions by default', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -188,7 +200,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should check any permission when mode is "any"', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -210,7 +225,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should deny access when user lacks required permissions', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -235,7 +253,10 @@ describe('PermissionsGuard', () => {
 
   describe('Scope handling', () => {
     it('should use global scope when specified', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
@@ -279,7 +300,10 @@ describe('PermissionsGuard', () => {
 
   describe('Cross-tenant access validation', () => {
     it('should deny cross-tenant access for non-admin users', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
       request.params = { organizationId: 'tenant456' }; // Different tenant
@@ -303,7 +327,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should allow cross-tenant access for system admins', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
       request.params = { organizationId: 'tenant456' }; // Different tenant
@@ -324,7 +351,10 @@ describe('PermissionsGuard', () => {
     });
 
     it('should allow access when organizationId from JWT matches organizationId in URL', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
       request.params = { organizationId: 'tenant123' }; // Same tenant
@@ -372,7 +402,10 @@ describe('PermissionsGuard', () => {
 
   describe('Error handling', () => {
     it('should fail closed on unexpected errors', async () => {
-      const user: UserContext = { userId: 'user123', organizationId: 'tenant123' };
+      const user: UserContext = {
+        userId: 'user123',
+        organizationId: 'tenant123',
+      };
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles

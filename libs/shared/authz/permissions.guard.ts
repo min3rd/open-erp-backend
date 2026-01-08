@@ -196,7 +196,8 @@ export class PermissionsGuard implements CanActivate {
             correlationId,
             userId: user.userId,
             route,
-            reason: 'Organization ID missing for organization-scoped permission check',
+            reason:
+              'Organization ID missing for organization-scoped permission check',
             requiredPermissions,
             scope,
           });
@@ -211,10 +212,12 @@ export class PermissionsGuard implements CanActivate {
         // Validate organization consistency if organizationId is in URL/header
         if (
           user.organizationId &&
-          (request.params?.organizationId || request.headers['x-organization-id'])
+          (request.params?.organizationId ||
+            request.headers['x-organization-id'])
         ) {
           const requestedOrganizationId =
-            request.params?.organizationId || request.headers['x-organization-id'];
+            request.params?.organizationId ||
+            request.headers['x-organization-id'];
           if (user.organizationId !== requestedOrganizationId) {
             // Allow if user is system admin (cross-tenant access)
             const isSystemAdmin = await this.authorizationService.isSystemAdmin(

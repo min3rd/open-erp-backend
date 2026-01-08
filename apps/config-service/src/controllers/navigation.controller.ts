@@ -27,7 +27,11 @@ import { NavigationService } from '../services/navigation.service';
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
-import { NavigationItemDto, NavigationResponseDto } from '../dto/navigation-response.dto';
+import {
+  NavigationItemDto,
+  NavigationResponseDto,
+} from '../dto/navigation-response.dto';
+import { NavigationScope } from '../schemas/navigation.schema';
 import { PermissionsGuard } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -47,13 +51,15 @@ export class NavigationController {
   @Permissions('navigation.read')
   @ApiOperation({
     summary: 'Get global navigation tree',
-    description: 'Returns the full global navigation tree, optionally filtered by user permissions',
+    description:
+      'Returns the full global navigation tree, optionally filtered by user permissions',
   })
   @ApiQuery({
     name: 'permissions',
     required: false,
     type: String,
-    description: 'Comma-separated list of permission keys to filter navigation items',
+    description:
+      'Comma-separated list of permission keys to filter navigation items',
     example: 'user.read,user.write',
   })
   @ApiResponse({
@@ -72,7 +78,7 @@ export class NavigationController {
 
     return {
       items,
-      scope: 'global' as any,
+      scope: NavigationScope.GLOBAL,
       total: items.length,
     };
   }
@@ -96,7 +102,8 @@ export class NavigationController {
     name: 'permissions',
     required: false,
     type: String,
-    description: 'Comma-separated list of permission keys to filter navigation items',
+    description:
+      'Comma-separated list of permission keys to filter navigation items',
   })
   @ApiResponse({
     status: 200,
@@ -111,11 +118,14 @@ export class NavigationController {
       ? permissionsParam.split(',').map((p) => p.trim())
       : undefined;
 
-    const items = await this.navigationService.getModuleNavigation(moduleKey, permissions);
+    const items = await this.navigationService.getModuleNavigation(
+      moduleKey,
+      permissions,
+    );
 
     return {
       items,
-      scope: 'module' as any,
+      scope: NavigationScope.MODULE,
       module: moduleKey,
       total: items.length,
     };
@@ -129,7 +139,8 @@ export class NavigationController {
   @Permissions('navigation.read')
   @ApiOperation({
     summary: 'Search navigation items',
-    description: 'Search for navigation items by label, icon, command, or subtitle',
+    description:
+      'Search for navigation items by label, icon, command, or subtitle',
   })
   @ApiQuery({
     name: 'q',
@@ -194,7 +205,8 @@ export class NavigationController {
   @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
   @ApiOperation({
     summary: 'Create a new navigation item',
-    description: 'Creates a new navigation item. Only admins can manage navigation.',
+    description:
+      'Creates a new navigation item. Only admins can manage navigation.',
   })
   @ApiResponse({
     status: 201,
@@ -206,10 +218,13 @@ export class NavigationController {
   @HttpCode(HttpStatus.CREATED)
   async createNavigation(
     @Body() dto: CreateNavigationDto,
-    @Request() req: any,
+    @Request() req: { user?: { userId?: string } },
   ): Promise<NavigationItemDto> {
     const userId = req.user?.userId || 'system';
-    const navigation = await this.navigationService.createNavigation(dto, userId);
+    const navigation = await this.navigationService.createNavigation(
+      dto,
+      userId,
+    );
     return this.navigationService.getNavigationById(navigation.id);
   }
 
@@ -217,7 +232,8 @@ export class NavigationController {
   @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
   @ApiOperation({
     summary: 'Update a navigation item',
-    description: 'Updates an existing navigation item. Only admins can manage navigation.',
+    description:
+      'Updates an existing navigation item. Only admins can manage navigation.',
   })
   @ApiParam({
     name: 'id',
@@ -234,10 +250,14 @@ export class NavigationController {
   async updateNavigation(
     @Param('id') id: string,
     @Body() dto: UpdateNavigationDto,
-    @Request() req: any,
+    @Request() req: { user?: { userId?: string } },
   ): Promise<NavigationItemDto> {
     const userId = req.user?.userId || 'system';
-    const navigation = await this.navigationService.updateNavigation(id, dto, userId);
+    const navigation = await this.navigationService.updateNavigation(
+      id,
+      dto,
+      userId,
+    );
     return this.navigationService.getNavigationById(navigation.id);
   }
 
@@ -245,7 +265,8 @@ export class NavigationController {
   @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
   @ApiOperation({
     summary: 'Delete a navigation item',
-    description: 'Deletes a navigation item and optionally its children. Only admins can manage navigation.',
+    description:
+      'Deletes a navigation item and optionally its children. Only admins can manage navigation.',
   })
   @ApiParam({
     name: 'id',
@@ -258,13 +279,17 @@ export class NavigationController {
     type: Boolean,
     description: 'Whether to delete children recursively (default: true)',
   })
-  @ApiResponse({ status: 200, description: 'Navigation item deleted successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Navigation item deleted successfully',
+  })
   @ApiResponse({ status: 404, description: 'Navigation item not found' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   async deleteNavigation(
     @Param('id') id: string,
-    @Query('cascade', new DefaultValuePipe(true), ParseBoolPipe) cascade: boolean,
-    @Request() req: any,
+    @Query('cascade', new DefaultValuePipe(true), ParseBoolPipe)
+    cascade: boolean,
+    @Request() req: { user?: { userId?: string } },
   ): Promise<{ message: string }> {
     const userId = req.user?.userId || 'system';
     await this.navigationService.deleteNavigation(id, userId, cascade);
@@ -279,7 +304,8 @@ export class NavigationController {
   @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
   @ApiOperation({
     summary: 'Move a navigation item',
-    description: 'Moves a navigation item to a new parent and/or position. Only admins can manage navigation.',
+    description:
+      'Moves a navigation item to a new parent and/or position. Only admins can manage navigation.',
   })
   @ApiParam({
     name: 'id',
@@ -292,15 +318,22 @@ export class NavigationController {
     type: NavigationItemDto,
   })
   @ApiResponse({ status: 404, description: 'Navigation item not found' })
-  @ApiResponse({ status: 400, description: 'Invalid move operation (cycle detected)' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid move operation (cycle detected)',
+  })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   async moveNavigation(
     @Param('id') id: string,
     @Body() dto: MoveNavigationDto,
-    @Request() req: any,
+    @Request() req: { user?: { userId?: string } },
   ): Promise<NavigationItemDto> {
     const userId = req.user?.userId || 'system';
-    const navigation = await this.navigationService.moveNavigation(id, dto, userId);
+    const navigation = await this.navigationService.moveNavigation(
+      id,
+      dto,
+      userId,
+    );
     return this.navigationService.getNavigationById(navigation.id);
   }
 
@@ -312,7 +345,8 @@ export class NavigationController {
   @Roles(['SYSTEM_ADMIN'])
   @ApiOperation({
     summary: 'Reload navigation cache',
-    description: 'Invalidates and reloads the navigation cache. Only system admins can perform this operation.',
+    description:
+      'Invalidates and reloads the navigation cache. Only system admins can perform this operation.',
   })
   @ApiQuery({
     name: 'scope',
@@ -333,7 +367,8 @@ export class NavigationController {
     @Query('scope') scope?: string,
     @Query('module') module?: string,
   ): Promise<{ message: string }> {
-    await this.navigationService.reloadCache(scope as any, module);
+    const navigationScope = scope as NavigationScope | undefined;
+    await this.navigationService.reloadCache(navigationScope, module);
     return { message: 'Navigation cache reloaded successfully' };
   }
 }

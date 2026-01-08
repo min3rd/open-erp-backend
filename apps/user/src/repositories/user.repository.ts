@@ -217,9 +217,19 @@ export class UserRepository {
     page?: number;
     limit?: number;
     sort?: any;
-  }): Promise<{ users: User[]; total: number; page: number; totalPages: number }> {
+  }): Promise<{
+    users: User[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
     try {
-      const { query = {}, page = 1, limit = 10, sort = { createdAt: -1 } } = options;
+      const {
+        query = {},
+        page = 1,
+        limit = 10,
+        sort = { createdAt: -1 },
+      } = options;
       const skip = (page - 1) * limit;
 
       const [users, total] = await Promise.all([
@@ -248,10 +258,15 @@ export class UserRepository {
     username?: string;
     page?: number;
     limit?: number;
-  }): Promise<{ users: User[]; total: number; page: number; totalPages: number }> {
+  }): Promise<{
+    users: User[];
+    total: number;
+    page: number;
+    totalPages: number;
+  }> {
     try {
       const { searchQuery, email, username, page = 1, limit = 10 } = options;
-      
+
       const query: any = {};
 
       if (searchQuery) {

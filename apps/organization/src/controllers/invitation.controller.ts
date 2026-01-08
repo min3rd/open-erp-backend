@@ -89,10 +89,7 @@ export class InvitationController {
   @ApiOperation({ summary: 'Revoke invitation' })
   @ApiResponse({ status: 200, description: 'Invitation revoked successfully' })
   @Permissions(['invitation.revoke', 'organization.manage'], { mode: 'any' })
-  async revoke(
-    @Param('id') id: string,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  async revoke(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.invitationService.revoke(id, req.user.userId);
   }
 }

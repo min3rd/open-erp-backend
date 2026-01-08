@@ -35,7 +35,9 @@ export class NavigationService {
   /**
    * Get global navigation tree with optional permission filtering
    */
-  async getGlobalNavigation(permissions?: string[]): Promise<NavigationItemDto[]> {
+  async getGlobalNavigation(
+    permissions?: string[],
+  ): Promise<NavigationItemDto[]> {
     const cacheKey = `global:${permissions?.sort().join(',') || 'all'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) {
@@ -43,7 +45,9 @@ export class NavigationService {
       return cached;
     }
 
-    const roots = await this.navigationRepository.findRoots(NavigationScope.GLOBAL);
+    const roots = await this.navigationRepository.findRoots(
+      NavigationScope.GLOBAL,
+    );
     const tree = await this.buildNavigationTree(roots, permissions);
 
     this.setCache(cacheKey, tree);
@@ -53,7 +57,10 @@ export class NavigationService {
   /**
    * Get module-specific navigation tree with optional permission filtering
    */
-  async getModuleNavigation(moduleKey: string, permissions?: string[]): Promise<NavigationItemDto[]> {
+  async getModuleNavigation(
+    moduleKey: string,
+    permissions?: string[],
+  ): Promise<NavigationItemDto[]> {
     const cacheKey = `module:${moduleKey}:${permissions?.sort().join(',') || 'all'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) {
@@ -61,7 +68,10 @@ export class NavigationService {
       return cached;
     }
 
-    const roots = await this.navigationRepository.findRoots(NavigationScope.MODULE, moduleKey);
+    const roots = await this.navigationRepository.findRoots(
+      NavigationScope.MODULE,
+      moduleKey,
+    );
     const tree = await this.buildNavigationTree(roots, permissions);
 
     this.setCache(cacheKey, tree);
@@ -71,7 +81,10 @@ export class NavigationService {
   /**
    * Get a single navigation item by ID with its children
    */
-  async getNavigationById(id: string, permissions?: string[]): Promise<NavigationItemDto> {
+  async getNavigationById(
+    id: string,
+    permissions?: string[],
+  ): Promise<NavigationItemDto> {
     const navigation = await this.navigationRepository.findById(id);
     if (!navigation) {
       throw new NotFoundException(`Navigation item '${id}' not found`);
@@ -79,7 +92,9 @@ export class NavigationService {
 
     const tree = await this.buildNavigationTree([navigation], permissions);
     if (tree.length === 0) {
-      throw new NotFoundException(`Navigation item '${id}' not accessible with provided permissions`);
+      throw new NotFoundException(
+        `Navigation item '${id}' not accessible with provided permissions`,
+      );
     }
 
     return tree[0];
@@ -88,26 +103,40 @@ export class NavigationService {
   /**
    * Create a new navigation item
    */
-  async createNavigation(dto: CreateNavigationDto, userId: string): Promise<Navigation> {
+  async createNavigation(
+    dto: CreateNavigationDto,
+    userId: string,
+  ): Promise<Navigation> {
     // Validate module scope
     if (dto.scope === NavigationScope.MODULE && !dto.module) {
-      throw new BadRequestException('Module key is required for module-scoped navigation');
+      throw new BadRequestException(
+        'Module key is required for module-scoped navigation',
+      );
     }
 
     // Validate parent exists and no cycle
     if (dto.parentId) {
       const parent = await this.navigationRepository.findById(dto.parentId);
       if (!parent) {
-        throw new NotFoundException(`Parent navigation item '${dto.parentId}' not found`);
+        throw new NotFoundException(
+          `Parent navigation item '${dto.parentId}' not found`,
+        );
       }
 
       // Check scope compatibility
       if (dto.scope !== parent.scope) {
-        throw new BadRequestException('Navigation item scope must match parent scope');
+        throw new BadRequestException(
+          'Navigation item scope must match parent scope',
+        );
       }
 
-      if (dto.scope === NavigationScope.MODULE && dto.module !== parent.module) {
-        throw new BadRequestException('Navigation item module must match parent module');
+      if (
+        dto.scope === NavigationScope.MODULE &&
+        dto.module !== parent.module
+      ) {
+        throw new BadRequestException(
+          'Navigation item module must match parent module',
+        );
       }
     }
 
@@ -129,7 +158,11 @@ export class NavigationService {
   /**
    * Update a navigation item
    */
-  async updateNavigation(id: string, dto: UpdateNavigationDto, userId: string): Promise<Navigation> {
+  async updateNavigation(
+    id: string,
+    dto: UpdateNavigationDto,
+    userId: string,
+  ): Promise<Navigation> {
     const existing = await this.navigationRepository.findById(id);
     if (!existing) {
       throw new NotFoundException(`Navigation item '${id}' not found`);
@@ -161,7 +194,11 @@ export class NavigationService {
   /**
    * Delete a navigation item and optionally its children
    */
-  async deleteNavigation(id: string, userId: string, cascade: boolean = true): Promise<void> {
+  async deleteNavigation(
+    id: string,
+    userId: string,
+    cascade: boolean = true,
+  ): Promise<void> {
     const navigation = await this.navigationRepository.findById(id);
     if (!navigation) {
       throw new NotFoundException(`Navigation item '${id}' not found`);
@@ -178,7 +215,9 @@ export class NavigationService {
     // Delete children if cascade
     if (cascade && children.length > 0) {
       await this.navigationRepository.deleteChildren(id);
-      this.logger.log(`Deleted ${children.length} children of navigation item '${id}'`);
+      this.logger.log(
+        `Deleted ${children.length} children of navigation item '${id}'`,
+      );
     }
 
     // Delete the item
@@ -199,7 +238,11 @@ export class NavigationService {
   /**
    * Move a navigation item to a new parent
    */
-  async moveNavigation(id: string, dto: MoveNavigationDto, userId: string): Promise<Navigation> {
+  async moveNavigation(
+    id: string,
+    dto: MoveNavigationDto,
+    userId: string,
+  ): Promise<Navigation> {
     const navigation = await this.navigationRepository.findById(id);
     if (!navigation) {
       throw new NotFoundException(`Navigation item '${id}' not found`);
@@ -218,7 +261,11 @@ export class NavigationService {
       updateDto.order = dto.order;
     }
 
-    const updated = await this.navigationRepository.update(id, updateDto, userId);
+    const updated = await this.navigationRepository.update(
+      id,
+      updateDto,
+      userId,
+    );
     if (!updated) {
       throw new NotFoundException(`Navigation item '${id}' not found`);
     }
@@ -236,7 +283,10 @@ export class NavigationService {
   /**
    * Search navigation items
    */
-  async searchNavigation(query: string, limit: number = 50): Promise<Navigation[]> {
+  async searchNavigation(
+    query: string,
+    limit: number = 50,
+  ): Promise<Navigation[]> {
     if (!query || query.trim().length === 0) {
       throw new BadRequestException('Search query cannot be empty');
     }
@@ -249,7 +299,9 @@ export class NavigationService {
    */
   async reloadCache(scope?: NavigationScope, module?: string): Promise<void> {
     this.invalidateCache(scope, module);
-    this.logger.log(`Navigation cache invalidated for scope=${scope}, module=${module}`);
+    this.logger.log(
+      `Navigation cache invalidated for scope=${scope}, module=${module}`,
+    );
   }
 
   // ========================================
@@ -332,16 +384,25 @@ export class NavigationService {
 
     const newParent = await this.navigationRepository.findById(newParentId);
     if (!newParent) {
-      throw new NotFoundException(`Parent navigation item '${newParentId}' not found`);
+      throw new NotFoundException(
+        `Parent navigation item '${newParentId}' not found`,
+      );
     }
 
     // Check scope compatibility
     if (current.scope !== newParent.scope) {
-      throw new BadRequestException('Navigation item scope must match parent scope');
+      throw new BadRequestException(
+        'Navigation item scope must match parent scope',
+      );
     }
 
-    if (current.scope === NavigationScope.MODULE && current.module !== newParent.module) {
-      throw new BadRequestException('Navigation item module must match parent module');
+    if (
+      current.scope === NavigationScope.MODULE &&
+      current.module !== newParent.module
+    ) {
+      throw new BadRequestException(
+        'Navigation item module must match parent module',
+      );
     }
 
     // Check for cycles
@@ -356,25 +417,33 @@ export class NavigationService {
   /**
    * Sanitize navigation data to prevent XSS
    */
-  private sanitizeNavigationData(dto: CreateNavigationDto | UpdateNavigationDto): void {
+  private sanitizeNavigationData(
+    dto: CreateNavigationDto | UpdateNavigationDto,
+  ): void {
     // Basic XSS prevention: remove script tags and dangerous attributes
     const dangerousPattern = /<script|javascript:|onerror=|onload=/gi;
 
     if ('label' in dto && dto.label) {
       if (dangerousPattern.test(dto.label)) {
-        throw new BadRequestException('Label contains potentially dangerous content');
+        throw new BadRequestException(
+          'Label contains potentially dangerous content',
+        );
       }
     }
 
     if ('tooltip' in dto && dto.tooltip) {
       if (dangerousPattern.test(dto.tooltip)) {
-        throw new BadRequestException('Tooltip contains potentially dangerous content');
+        throw new BadRequestException(
+          'Tooltip contains potentially dangerous content',
+        );
       }
     }
 
     if ('subtitle' in dto && dto.subtitle) {
       if (dangerousPattern.test(dto.subtitle)) {
-        throw new BadRequestException('Subtitle contains potentially dangerous content');
+        throw new BadRequestException(
+          'Subtitle contains potentially dangerous content',
+        );
       }
     }
 
@@ -394,7 +463,7 @@ export class NavigationService {
     if (!navigation.createdAt || !navigation.updatedAt) {
       this.logger.warn(
         `Navigation item '${navigation.id}' is missing timestamps. ` +
-        `createdAt: ${navigation.createdAt}, updatedAt: ${navigation.updatedAt}`,
+          `createdAt: ${navigation.createdAt}, updatedAt: ${navigation.updatedAt}`,
       );
     }
 
@@ -475,7 +544,11 @@ export class NavigationService {
     for (const key of this.cache.keys()) {
       if (scope === NavigationScope.GLOBAL && key.startsWith('global:')) {
         keysToDelete.push(key);
-      } else if (scope === NavigationScope.MODULE && module && key.startsWith(`module:${module}:`)) {
+      } else if (
+        scope === NavigationScope.MODULE &&
+        module &&
+        key.startsWith(`module:${module}:`)
+      ) {
         keysToDelete.push(key);
       }
     }
@@ -486,7 +559,11 @@ export class NavigationService {
   /**
    * Publish navigation event
    */
-  private async publishEvent(eventName: string, navigation: Navigation, userId: string): Promise<void> {
+  private async publishEvent(
+    eventName: string,
+    navigation: Navigation,
+    userId: string,
+  ): Promise<void> {
     try {
       this.userClient.emit(eventName, {
         id: navigation.id,
@@ -496,7 +573,10 @@ export class NavigationService {
         timestamp: new Date(),
       });
     } catch (error) {
-      this.logger.error(`Error publishing event ${eventName}: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error publishing event ${eventName}: ${error.message}`,
+        error.stack,
+      );
       // Don't throw - event publishing failure shouldn't break the operation
     }
   }
