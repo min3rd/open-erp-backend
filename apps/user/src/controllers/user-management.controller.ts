@@ -26,7 +26,7 @@ import {
   ListUsersQueryDto,
   UserResponseDto,
 } from '../dto/user.dto';
-import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { JwtAuthGuard } from '@shared/authz';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types/permission.enum';
 import { PermissionsGuard } from '@shared/authz';
