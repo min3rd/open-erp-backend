@@ -27,6 +27,8 @@ export function getTokenExpiration(minutes: number = 15): Date {
  * @param email - User email
  * @param secret - JWT secret key
  * @param expiresIn - Token expiration time (e.g., '15m', '1h')
+ * @param roles - User roles (optional)
+ * @param organizationId - User organization ID (optional)
  * @returns JWT access token
  */
 export function generateAccessToken(
@@ -34,12 +36,23 @@ export function generateAccessToken(
   email: string,
   secret: string,
   expiresIn: string | number = '15m',
+  roles?: string[],
+  organizationId?: string,
 ): string {
-  const payload = {
+  const payload: any = {
     sub: userId,
     email,
     type: 'access',
   };
+  
+  if (roles && roles.length > 0) {
+    payload.roles = roles;
+  }
+  
+  if (organizationId) {
+    payload.organizationId = organizationId;
+  }
+  
   return jwt.sign(payload, secret, { expiresIn: expiresIn as any });
 }
 

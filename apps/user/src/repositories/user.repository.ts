@@ -293,4 +293,92 @@ export class UserRepository {
       throw error;
     }
   }
+
+  /**
+   * Add a role to a user
+   */
+  async addRoleToUser(
+    userId: string,
+    roleId: string,
+    grantedBy?: string,
+  ): Promise<User | null> {
+    try {
+      const user = await this.userModel.findById(userId).exec();
+      if (!user) {
+        return null;
+      }
+
+      // Check if role already assigned
+      const hasRole = user.roleAssignments?.some(
+        (ra) => ra.roleId.toString() === roleId,
+      );
+
+      if (!hasRole) {
+        if (!user.roleAssignments) {
+          user.roleAssignments = [];
+        }
+        user.roleAssignments.push({
+          roleId: roleId as any,
+          grantedAt: new Date(),
+          grantedBy: grantedBy as any,
+        });
+        await user.save();
+        this.logger.log(`Role ${roleId} added to user ${userId}`);
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error adding role to user: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Remove a role from a user
+   */
+  async removeRoleFromUser(userId: string, roleId: string): Promise<User | null> {
+    try {
+      const user = await this.userModel.findById(userId).exec();
+      if (!user) {
+        return null;
+      }
+
+      if (user.roleAssignments) {
+        user.roleAssignments = user.roleAssignments.filter(
+          (ra) => ra.roleId.toString() !== roleId,
+        );
+        await user.save();
+        this.logger.log(`Role ${roleId} removed from user ${userId}`);
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error removing role from user: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Get user roles (populated)
+   */
+  async getUserWithRoles(userId: string): Promise<User | null> {
+    try {
+      return await this.userModel
+        .findById(userId)
+        .populate('roleAssignments.roleId')
+        .exec();
+    } catch (error) {
+      this.logger.error(
+        `Error getting user with roles: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
 }

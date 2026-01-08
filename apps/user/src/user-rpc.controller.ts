@@ -2,6 +2,7 @@ import { Controller, Logger, Inject } from '@nestjs/common';
 import { MessagePattern, Payload, ClientProxy } from '@nestjs/microservices';
 import { RPC_METHODS, EVENT_NAMES } from '@shared/constants/message.constants';
 import { UserRepository, UpdateUserDto } from './repositories/user.repository';
+import { RoleRepository } from './repositories/role.repository';
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 import { RABBITMQ_NOTIFICATION_CLIENT } from '@shared/rabbitmq';
 
@@ -15,6 +16,7 @@ export class UserRpcController {
 
   constructor(
     private readonly userRepository: UserRepository,
+    private readonly roleRepository: RoleRepository,
     private readonly organizationMemberRepository: OrganizationMemberRepository,
     @Inject(RABBITMQ_NOTIFICATION_CLIENT)
     private readonly notificationClient: ClientProxy,
@@ -284,6 +286,148 @@ export class UserRpcController {
     } catch (error) {
       this.logger.error(
         `Error removing user from organization via RPC: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  @MessagePattern(RPC_METHODS.USER.COUNT_USERS)
+  async countUsers(@Payload() _params?: any) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.COUNT_USERS}`);
+    try {
+      const count = await this.userRepository.count();
+      this.logger.log(`User count: ${count}`);
+      return count;
+    } catch (error) {
+      this.logger.error(
+        `Error counting users via RPC: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  @MessagePattern(RPC_METHODS.USER.GET_USER_WITH_ROLES)
+  async getUserWithRoles(@Payload() params: { userId: string }) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER_WITH_ROLES}`);
+    try {
+      const user = await this.userRepository.getUserWithRoles(params.userId);
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error getting user with roles via RPC: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  @MessagePattern(RPC_METHODS.USER.ADD_ROLE_TO_USER)
+  async addRoleToUser(
+    @Payload()
+    params: {
+      userId: string;
+      roleId: string;
+      grantedBy?: string;
+    },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.ADD_ROLE_TO_USER}`);
+    try {
+      const user = await this.userRepository.addRoleToUser(
+        params.userId,
+        params.roleId,
+        params.grantedBy,
+      );
+      if (!user) {
+        throw new Error(`User not found with id: ${params.userId}`);
+      }
+
+      this.logger.log(
+        `Role ${params.roleId} added to user ${params.userId} by ${params.grantedBy || 'system'}`,
+      );
+
+      // Emit event
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+          userId: params.userId,
+          roleAdded: params.roleId,
+          grantedBy: params.grantedBy,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error adding role to user via RPC: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  @MessagePattern(RPC_METHODS.USER.REMOVE_ROLE_FROM_USER)
+  async removeRoleFromUser(
+    @Payload() params: { userId: string; roleId: string },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.REMOVE_ROLE_FROM_USER}`);
+    try {
+      const user = await this.userRepository.removeRoleFromUser(
+        params.userId,
+        params.roleId,
+      );
+      if (!user) {
+        throw new Error(`User not found with id: ${params.userId}`);
+      }
+
+      this.logger.log(`Role ${params.roleId} removed from user ${params.userId}`);
+
+      // Emit event
+      try {
+        this.notificationClient.emit(EVENT_NAMES.USER.UPDATED, {
+          userId: params.userId,
+          roleRemoved: params.roleId,
+        });
+      } catch (error) {
+        this.logger.warn(`Failed to emit user updated event: ${error.message}`);
+      }
+
+      return user;
+    } catch (error) {
+      this.logger.error(
+        `Error removing role from user via RPC: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  @MessagePattern(RPC_METHODS.USER.ENSURE_SYSTEM_ROLE_EXISTS)
+  async ensureSystemRoleExists(
+    @Payload()
+    params: {
+      code: string;
+      name?: string;
+      description?: string;
+      permissions?: string[];
+    },
+  ) {
+    this.logger.log(`RPC: ${RPC_METHODS.USER.ENSURE_SYSTEM_ROLE_EXISTS}`);
+    try {
+      const role = await this.roleRepository.ensureSystemRoleExists(
+        params.code,
+        {
+          name: params.name,
+          description: params.description,
+          permissions: params.permissions,
+        },
+      );
+      return role;
+    } catch (error) {
+      this.logger.error(
+        `Error ensuring system role exists via RPC: ${error.message}`,
         error.stack,
       );
       throw error;

@@ -134,11 +134,21 @@ export class AuthService {
       // Allow resending verification code
       this.logger.log(`Resending verification code for pending user: ${email}`);
     } else {
+      // Check if this is the first user (for SYSTEM_ADMIN assignment)
+      const userCount = await firstValueFrom(
+        this.userClient.send(RPC_METHODS.USER.COUNT_USERS, {}),
+      );
+      const isFirstUser = userCount === 0;
+
+      if (isFirstUser) {
+        this.logger.log('First user registration detected - will assign SYSTEM_ADMIN role');
+      }
+
       // Create new user via RPC to user service using NestJS ClientProxy
       const hashedPassword = await hashPassword(password);
 
       try {
-        await firstValueFrom(
+        const newUser = await firstValueFrom(
           this.userClient.send(RPC_METHODS.USER.CREATE_USER, {
             email,
             username: email,
@@ -149,6 +159,50 @@ export class AuthService {
         );
 
         this.logger.log(`New user created: ${email}`);
+
+        // If this is the first user, assign SYSTEM_ADMIN role
+        if (isFirstUser && newUser && newUser.id) {
+          try {
+            // Ensure SYSTEM_ADMIN role exists
+            const systemAdminRole = await firstValueFrom(
+              this.userClient.send(RPC_METHODS.USER.ENSURE_SYSTEM_ROLE_EXISTS, {
+                code: 'SYSTEM_ADMIN',
+                name: 'System Administrator',
+                description: 'Full system administrator with unrestricted access',
+                permissions: [
+                  'system.admin',
+                  'system.config',
+                  'user.manage',
+                  'role.manage',
+                ],
+              }),
+            );
+
+            // Add SYSTEM_ADMIN role to the first user
+            await firstValueFrom(
+              this.userClient.send(RPC_METHODS.USER.ADD_ROLE_TO_USER, {
+                userId: newUser.id.toString(),
+                roleId: systemAdminRole._id.toString(),
+                grantedBy: 'system',
+              }),
+            );
+
+            this.logger.log({
+              event: 'system_admin.assigned',
+              userId: newUser.id.toString(),
+              email,
+              reason: 'first_user_registration',
+              timestamp: new Date().toISOString(),
+            });
+          } catch (roleError) {
+            this.logger.error(
+              `Failed to assign SYSTEM_ADMIN role to first user: ${roleError.message}`,
+              roleError.stack,
+            );
+            // Don't fail registration if role assignment fails
+            // Admin can manually assign the role later
+          }
+        }
       } catch (error) {
         this.logger.error(`Error creating user: ${error.message}`, error.stack);
         if (error.code === 11000 || error.message?.includes('duplicate')) {
@@ -257,12 +311,31 @@ export class AuthService {
       });
     }
 
-    // Generate tokens
+    // Get user with roles for JWT payload
+    const userWithRoles = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.GET_USER_WITH_ROLES, {
+        userId: user.id.toString(),
+      }),
+    );
+
+    // Extract role codes for JWT
+    const roleCodes: string[] = [];
+    if (userWithRoles?.roleAssignments && Array.isArray(userWithRoles.roleAssignments)) {
+      for (const assignment of userWithRoles.roleAssignments) {
+        if (assignment.roleId && typeof assignment.roleId === 'object' && assignment.roleId.code) {
+          roleCodes.push(assignment.roleId.code);
+        }
+      }
+    }
+
+    // Generate tokens with roles
     const accessToken = generateAccessToken(
       user.id.toString(),
       user.email,
       this.jwtSecret,
       this.jwtAccessExpiresIn,
+      roleCodes.length > 0 ? roleCodes : undefined,
+      user.organizationId?.toString(),
     );
 
     const refreshTokenValue = generateRefreshToken();
