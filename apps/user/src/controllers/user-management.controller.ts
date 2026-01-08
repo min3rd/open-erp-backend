@@ -9,6 +9,7 @@ import {
   Query,
   HttpCode,
   HttpStatus,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { UserManagementService } from '../services/user-management.service';
 import {
@@ -24,9 +26,14 @@ import {
   ListUsersQueryDto,
   UserResponseDto,
 } from '../dto/user.dto';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
+import { Permissions } from '@shared/authz/decorators';
+import { Permission } from '@shared/types/permission.enum';
 
 @ApiTags('users')
+@ApiBearerAuth()
 @Controller('users')
+@UseGuards(JwtAuthGuard)
 export class UserManagementController {
   constructor(private readonly userManagementService: UserManagementService) {}
 
@@ -41,6 +48,10 @@ export class UserManagementController {
     status: 400,
     description: 'Invalid input or user already exists',
   })
+  @Permissions([Permission.USER_CREATE, Permission.USER_MANAGE], {
+    mode: 'any',
+    scope: 'global',
+  })
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userManagementService.createUser(createUserDto);
     return {
@@ -52,6 +63,10 @@ export class UserManagementController {
   @Get()
   @ApiOperation({ summary: 'List/search users' })
   @ApiResponse({ status: 200, description: 'Return list of users' })
+  @Permissions([Permission.USER_READ, Permission.USER_MANAGE], {
+    mode: 'any',
+    scope: 'global',
+  })
   async listUsers(@Query() query: ListUsersQueryDto) {
     const result = await this.userManagementService.listUsers(query);
     return {
@@ -80,6 +95,10 @@ export class UserManagementController {
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
+  @Permissions([Permission.USER_READ, Permission.USER_MANAGE], {
+    mode: 'any',
+    scope: 'global',
+  })
   async getUser(@Param('id') id: string, @Query('include') include?: string) {
     const includeMemberships = include === 'memberships';
     const user = await this.userManagementService.findUserById(
@@ -102,6 +121,10 @@ export class UserManagementController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   @ApiResponse({ status: 400, description: 'Invalid input' })
+  @Permissions([Permission.USER_UPDATE, Permission.USER_MANAGE], {
+    mode: 'any',
+    scope: 'global',
+  })
   async updateUser(
     @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -119,6 +142,10 @@ export class UserManagementController {
   @ApiParam({ name: 'id', description: 'User ID' })
   @ApiResponse({ status: 200, description: 'User successfully deleted' })
   @ApiResponse({ status: 404, description: 'User not found' })
+  @Permissions([Permission.USER_DELETE, Permission.USER_MANAGE], {
+    mode: 'any',
+    scope: 'global',
+  })
   async deleteUser(@Param('id') id: string) {
     await this.userManagementService.deleteUser(id);
     return {
