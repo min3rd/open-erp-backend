@@ -65,6 +65,20 @@ export enum Permission {
   REPORT_VIEW = 'report.view',
   REPORT_EXPORT = 'report.export',
   REPORT_MANAGE = 'report.manage',
+
+  // Navigation Management
+  NAVIGATION_READ = 'navigation.read',
+  NAVIGATION_CREATE = 'navigation.create',
+  NAVIGATION_UPDATE = 'navigation.update',
+  NAVIGATION_DELETE = 'navigation.delete',
+  NAVIGATION_MANAGE = 'navigation.manage', // Full navigation management
+
+  // Configuration Management
+  CONFIG_READ = 'config.read',
+  CONFIG_CREATE = 'config.create',
+  CONFIG_UPDATE = 'config.update',
+  CONFIG_DELETE = 'config.delete',
+  CONFIG_MANAGE = 'config.manage',
 }
 
 /**
@@ -135,5 +149,17 @@ export const PermissionGroups = {
     Permission.REPORT_VIEW,
     Permission.REPORT_EXPORT,
     Permission.REPORT_MANAGE,
+  ],
+  NAVIGATION_FULL: [
+    Permission.NAVIGATION_CREATE,
+    Permission.NAVIGATION_READ,
+    Permission.NAVIGATION_UPDATE,
+    Permission.NAVIGATION_DELETE,
+  ],
+  CONFIG_FULL: [
+    Permission.CONFIG_CREATE,
+    Permission.CONFIG_READ,
+    Permission.CONFIG_UPDATE,
+    Permission.CONFIG_DELETE,
   ],
 };

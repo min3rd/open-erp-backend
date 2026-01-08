@@ -3,6 +3,7 @@ import { NavigationService } from '../src/services/navigation.service';
 import { NavigationRepository } from '../src/repositories/navigation.repository';
 import { NavigationScope } from '../src/schemas/navigation.schema';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
+import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
 
 const mockRabbitMQClient = {
   emit: jest.fn().mockResolvedValue(undefined),
@@ -34,7 +35,7 @@ describe('NavigationService', () => {
           useValue: mockNavigationRepository,
         },
         {
-          provide: 'RABBITMQ_USER_CLIENT',
+          provide: RABBITMQ_USER_CLIENT,
           useValue: mockRabbitMQClient,
         },
       ],

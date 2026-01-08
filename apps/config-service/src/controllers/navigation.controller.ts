@@ -35,6 +35,7 @@ import { NavigationScope } from '../schemas/navigation.schema';
 import { PermissionsGuard } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { Permission, Role, RoleGroups } from '@shared/types';
 
 @ApiTags('navigations')
 @Controller({ path: 'navigations', version: '1' })
@@ -48,7 +49,7 @@ export class NavigationController {
   // ========================================
 
   @Get('global')
-  @Permissions('navigation.read')
+  @Permissions(Permission.NAVIGATION_READ)
   @ApiOperation({
     summary: 'Get global navigation tree',
     description:
@@ -88,7 +89,7 @@ export class NavigationController {
   // ========================================
 
   @Get('module/:moduleKey')
-  @Permissions('navigation.read')
+  @Permissions(Permission.NAVIGATION_READ)
   @ApiOperation({
     summary: 'Get module-specific navigation tree',
     description: 'Returns navigation tree scoped to the specified module',
@@ -136,7 +137,7 @@ export class NavigationController {
   // ========================================
 
   @Get('search')
-  @Permissions('navigation.read')
+  @Permissions(Permission.NAVIGATION_READ)
   @ApiOperation({
     summary: 'Search navigation items',
     description:
@@ -168,7 +169,7 @@ export class NavigationController {
   }
 
   @Get(':id')
-  @Permissions('navigation.read')
+  @Permissions(Permission.NAVIGATION_READ)
   @ApiOperation({
     summary: 'Get a navigation item by ID',
     description: 'Retrieves a specific navigation item with its children',
@@ -202,7 +203,7 @@ export class NavigationController {
   }
 
   @Post()
-  @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
+  @Roles(RoleGroups.NAVIGATION_ADMINS)
   @ApiOperation({
     summary: 'Create a new navigation item',
     description:
@@ -229,7 +230,7 @@ export class NavigationController {
   }
 
   @Patch(':id')
-  @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
+  @Roles(RoleGroups.NAVIGATION_ADMINS)
   @ApiOperation({
     summary: 'Update a navigation item',
     description:
@@ -262,7 +263,7 @@ export class NavigationController {
   }
 
   @Delete(':id')
-  @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
+  @Roles(RoleGroups.NAVIGATION_ADMINS)
   @ApiOperation({
     summary: 'Delete a navigation item',
     description:
@@ -301,7 +302,7 @@ export class NavigationController {
   // ========================================
 
   @Post(':id/move')
-  @Roles(['SYSTEM_ADMIN', 'NAV_ADMIN'])
+  @Roles(RoleGroups.NAVIGATION_ADMINS)
   @ApiOperation({
     summary: 'Move a navigation item',
     description:
@@ -342,7 +343,7 @@ export class NavigationController {
   // ========================================
 
   @Post('cache/reload')
-  @Roles(['SYSTEM_ADMIN'])
+  @Roles([Role.SYSTEM_ADMIN])
   @ApiOperation({
     summary: 'Reload navigation cache',
     description:
