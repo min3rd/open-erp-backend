@@ -13,6 +13,7 @@ import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
 import { NavigationItemDto } from '../dto/navigation-response.dto';
 import { EVENT_NAMES } from '@shared/constants/message.constants';
+import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
 
 // Simple in-memory cache
 interface CacheEntry {
@@ -29,7 +30,7 @@ export class NavigationService {
 
   constructor(
     private readonly navigationRepository: NavigationRepository,
-    @Inject('RABBITMQ_USER_CLIENT') private readonly userClient: ClientProxy,
+    @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
   ) {}
 
   /**
