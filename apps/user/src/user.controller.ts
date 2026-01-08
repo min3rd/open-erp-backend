@@ -10,6 +10,9 @@ import {
 import { UserService } from './user.service';
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 
+/**
+ * @deprecated Use UserManagementController instead
+ */
 @ApiTags('users')
 @Controller('users')
 export class UserController {

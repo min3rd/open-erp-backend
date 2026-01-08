@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { UserController } from './user.controller';
 import { HealthController } from './health.controller';
 import { UserRpcController } from './user-rpc.controller';
 import { UserEventController } from './user-event.controller';
@@ -30,7 +29,7 @@ import { OrganizationMemberRepository } from './repositories/organization-member
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 60 seconds
-        limit: 10, // 10 requests per minute
+        limit: 100, // 100 requests per minute
       },
     ]),
     MongooseModule.forRootAsync({
@@ -45,7 +44,6 @@ import { OrganizationMemberRepository } from './repositories/organization-member
     ]),
   ],
   controllers: [
-    UserController,
     HealthController,
     UserRpcController,
     UserEventController,
