@@ -29,6 +29,7 @@ import { getOrCreateCorrelationId } from '../errors/correlation-id.util';
  */
 export interface UserContext {
   userId: string;
+  email?: string;
   organizationId?: string;
   roles?: string[];
   [key: string]: any;
