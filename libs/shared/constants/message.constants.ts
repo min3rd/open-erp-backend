@@ -49,9 +49,12 @@ export const RPC_METHODS = {
     // Add organization RPC methods as needed
   },
   
-  // Config Service RPC Methods (placeholder for future)
+  // Config Service RPC Methods
   CONFIG: {
-    // Add config RPC methods as needed
+    // Navigation RPC Methods
+    GET_NAVIGATION_GLOBAL: 'getNavigationGlobal',
+    GET_NAVIGATION_MODULE: 'getNavigationModule',
+    RELOAD_NAVIGATION_CACHE: 'reloadNavigationCache',
   },
 } as const;
 
@@ -110,6 +113,14 @@ export const EVENT_NAMES = {
     USER_UPDATED: 'config.user.updated',
     USER_DELETED: 'config.user.deleted',
   },
+
+  // Navigation Events
+  NAVIGATION: {
+    CREATED: 'navigation.created',
+    UPDATED: 'navigation.updated',
+    DELETED: 'navigation.deleted',
+    MOVED: 'navigation.moved',
+  },
 } as const;
 
 /**
@@ -129,3 +140,4 @@ export type AuthEvent = typeof EVENT_NAMES.AUTH[keyof typeof EVENT_NAMES.AUTH];
 export type NotificationEvent = typeof EVENT_NAMES.NOTIFICATION[keyof typeof EVENT_NAMES.NOTIFICATION];
 export type OrganizationEvent = typeof EVENT_NAMES.ORGANIZATION[keyof typeof EVENT_NAMES.ORGANIZATION];
 export type ConfigEvent = typeof EVENT_NAMES.CONFIG[keyof typeof EVENT_NAMES.CONFIG];
+export type NavigationEvent = typeof EVENT_NAMES.NAVIGATION[keyof typeof EVENT_NAMES.NAVIGATION];
