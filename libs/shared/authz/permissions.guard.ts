@@ -25,7 +25,7 @@ import {
 } from '../errors/error-codes';
 import { getOrCreateCorrelationId } from '../errors/correlation-id.util';
 import { extractBearerToken, verifyToken } from './utils/token.util';
-import { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';
+import type { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';
 import { Role } from '@shared/types/role.enum';
 
 /**
@@ -112,7 +112,7 @@ export class PermissionsGuard implements CanActivate {
       }
 
       // Get user from request (set by authentication middleware/guard)
-      let user: UserContext = request.user;
+      let user: UserContext | null = request.user;
 
       if (!user || !user.userId) {
         // Try to resolve user independently from Authorization header
