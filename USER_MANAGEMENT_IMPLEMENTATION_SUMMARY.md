@@ -69,11 +69,11 @@ This implementation adds comprehensive user management APIs to the `user` micros
 
 ### ✅ Phase 5: REST Controllers
 - **UserManagementController** (`apps/user/src/controllers/user-management.controller.ts`)
-  - POST `/api/users` - Create user
-  - GET `/api/users/:id` - Get user (with ?include=memberships)
-  - PATCH `/api/users/:id` - Update user
-  - DELETE `/api/users/:id` - Delete user
-  - GET `/api/users` - List/search users (supports ?q, ?email, ?username, ?scope, ?organizationId)
+  - POST `/users` - Create user
+  - GET `/users/:id` - Get user (with ?include=memberships)
+  - PATCH `/users/:id` - Update user
+  - DELETE `/users/:id` - Delete user
+  - GET `/users` - List/search users (supports ?q, ?email, ?username, ?scope, ?organizationId)
 
 - **TenantMembershipController** (`apps/user/src/controllers/tenant-membership.controller.ts`)
   - POST `/api/organizations/:organizationId/users` - Invite member (rate limited: 5/min)
@@ -200,7 +200,7 @@ This implementation adds comprehensive user management APIs to the `user` micros
 
 ### Create User
 ```bash
-POST /api/users
+POST /users
 {
   "username": "john_doe",
   "email": "john@example.com",
@@ -221,7 +221,7 @@ POST /api/organizations/:organizationId/users
 
 ### Search Users in Tenant
 ```bash
-GET /api/users?scope=tenant&organizationId=org123&page=1&size=10
+GET /users?scope=tenant&organizationId=org123&page=1&size=10
 ```
 
 ### List Tenant Admins

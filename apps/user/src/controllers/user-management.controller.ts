@@ -15,7 +15,7 @@ import { UserManagementService } from '../services/user-management.service';
 import { CreateUserDto, UpdateUserDto, ListUsersQueryDto, UserResponseDto } from '../dto/user.dto';
 
 @ApiTags('users')
-@Controller('api/users')
+@Controller('users')
 export class UserManagementController {
   constructor(private readonly userManagementService: UserManagementService) {}
 

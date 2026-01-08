@@ -56,7 +56,7 @@
               "raw": "{\n  \"username\": \"john_doe\",\n  \"email\": \"john.doe@example.com\",\n  \"displayName\": \"John Doe\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"phone\": \"+1234567890\",\n  \"password\": \"securePassword123\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/users",
+              "raw": "{{baseUrl}}/v1/users",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users"]
             }
@@ -69,7 +69,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "raw": "{{baseUrl}}/v1/users/{{userId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users", "{{userId}}"]
             }
@@ -82,7 +82,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}?include=memberships",
+              "raw": "{{baseUrl}}/v1/users/{{userId}}?include=memberships",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users", "{{userId}}"],
               "query": [
@@ -110,7 +110,7 @@
               "raw": "{\n  \"displayName\": \"John Smith\",\n  \"phone\": \"+1987654321\"\n}"
             },
             "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "raw": "{{baseUrl}}/v1/users/{{userId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users", "{{userId}}"]
             }
@@ -123,7 +123,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users?page=1&size=10",
+              "raw": "{{baseUrl}}/v1/users?page=1&size=10",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users"],
               "query": [
@@ -146,7 +146,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users?q=john&page=1&size=10",
+              "raw": "{{baseUrl}}/v1/users?q=john&page=1&size=10",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users"],
               "query": [
@@ -173,7 +173,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users?email=john.doe@example.com",
+              "raw": "{{baseUrl}}/v1/users?email=john.doe@example.com",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users"],
               "query": [
@@ -192,7 +192,7 @@
             "method": "DELETE",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users/{{userId}}",
+              "raw": "{{baseUrl}}/v1/users/{{userId}}",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users", "{{userId}}"]
             }
@@ -353,7 +353,7 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{baseUrl}}/api/users?scope=tenant&organizationId={{organizationId}}&page=1&size=10",
+              "raw": "{{baseUrl}}/v1/users?scope=tenant&organizationId={{organizationId}}&page=1&size=10",
               "host": ["{{baseUrl}}"],
               "path": ["api", "users"],
               "query": [

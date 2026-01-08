@@ -143,7 +143,7 @@ npm run test                   # Run tests
 
 ```bash
 # Create a new user
-POST /api/users
+POST /users
 {
   "username": "john_doe",
   "email": "john@example.com",
@@ -152,22 +152,22 @@ POST /api/users
 }
 
 # Get user by ID
-GET /api/users/:id?include=memberships
+GET /users/:id?include=memberships
 
 # Update user profile
-PATCH /api/users/:id
+PATCH /users/:id
 {
   "displayName": "John Smith",
   "phone": "+1234567890"
 }
 
 # Delete user (soft delete)
-DELETE /api/users/:id
+DELETE /users/:id
 
 # List/search users
-GET /api/users?q=john&page=1&size=10&scope=global
-GET /api/users?email=john@example.com
-GET /api/users?scope=organization&organizationId=org123
+GET /users?q=john&page=1&size=10&scope=global
+GET /users?email=john@example.com
+GET /users?scope=organization&organizationId=org123
 ```
 
 ### Organization-Scoped User Management
