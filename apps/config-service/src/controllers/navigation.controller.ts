@@ -32,14 +32,14 @@ import {
   NavigationResponseDto,
 } from '../dto/navigation-response.dto';
 import { NavigationScope } from '../schemas/navigation.schema';
-import { PermissionsGuard } from '@shared/authz';
+import { JwtAuthGuard, PermissionsGuard } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { Permission, Role, RoleGroups } from '@shared/types';
 
 @ApiTags('navigations')
 @Controller({ path: 'navigations', version: '1' })
-@UseGuards(PermissionsGuard, ThrottlerGuard)
+@UseGuards(JwtAuthGuard, PermissionsGuard, ThrottlerGuard)
 @ApiBearerAuth()
 export class NavigationController {
   constructor(private readonly navigationService: NavigationService) {}
