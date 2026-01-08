@@ -23,10 +23,22 @@ export { CurrentUser } from './current-user.decorator';
 
 // Guards
 export { PermissionsGuard, UserContext } from './permissions.guard';
-export { JwtAuthGuard, JwtPayload } from './jwt-auth.guard';
+export { JwtAuthGuard } from './jwt-auth.guard';
+export { RolesGuard } from './roles.guard';
 
 // Service
 export {
   AuthorizationService,
   PermissionCheckOptions,
 } from './authorization.service';
+
+// Utilities
+export {
+  verifyToken,
+  generateRandomSecret,
+  extractBearerToken,
+  JwtPayload,
+} from './utils/token.util';
+
+// Interfaces
+export { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';

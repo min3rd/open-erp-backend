@@ -3,10 +3,10 @@ import { UserContext } from './permissions.guard';
 
 /**
  * CurrentUser Parameter Decorator
- * 
+ *
  * Extracts the authenticated user from the request object.
  * The user object is set by the JWT authentication guard.
- * 
+ *
  * @example
  * ```typescript
  * @Post('organizations/:organizationId/users')
@@ -21,7 +21,7 @@ import { UserContext } from './permissions.guard';
  *   // Use invitedById for audit trail
  * }
  * ```
- * 
+ *
  * @returns The user context containing userId, organizationId, roles, etc.
  */
 export const CurrentUser = createParamDecorator(

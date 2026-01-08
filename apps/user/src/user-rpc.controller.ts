@@ -238,14 +238,14 @@ export class UserRpcController {
       // The 'system' fallback is only for backwards compatibility with older RPC callers
       // that don't provide user IDs. New callers should always provide createdBy or invitedBy.
       const createdBy = params.createdBy || params.invitedBy;
-      
+
       if (!createdBy) {
         this.logger.warn(
           `No createdBy or invitedBy provided for addUserToOrganization. ` +
-          `Using 'system' as fallback. Please update RPC caller to provide user ID.`
+            `Using 'system' as fallback. Please update RPC caller to provide user ID.`,
         );
       }
-      
+
       const membership = await this.organizationMemberRepository.create({
         userId: params.userId,
         organizationId: params.organizationId,
