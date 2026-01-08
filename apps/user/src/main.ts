@@ -33,6 +33,10 @@ async function bootstrap() {
     prefix: 'v',
   });
 
+  app.enableCors({
+    origin: '*',
+  });
+
   // Apply global exception filter for standardized error handling
   app.useGlobalFilters(new GlobalExceptionFilter());
 
