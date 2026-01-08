@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   UnauthorizedException,
   Logger,
+  Optional,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { AuthorizationService } from './authorization.service';
@@ -23,6 +24,9 @@ import {
   AUTH_FORBIDDEN_CROSS_TENANT,
 } from '../errors/error-codes';
 import { getOrCreateCorrelationId } from '../errors/correlation-id.util';
+import { extractBearerToken, verifyToken } from './utils/token.util';
+import { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';
+import { Role } from '@shared/types/role.enum';
 
 /**
  * User context from JWT token
@@ -67,16 +71,27 @@ class AuthzMetrics {
 /**
  * Permissions Guard
  * Enforces permission-based access control with scope awareness
- * Integrates with JWT authentication and supports both global and tenant scopes
+ * Can work independently without JwtAuthGuard by resolving user context from token
+ * Supports SYSTEM_ADMIN bypass
  */
 @Injectable()
 export class PermissionsGuard implements CanActivate {
   private readonly logger = new Logger(PermissionsGuard.name);
+  private readonly jwtSecret: string;
 
   constructor(
     private reflector: Reflector,
     private authorizationService: AuthorizationService,
-  ) {}
+    @Optional() private tokenResolver?: ITokenResolver,
+    @Optional() private userResolver?: IUserResolver,
+  ) {
+    this.jwtSecret = process.env.JWT_SECRET || '';
+    if (!this.jwtSecret && process.env.NODE_ENV === 'production') {
+      this.logger.warn(
+        'JWT_SECRET not set - PermissionsGuard may not work properly in standalone mode',
+      );
+    }
+  }
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
     const request = context.switchToHttp().getRequest();
@@ -97,23 +112,41 @@ export class PermissionsGuard implements CanActivate {
       }
 
       // Get user from request (set by authentication middleware/guard)
-      const user: UserContext = request.user;
+      let user: UserContext = request.user;
 
       if (!user || !user.userId) {
-        this.logDenyDecision({
-          correlationId,
-          userId: 'unknown',
-          route,
-          reason: 'User not authenticated',
-          requiredPermissions: [],
-          scope: 'organization',
-        });
-        AuthzMetrics.incrementDeny();
-        throw new UnauthorizedException({
-          errorCode: AUTH_UNAUTHORIZED,
-          message: 'User not authenticated',
-          correlationId,
-        });
+        // Try to resolve user independently from Authorization header
+        user = await this.resolveUserFromRequest(request);
+
+        if (!user || !user.userId) {
+          this.logDenyDecision({
+            correlationId,
+            userId: 'unknown',
+            route,
+            reason: 'User not authenticated',
+            requiredPermissions: [],
+            scope: 'organization',
+          });
+          AuthzMetrics.incrementDeny();
+          throw new UnauthorizedException({
+            errorCode: AUTH_UNAUTHORIZED,
+            message: 'User not authenticated',
+            correlationId,
+          });
+        }
+
+        // Set user in request for downstream use
+        request.user = user;
+      }
+
+      // Check for SYSTEM_ADMIN bypass (before expensive permission checks)
+      if (user.roles && user.roles.includes(Role.SYSTEM_ADMIN)) {
+        this.logger.debug(
+          `SYSTEM_ADMIN bypass granted for user ${user.userId} on route ${route}`,
+        );
+        this.auditSuperAdminAccess(user.userId, route, correlationId);
+        AuthzMetrics.incrementAllow();
+        return true;
       }
 
       // Check for role-based requirements
@@ -338,6 +371,79 @@ export class PermissionsGuard implements CanActivate {
     this.logger.warn({
       message: 'Authorization denied',
       ...details,
+    });
+  }
+
+  /**
+   * Resolve user context from request Authorization header
+   * This enables PermissionsGuard to work independently of JwtAuthGuard
+   */
+  private async resolveUserFromRequest(
+    request: any,
+  ): Promise<UserContext | null> {
+    const token = extractBearerToken(request.headers.authorization);
+
+    if (!token) {
+      return null;
+    }
+
+    // Try custom token resolver first (e.g., RPC to auth service)
+    if (this.tokenResolver) {
+      try {
+        const user = await this.tokenResolver.resolveToken(token);
+        if (user) {
+          this.logger.debug('User resolved via custom token resolver');
+          return user;
+        }
+      } catch (error) {
+        this.logger.warn(`Custom token resolver failed: ${error.message}`);
+      }
+    }
+
+    // Try custom user resolver (e.g., RPC call)
+    if (this.userResolver) {
+      try {
+        const user = await this.userResolver.resolveUserFromToken(token);
+        if (user) {
+          this.logger.debug('User resolved via custom user resolver');
+          return user;
+        }
+      } catch (error) {
+        this.logger.warn(`Custom user resolver failed: ${error.message}`);
+      }
+    }
+
+    // Fallback to JWT verification with shared secret
+    if (this.jwtSecret) {
+      const decoded = verifyToken(token, this.jwtSecret);
+      if (decoded) {
+        this.logger.debug('User resolved via JWT verification');
+        return {
+          userId: decoded.sub,
+          email: decoded.email,
+          organizationId: decoded.organizationId,
+          roles: decoded.roles,
+        };
+      }
+    }
+
+    return null;
+  }
+
+  /**
+   * Audit SUPER_ADMIN access
+   */
+  private auditSuperAdminAccess(
+    userId: string,
+    route: string,
+    correlationId: string,
+  ): void {
+    this.logger.log({
+      message: 'SYSTEM_ADMIN bypass used',
+      userId,
+      route,
+      correlationId,
+      timestamp: new Date().toISOString(),
     });
   }
 
