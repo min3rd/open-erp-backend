@@ -1,5 +1,6 @@
-import { Injectable, ExecutionContext, Logger } from '@nestjs/common';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { Injectable, ExecutionContext, Logger, Inject } from '@nestjs/common';
+import { ThrottlerGuard, ThrottlerModuleOptions, ThrottlerStorage } from '@nestjs/throttler';
+import { Reflector } from '@nestjs/core';
 import { Role } from '@shared/types/role.enum';
 import { extractBearerToken, verifyToken } from './utils/token.util';
 
@@ -12,8 +13,12 @@ export class SystemAdminThrottlerGuard extends ThrottlerGuard {
   private readonly logger = new Logger(SystemAdminThrottlerGuard.name);
   private readonly jwtSecret: string;
 
-  constructor() {
-    super();
+  constructor(
+    @Inject('THROTTLER_OPTIONS') protected readonly options: ThrottlerModuleOptions,
+    @Inject('THROTTLER_STORAGE') protected readonly storageService: ThrottlerStorage,
+    protected readonly reflector: Reflector,
+  ) {
+    super(options, storageService, reflector);
     this.jwtSecret = process.env.JWT_SECRET || '';
     if (!this.jwtSecret && process.env.NODE_ENV === 'production') {
       this.logger.warn(

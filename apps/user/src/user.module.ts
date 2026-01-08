@@ -4,6 +4,7 @@ import { UserRpcController } from './user-rpc.controller';
 import { UserEventController } from './user-event.controller';
 import { UserManagementController } from './controllers/user-management.controller';
 import { OrganizationMembershipController } from './controllers/organization-membership.controller';
+import { SystemAdminController } from './controllers/system-admin.controller';
 import { UserService } from './user.service';
 import { UserManagementService } from './services/user-management.service';
 import { OrganizationMembershipService } from './services/organization-membership.service';
@@ -54,6 +55,7 @@ import { RoleRepository } from './repositories/role.repository';
     UserEventController,
     UserManagementController,
     OrganizationMembershipController,
+    SystemAdminController,
   ],
   providers: [
     UserService,
