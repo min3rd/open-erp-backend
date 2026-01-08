@@ -174,7 +174,7 @@ GET /users?scope=organization&organizationId=org123
 
 ```bash
 # Invite/add user to organization
-POST /api/organizations/:organizationId/users
+POST /organizations/:organizationId/users
 {
   "identifier": "john@example.com",  # email or username
   "role": "admin",                   # owner, admin, member, billing
@@ -182,20 +182,20 @@ POST /api/organizations/:organizationId/users
 }
 
 # List organization members
-GET /api/organizations/:organizationId/users?role=admin&status=active&page=1&size=10
+GET /organizations/:organizationId/users?role=admin&status=active&page=1&size=10
 
 # Get membership details
-GET /api/organizations/:organizationId/users/:userId
+GET /organizations/:organizationId/users/:userId
 
 # Update membership
-PATCH /api/organizations/:organizationId/users/:userId
+PATCH /organizations/:organizationId/users/:userId
 {
   "role": "member",
   "status": "active"
 }
 
 # Remove user from organization
-DELETE /api/organizations/:organizationId/users/:userId
+DELETE /organizations/:organizationId/users/:userId
 ```
 
 ### RPC Methods (Internal Services)

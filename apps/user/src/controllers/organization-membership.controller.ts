@@ -21,7 +21,7 @@ import {
 } from '../dto/membership.dto';
 
 @ApiTags('organizations')
-@Controller('api/organizations')
+@Controller('organizations')
 export class OrganizationMembershipController {
   constructor(private readonly membershipService: OrganizationMembershipService) {}
 

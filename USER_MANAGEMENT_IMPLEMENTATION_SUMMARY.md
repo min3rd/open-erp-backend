@@ -76,11 +76,11 @@ This implementation adds comprehensive user management APIs to the `user` micros
   - GET `/users` - List/search users (supports ?q, ?email, ?username, ?scope, ?organizationId)
 
 - **TenantMembershipController** (`apps/user/src/controllers/tenant-membership.controller.ts`)
-  - POST `/api/organizations/:organizationId/users` - Invite member (rate limited: 5/min)
-  - GET `/api/organizations/:organizationId/users` - List members (with ?role, ?status)
-  - GET `/api/organizations/:organizationId/users/:userId` - Get membership
-  - PATCH `/api/organizations/:organizationId/users/:userId` - Update membership
-  - DELETE `/api/organizations/:organizationId/users/:userId` - Remove member
+  - POST `/organizations/:organizationId/users` - Invite member (rate limited: 5/min)
+  - GET `/organizations/:organizationId/users` - List members (with ?role, ?status)
+  - GET `/organizations/:organizationId/users/:userId` - Get membership
+  - PATCH `/organizations/:organizationId/users/:userId` - Update membership
+  - DELETE `/organizations/:organizationId/users/:userId` - Remove member
 
 ### ✅ Phase 6: RPC Methods
 - **Extended UserRpcController** (`apps/user/src/user-rpc.controller.ts`)
@@ -211,7 +211,7 @@ POST /users
 
 ### Invite to Tenant
 ```bash
-POST /api/organizations/:organizationId/users
+POST /organizations/:organizationId/users
 {
   "identifier": "john@example.com",
   "role": "admin",
@@ -226,7 +226,7 @@ GET /users?scope=tenant&organizationId=org123&page=1&size=10
 
 ### List Tenant Admins
 ```bash
-GET /api/organizations/:organizationId/users?role=admin&status=active
+GET /organizations/:organizationId/users?role=admin&status=active
 ```
 
 ## Testing
