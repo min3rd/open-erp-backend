@@ -49,7 +49,7 @@ export class NavigationController {
   // ========================================
 
   @Get('global')
-  @Permissions(Permission.NAVIGATION_READ)
+  @Permissions(Permission.NAVIGATION_READ, { scope: 'global' })
   @ApiOperation({
     summary: 'Get global navigation tree',
     description:
