@@ -141,7 +141,9 @@ export class AuthService {
       const isFirstUser = userCount === 0;
 
       if (isFirstUser) {
-        this.logger.log('First user registration detected - will assign SYSTEM_ADMIN role');
+        this.logger.log(
+          'First user registration detected - will assign SYSTEM_ADMIN role',
+        );
       }
 
       // Create new user via RPC to user service using NestJS ClientProxy
@@ -168,7 +170,8 @@ export class AuthService {
               this.userClient.send(RPC_METHODS.USER.ENSURE_SYSTEM_ROLE_EXISTS, {
                 code: 'SYSTEM_ADMIN',
                 name: 'System Administrator',
-                description: 'Full system administrator with unrestricted access',
+                description:
+                  'Full system administrator with unrestricted access',
                 permissions: [
                   'system.admin',
                   'system.config',
@@ -320,9 +323,16 @@ export class AuthService {
 
     // Extract role codes for JWT
     const roleCodes: string[] = [];
-    if (userWithRoles?.roleAssignments && Array.isArray(userWithRoles.roleAssignments)) {
+    if (
+      userWithRoles?.roleAssignments &&
+      Array.isArray(userWithRoles.roleAssignments)
+    ) {
       for (const assignment of userWithRoles.roleAssignments) {
-        if (assignment.roleId && typeof assignment.roleId === 'object' && assignment.roleId.code) {
+        if (
+          assignment.roleId &&
+          typeof assignment.roleId === 'object' &&
+          assignment.roleId.code
+        ) {
           roleCodes.push(assignment.roleId.code);
         }
       }

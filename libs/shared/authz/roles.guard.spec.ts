@@ -1,11 +1,18 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ExecutionContext, ForbiddenException, UnauthorizedException } from '@nestjs/common';
+import {
+  ExecutionContext,
+  ForbiddenException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { RolesGuard } from './roles.guard';
 import { UserContext } from './permissions.guard';
 import { IS_PUBLIC_KEY, REQUIRED_ROLES_KEY } from './decorators';
 import { Role } from '@shared/types/role.enum';
-import { AUTH_INSUFFICIENT_PERMISSIONS, AUTH_UNAUTHORIZED } from '../errors/error-codes';
+import {
+  AUTH_INSUFFICIENT_PERMISSIONS,
+  AUTH_UNAUTHORIZED,
+} from '../errors/error-codes';
 
 describe('RolesGuard', () => {
   let guard: RolesGuard;
@@ -70,7 +77,7 @@ describe('RolesGuard', () => {
         if (key === REQUIRED_ROLES_KEY) return [];
         return undefined;
       });
-      
+
       const user: UserContext = {
         userId: 'user123',
         email: 'test@example.com',
@@ -88,10 +95,12 @@ describe('RolesGuard', () => {
         if (key === REQUIRED_ROLES_KEY) return [Role.USER];
         return undefined;
       });
-      
+
       const context = createMockExecutionContext();
 
-      await expect(guard.canActivate(context)).rejects.toThrow(UnauthorizedException);
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
 
     it('should allow access when user has required role', async () => {
@@ -100,7 +109,7 @@ describe('RolesGuard', () => {
         if (key === REQUIRED_ROLES_KEY) return [Role.USER];
         return undefined;
       });
-      
+
       const user: UserContext = {
         userId: 'user123',
         email: 'test@example.com',
@@ -119,7 +128,7 @@ describe('RolesGuard', () => {
         if (key === REQUIRED_ROLES_KEY) return [Role.ORGANIZATION_ADMIN];
         return undefined;
       });
-      
+
       const user: UserContext = {
         userId: 'user123',
         email: 'test@example.com',
@@ -127,16 +136,19 @@ describe('RolesGuard', () => {
       };
       const context = createMockExecutionContext(user);
 
-      await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);
+      await expect(guard.canActivate(context)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
 
     it('should allow access when user has one of multiple required roles', async () => {
       reflector.getAllAndOverride.mockImplementation((key) => {
         if (key === IS_PUBLIC_KEY) return false;
-        if (key === REQUIRED_ROLES_KEY) return [Role.ORGANIZATION_ADMIN, Role.MANAGER];
+        if (key === REQUIRED_ROLES_KEY)
+          return [Role.ORGANIZATION_ADMIN, Role.MANAGER];
         return undefined;
       });
-      
+
       const user: UserContext = {
         userId: 'user123',
         email: 'test@example.com',
@@ -157,7 +169,7 @@ describe('RolesGuard', () => {
         if (key === REQUIRED_ROLES_KEY) return [Role.ORGANIZATION_ADMIN];
         return undefined;
       });
-      
+
       const user: UserContext = {
         userId: 'admin123',
         email: 'admin@example.com',
@@ -176,7 +188,7 @@ describe('RolesGuard', () => {
         if (key === REQUIRED_ROLES_KEY) return [Role.USER];
         return undefined;
       });
-      
+
       const user: UserContext = {
         userId: 'admin123',
         email: 'admin@example.com',

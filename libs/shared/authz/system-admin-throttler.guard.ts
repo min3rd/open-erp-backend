@@ -15,8 +15,10 @@ export class SystemAdminThrottlerGuard extends ThrottlerGuard {
   private readonly jwtSecret: string;
 
   constructor(
-    @Inject('THROTTLER_OPTIONS') protected readonly options: ThrottlerModuleOptions,
-    @Inject('THROTTLER_STORAGE') protected readonly storageService: ThrottlerStorage,
+    @Inject('THROTTLER_OPTIONS')
+    protected readonly options: ThrottlerModuleOptions,
+    @Inject('THROTTLER_STORAGE')
+    protected readonly storageService: ThrottlerStorage,
     protected readonly reflector: Reflector,
   ) {
     super(options, storageService, reflector);
@@ -52,7 +54,11 @@ export class SystemAdminThrottlerGuard extends ThrottlerGuard {
     }
 
     // Check if user has SYSTEM_ADMIN role
-    if (user?.roles && Array.isArray(user.roles) && user.roles.includes(Role.SYSTEM_ADMIN)) {
+    if (
+      user?.roles &&
+      Array.isArray(user.roles) &&
+      user.roles.includes(Role.SYSTEM_ADMIN)
+    ) {
       // Log the bypass for audit purposes
       this.logger.log({
         message: 'SYSTEM_ADMIN throttle bypass',

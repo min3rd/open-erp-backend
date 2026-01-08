@@ -44,15 +44,15 @@ export function generateAccessToken(
     email,
     type: 'access',
   };
-  
+
   if (roles && roles.length > 0) {
     payload.roles = roles;
   }
-  
+
   if (organizationId) {
     payload.organizationId = organizationId;
   }
-  
+
   return jwt.sign(payload, secret, { expiresIn: expiresIn as any });
 }
 

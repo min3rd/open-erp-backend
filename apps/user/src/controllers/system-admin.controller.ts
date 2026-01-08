@@ -11,7 +11,13 @@ import {
   HttpCode,
   ForbiddenException,
 } from '@nestjs/common';
-import { JwtAuthGuard, RolesGuard, Roles, CurrentUser, UserContext } from '@shared/authz';
+import {
+  JwtAuthGuard,
+  RolesGuard,
+  Roles,
+  CurrentUser,
+  UserContext,
+} from '@shared/authz';
 import { Role } from '@shared/types/role.enum';
 import { UserRepository } from '../repositories/user.repository';
 import { RoleRepository } from '../repositories/role.repository';
@@ -38,8 +44,11 @@ export class SystemAdminController {
   async listSystemAdmins() {
     try {
       // Find SYSTEM_ADMIN role
-      const systemAdminRole = await this.roleRepository.findByCode('SYSTEM_ADMIN', 'global');
-      
+      const systemAdminRole = await this.roleRepository.findByCode(
+        'SYSTEM_ADMIN',
+        'global',
+      );
+
       if (!systemAdminRole) {
         return {
           success: true,
@@ -82,7 +91,10 @@ export class SystemAdminController {
         count: adminsWithDetails.length,
       };
     } catch (error) {
-      this.logger.error(`Error listing SYSTEM_ADMIN users: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error listing SYSTEM_ADMIN users: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -109,7 +121,12 @@ export class SystemAdminController {
         {
           name: 'System Administrator',
           description: 'Full system administrator with unrestricted access',
-          permissions: ['system.admin', 'system.config', 'user.manage', 'role.manage'],
+          permissions: [
+            'system.admin',
+            'system.config',
+            'user.manage',
+            'role.manage',
+          ],
         },
       );
 
@@ -152,7 +169,10 @@ export class SystemAdminController {
         },
       };
     } catch (error) {
-      this.logger.error(`Error granting SYSTEM_ADMIN role: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error granting SYSTEM_ADMIN role: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -169,7 +189,9 @@ export class SystemAdminController {
     try {
       // Prevent self-revocation
       if (userId === currentUser.userId) {
-        throw new ForbiddenException('Cannot revoke your own SYSTEM_ADMIN role');
+        throw new ForbiddenException(
+          'Cannot revoke your own SYSTEM_ADMIN role',
+        );
       }
 
       // Verify user exists
@@ -179,7 +201,10 @@ export class SystemAdminController {
       }
 
       // Find SYSTEM_ADMIN role
-      const systemAdminRole = await this.roleRepository.findByCode('SYSTEM_ADMIN', 'global');
+      const systemAdminRole = await this.roleRepository.findByCode(
+        'SYSTEM_ADMIN',
+        'global',
+      );
       if (!systemAdminRole) {
         throw new ForbiddenException('SYSTEM_ADMIN role not found');
       }
@@ -208,7 +233,7 @@ export class SystemAdminController {
       if (systemAdmins.length <= 1) {
         throw new ForbiddenException(
           'Cannot revoke SYSTEM_ADMIN role from the last system administrator. ' +
-          'System must have at least one SYSTEM_ADMIN user.',
+            'System must have at least one SYSTEM_ADMIN user.',
         );
       }
 
@@ -237,7 +262,10 @@ export class SystemAdminController {
         },
       };
     } catch (error) {
-      this.logger.error(`Error revoking SYSTEM_ADMIN role: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error revoking SYSTEM_ADMIN role: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
