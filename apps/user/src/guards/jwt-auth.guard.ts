@@ -7,6 +7,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import * as jwt from 'jsonwebtoken';
+import * as crypto from 'crypto';
 import { IS_PUBLIC_KEY } from '@shared/authz/decorators';
 
 /**
@@ -32,7 +33,6 @@ export class JwtAuthGuard implements CanActivate {
    * Generate a random secret for non-production use
    */
   private generateRandomSecret(): string {
-    const crypto = require('crypto');
     const secret = crypto.randomBytes(32).toString('hex');
     this.logger.warn(
       'Using auto-generated JWT secret. Set JWT_SECRET in production!',
