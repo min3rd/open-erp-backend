@@ -7,7 +7,22 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import * as jwt from 'jsonwebtoken';
+import * as crypto from 'crypto';
 import { IS_PUBLIC_KEY } from './decorators';
+
+/**
+ * JWT Payload Interface
+ * Describes the structure of decoded JWT tokens
+ */
+export interface JwtPayload {
+  sub: string; // User ID
+  email: string;
+  organizationId?: string;
+  roles?: string[];
+  type?: string;
+  iat?: number;
+  exp?: number;
+}
 
 /**
  * JWT Authentication Guard
@@ -48,7 +63,6 @@ export class JwtAuthGuard implements CanActivate {
    * Generate a random secret for non-production use
    */
   private generateRandomSecret(): string {
-    const crypto = require('crypto');
     const secret = crypto.randomBytes(32).toString('hex');
     this.logger.warn(
       'Using auto-generated JWT secret. Set JWT_SECRET in production!',
@@ -62,9 +76,9 @@ export class JwtAuthGuard implements CanActivate {
    * @param secret - JWT secret key
    * @returns Decoded token payload or null if invalid
    */
-  private verifyToken(token: string, secret: string): any {
+  private verifyToken(token: string, secret: string): JwtPayload | null {
     try {
-      return jwt.verify(token, secret);
+      return jwt.verify(token, secret) as JwtPayload;
     } catch {
       return null;
     }
