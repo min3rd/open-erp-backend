@@ -40,9 +40,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Tenant Service (Dev)",
+      "name": "Organization Service (Dev)",
       "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "start:tenant:dev"],
+      "runtimeArgs": ["run", "start:organization:dev"],
       "sourceMaps": true,
       "console": "integratedTerminal"
     }
