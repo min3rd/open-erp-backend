@@ -183,7 +183,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create', 'order.update']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.hasAllPermissions.mockResolvedValue(true);
@@ -195,7 +195,7 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(
         'user123',
         ['order.create', 'order.update'],
-        { scope: 'tenant', organizationId: 'tenant123' },
+        { scope: 'organization', organizationId: 'tenant123' },
       );
     });
 
@@ -208,7 +208,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.delete', 'order.manage']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('any'); // mode
 
       authorizationService.hasAnyPermission.mockResolvedValue(true);
@@ -220,7 +220,7 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAnyPermission).toHaveBeenCalledWith(
         'user123',
         ['order.delete', 'order.manage'],
-        { scope: 'tenant', organizationId: 'tenant123' },
+        { scope: 'organization', organizationId: 'tenant123' },
       );
     });
 
@@ -233,7 +233,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.hasAllPermissions.mockResolvedValue(false);
@@ -283,7 +283,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       const context = createMockExecutionContext(user);
@@ -312,7 +312,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.isSystemAdmin.mockResolvedValue(false);
@@ -339,7 +339,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.isSystemAdmin.mockResolvedValue(true);
@@ -363,7 +363,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.hasAllPermissions.mockResolvedValue(true);
@@ -373,18 +373,18 @@ describe('PermissionsGuard', () => {
       expect(result).toBe(true);
     });
 
-    it('should get organizationId from x-tenant-id header when not in JWT', async () => {
+    it('should get organizationId from x-organization-id header when not in JWT', async () => {
       const user: UserContext = { userId: 'user123' }; // No organizationId in JWT
       const context = createMockExecutionContext(user);
       const request = context.switchToHttp().getRequest();
-      request.headers = { 'x-tenant-id': 'tenant123' };
+      request.headers = { 'x-organization-id': 'tenant123' };
       request.params = {}; // No organizationId in params
 
       reflector.getAllAndOverride
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.hasAllPermissions.mockResolvedValue(true);
@@ -395,7 +395,7 @@ describe('PermissionsGuard', () => {
       expect(authorizationService.hasAllPermissions).toHaveBeenCalledWith(
         'user123',
         ['order.create'],
-        { scope: 'tenant', organizationId: 'tenant123' },
+        { scope: 'organization', organizationId: 'tenant123' },
       );
     });
   });
@@ -410,7 +410,7 @@ describe('PermissionsGuard', () => {
         .mockReturnValueOnce(false) // isPublic
         .mockReturnValueOnce(undefined) // requiredRoles
         .mockReturnValueOnce(['order.create']) // requiredPermissions
-        .mockReturnValueOnce('tenant') // scope
+        .mockReturnValueOnce('organization') // scope
         .mockReturnValueOnce('all'); // mode
 
       authorizationService.hasAllPermissions.mockRejectedValue(
@@ -422,6 +422,61 @@ describe('PermissionsGuard', () => {
       await expect(guard.canActivate(context)).rejects.toThrow(
         ForbiddenException,
       );
+    });
+  });
+
+  describe('SYSTEM_ADMIN bypass', () => {
+    it('should allow SYSTEM_ADMIN to bypass permission checks', async () => {
+      const user: UserContext = {
+        userId: 'admin123',
+        organizationId: 'tenant123',
+        roles: ['SYSTEM_ADMIN'],
+      };
+      reflector.getAllAndOverride
+        .mockReturnValueOnce(false) // isPublic
+        .mockReturnValueOnce(undefined) // requiredRoles
+        .mockReturnValueOnce(['order.create']) // requiredPermissions
+
+      const context = createMockExecutionContext(user);
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      // Permission check should be skipped
+      expect(authorizationService.hasAllPermissions).not.toHaveBeenCalled();
+    });
+
+    it('should allow SYSTEM_ADMIN to bypass role checks', async () => {
+      const user: UserContext = {
+        userId: 'admin123',
+        organizationId: 'tenant123',
+        roles: ['SYSTEM_ADMIN'],
+      };
+      reflector.getAllAndOverride
+        .mockReturnValueOnce(false) // isPublic
+        .mockReturnValueOnce(['ORGANIZATION_ADMIN']) // requiredRoles
+
+      const context = createMockExecutionContext(user);
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
+      // Role check via AuthorizationService should be skipped
+      expect(authorizationService.hasAnyRole).not.toHaveBeenCalled();
+    });
+
+    it('should work for SYSTEM_ADMIN without organizationId', async () => {
+      const user: UserContext = {
+        userId: 'admin123',
+        roles: ['SYSTEM_ADMIN'],
+      };
+      reflector.getAllAndOverride
+        .mockReturnValueOnce(false) // isPublic
+        .mockReturnValueOnce(undefined) // requiredRoles
+        .mockReturnValueOnce(['order.create']) // requiredPermissions
+
+      const context = createMockExecutionContext(user);
+      const result = await guard.canActivate(context);
+
+      expect(result).toBe(true);
     });
   });
 });
