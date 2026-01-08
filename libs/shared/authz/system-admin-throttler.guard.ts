@@ -1,5 +1,6 @@
 import { Injectable, ExecutionContext, Logger, Inject } from '@nestjs/common';
-import { ThrottlerGuard, ThrottlerModuleOptions, ThrottlerStorage } from '@nestjs/throttler';
+import { ThrottlerGuard, ThrottlerStorage } from '@nestjs/throttler';
+import type { ThrottlerModuleOptions } from '@nestjs/throttler';
 import { Reflector } from '@nestjs/core';
 import { Role } from '@shared/types/role.enum';
 import { extractBearerToken, verifyToken } from './utils/token.util';

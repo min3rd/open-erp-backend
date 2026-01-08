@@ -13,6 +13,9 @@ export {
   REQUIRED_ROLES_KEY,
   PERMISSION_SCOPE_KEY,
   PERMISSION_MODE_KEY,
+} from './decorators';
+
+export type {
   PermissionScope,
   PermissionMode,
   PermissionOptions,
@@ -22,24 +25,24 @@ export {
 export { CurrentUser } from './current-user.decorator';
 
 // Guards
-export { PermissionsGuard, UserContext } from './permissions.guard';
+export { PermissionsGuard } from './permissions.guard';
+export type { UserContext } from './permissions.guard';
 export { JwtAuthGuard } from './jwt-auth.guard';
 export { RolesGuard } from './roles.guard';
 export { SystemAdminThrottlerGuard } from './system-admin-throttler.guard';
 
 // Service
-export {
-  AuthorizationService,
-  PermissionCheckOptions,
-} from './authorization.service';
+export { AuthorizationService } from './authorization.service';
+export type { PermissionCheckOptions } from './authorization.service';
 
 // Utilities
 export {
   verifyToken,
   generateRandomSecret,
   extractBearerToken,
-  JwtPayload,
 } from './utils/token.util';
 
+export type { JwtPayload } from './utils/token.util';
+
 // Interfaces
-export { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';
+export type { ITokenResolver, IUserResolver } from './interfaces/resolver.interface';

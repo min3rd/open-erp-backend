@@ -12,7 +12,7 @@ import { IS_PUBLIC_KEY, REQUIRED_ROLES_KEY } from './decorators';
 import { UserContext } from './permissions.guard';
 import { Role } from '@shared/types/role.enum';
 import { extractBearerToken, verifyToken } from './utils/token.util';
-import { ITokenResolver } from './interfaces/resolver.interface';
+import type { ITokenResolver } from './interfaces/resolver.interface';
 import {
   AUTH_UNAUTHORIZED,
   AUTH_INSUFFICIENT_PERMISSIONS,
@@ -67,7 +67,7 @@ export class RolesGuard implements CanActivate {
       }
 
       // Ensure user context exists
-      let user: UserContext = request.user;
+      let user: UserContext | null = request.user;
 
       if (!user || !user.userId) {
         // Try to resolve user from token
