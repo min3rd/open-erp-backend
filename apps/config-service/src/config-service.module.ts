@@ -10,10 +10,14 @@ import { PermissionService } from '@shared/services/permission.service';
 import { User, UserSchema, Role, RoleSchema } from '@shared/schemas';
 import { ConfigController } from './controllers/config.controller';
 import { UserConfigController } from './controllers/user-config.controller';
+import { NavigationController } from './controllers/navigation.controller';
 import { HealthController } from './controllers/health.controller';
 import { ConfigService } from './services/config.service';
+import { NavigationService } from './services/navigation.service';
 import { ConfigRepository } from './repositories/config.repository';
+import { NavigationRepository } from './repositories/navigation.repository';
 import { Config, ConfigSchema } from './schemas/config.schema';
+import { Navigation, NavigationSchema } from './schemas/navigation.schema';
 
 @Module({
   imports: [
@@ -22,6 +26,7 @@ import { Config, ConfigSchema } from './schemas/config.schema';
     RabbitMQClientModule.forRoot(),
     MongooseModule.forFeature([
       { name: Config.name, schema: ConfigSchema },
+      { name: Navigation.name, schema: NavigationSchema },
       { name: User.name, schema: UserSchema },
       { name: Role.name, schema: RoleSchema },
     ]),
@@ -32,13 +37,15 @@ import { Config, ConfigSchema } from './schemas/config.schema';
       },
     ]),
   ],
-  controllers: [ConfigController, UserConfigController, HealthController],
+  controllers: [ConfigController, UserConfigController, NavigationController, HealthController],
   providers: [
     ConfigService,
+    NavigationService,
     ConfigRepository,
+    NavigationRepository,
     AuthorizationService,
     PermissionService,
   ],
-  exports: [ConfigService, ConfigRepository],
+  exports: [ConfigService, NavigationService, ConfigRepository, NavigationRepository],
 })
 export class ConfigServiceModule {}
