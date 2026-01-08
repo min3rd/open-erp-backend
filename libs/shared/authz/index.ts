@@ -18,12 +18,8 @@ export {
   PermissionOptions,
 } from './decorators';
 
-// Current User Decorator
-export { CurrentUser } from './current-user.decorator';
-
-// Guards
+// Guard
 export { PermissionsGuard, UserContext } from './permissions.guard';
-export { JwtAuthGuard } from './jwt-auth.guard';
 
 // Service
 export {
