@@ -1,11 +1,11 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { MongooseModule } from '@nestjs/mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
-import { Model } from 'mongoose';
+import { Model, Schema as MongooseSchema } from 'mongoose';
 import { AuthorizationService } from './authorization.service';
 import { User, UserSchema, UserDocument } from '../schemas/user.schema';
 import { Role, RoleSchema, RoleDocument } from '../schemas/role.schema';
-import { Tenant, TenantSchema, TenantDocument } from '../schemas/tenant.schema';
+import { Organization, OrganizationSchema, OrganizationDocument } from '../schemas/organization.schema';
 import { Permission } from '../types/permission.enum';
 
 describe('AuthorizationService', () => {
@@ -14,12 +14,12 @@ describe('AuthorizationService', () => {
   let moduleRef: TestingModule;
   let userModel: Model<UserDocument>;
   let roleModel: Model<RoleDocument>;
-  let tenantModel: Model<TenantDocument>;
+  let organizationModel: Model<OrganizationDocument>;
 
-  let testTenant: TenantDocument;
+  let testOrganization: OrganizationDocument;
   let testUser: UserDocument;
   let globalAdminRole: RoleDocument;
-  let tenantAdminRole: RoleDocument;
+  let organizationAdminRole: RoleDocument;
   let managerRole: RoleDocument;
 
   beforeAll(async () => {
@@ -34,7 +34,7 @@ describe('AuthorizationService', () => {
         MongooseModule.forFeature([
           { name: User.name, schema: UserSchema },
           { name: Role.name, schema: RoleSchema },
-          { name: Tenant.name, schema: TenantSchema },
+          { name: Organization.name, schema: OrganizationSchema },
         ]),
       ],
       providers: [AuthorizationService],
@@ -43,7 +43,7 @@ describe('AuthorizationService', () => {
     service = moduleRef.get<AuthorizationService>(AuthorizationService);
     userModel = moduleRef.get('UserModel');
     roleModel = moduleRef.get('RoleModel');
-    tenantModel = moduleRef.get('TenantModel');
+    organizationModel = moduleRef.get('OrganizationModel');
   }, 60000);
 
   afterAll(async () => {
@@ -56,11 +56,18 @@ describe('AuthorizationService', () => {
   });
 
   beforeEach(async () => {
-    // Create test tenant
-    testTenant = await tenantModel.create({
-      name: 'Test Tenant',
-      slug: 'test-tenant',
+    // Create test organization
+    testOrganization = await organizationModel.create({
+      type: 'company',
+      name: 'Test Organization',
+      taxId: 'TEST-TAX-123',
+      headquartersAddress: '123 Test St',
+      legalRepresentative: 'Test Representative',
+      contactPhone: '+1234567890',
+      contactEmail: 'test@example.com',
+      foundedDate: new Date('2020-01-01'),
       status: 'active',
+      createdBy: new MongooseSchema.Types.ObjectId(),
     });
 
     // Create global admin role
@@ -73,12 +80,12 @@ describe('AuthorizationService', () => {
       isSystem: true,
     });
 
-    // Create tenant admin role
-    tenantAdminRole = await roleModel.create({
-      name: 'Tenant Admin',
-      code: 'TENANT_ADMIN',
-      scope: 'tenant',
-      organizationId: testTenant._id as any,
+    // Create organization admin role
+    organizationAdminRole = await roleModel.create({
+      name: 'Organization Admin',
+      code: 'ORGANIZATION_ADMIN',
+      scope: 'organization',
+      organizationId: testOrganization._id as any,
       permissions: [
         Permission.USER_CREATE,
         Permission.USER_READ,
@@ -88,12 +95,12 @@ describe('AuthorizationService', () => {
       isSystem: false,
     });
 
-    // Create manager role for same tenant
+    // Create manager role for same organization
     managerRole = await roleModel.create({
       name: 'Manager',
       code: 'MANAGER',
-      scope: 'tenant',
-      organizationId: testTenant._id as any,
+      scope: 'organization',
+      organizationId: testOrganization._id as any,
       permissions: [Permission.ORDER_READ, Permission.ORDER_APPROVE],
       status: 'active',
       isSystem: false,
@@ -103,7 +110,7 @@ describe('AuthorizationService', () => {
     testUser = await userModel.create({
       username: 'testuser',
       email: 'test@example.com',
-      organizationId: testTenant._id as any,
+      organizationId: testOrganization._id as any,
       status: 'active',
       roleAssignments: [],
       specialPermissions: [],
@@ -118,8 +125,8 @@ describe('AuthorizationService', () => {
     if (roleModel) {
       await roleModel.deleteMany({});
     }
-    if (tenantModel) {
-      await tenantModel.deleteMany({});
+    if (organizationModel) {
+      await organizationModel.deleteMany({});
     }
   });
 
@@ -127,7 +134,7 @@ describe('AuthorizationService', () => {
     it('should check organization-scoped permission correctly', async () => {
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -144,7 +151,7 @@ describe('AuthorizationService', () => {
     it('should deny global-scoped permission when user only has tenant role', async () => {
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -201,7 +208,7 @@ describe('AuthorizationService', () => {
           grantedAt: new Date(),
         },
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -224,7 +231,7 @@ describe('AuthorizationService', () => {
           grantedAt: new Date(),
         },
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -242,7 +249,7 @@ describe('AuthorizationService', () => {
     });
 
     it('should respect custom organizationId parameter', async () => {
-      const otherTenant = await tenantModel.create({
+      const otherTenant = await organizationModel.create({
         name: 'Other Tenant',
         slug: 'other-tenant',
         status: 'active',
@@ -260,7 +267,7 @@ describe('AuthorizationService', () => {
 
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
         {
@@ -293,7 +300,7 @@ describe('AuthorizationService', () => {
     it('should return true when user has the role', async () => {
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -358,7 +365,7 @@ describe('AuthorizationService', () => {
     it('should return false for non-system admin', async () => {
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -373,7 +380,7 @@ describe('AuthorizationService', () => {
     it('should return true for tenant admin of the same tenant', async () => {
       testUser.roleAssignments = [
         {
-          roleId: tenantAdminRole._id as any,
+          roleId: organizationAdminRole._id as any,
           grantedAt: new Date(),
         },
       ];
@@ -397,7 +404,7 @@ describe('AuthorizationService', () => {
     });
 
     it('should return false for tenant admin of different tenant', async () => {
-      const otherTenant = await tenantModel.create({
+      const otherTenant = await organizationModel.create({
         name: 'Other Tenant',
         slug: 'other-tenant',
         status: 'active',
