@@ -29,6 +29,11 @@ export const RPC_METHODS = {
     GET_USER_ORGANIZATIONS: 'getUserOrganizations',
     ADD_USER_TO_ORGANIZATION: 'addUserToOrganization',
     REMOVE_USER_FROM_ORGANIZATION: 'removeUserFromOrganization',
+    COUNT_USERS: 'countUsers',
+    GET_USER_WITH_ROLES: 'getUserWithRoles',
+    ADD_ROLE_TO_USER: 'addRoleToUser',
+    REMOVE_ROLE_FROM_USER: 'removeRoleFromUser',
+    ENSURE_SYSTEM_ROLE_EXISTS: 'ensureSystemRoleExists',
   },
 
   // Notification Service RPC Methods

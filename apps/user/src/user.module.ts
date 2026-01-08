@@ -10,7 +10,8 @@ import { OrganizationMembershipService } from './services/organization-membershi
 import { RabbitMQClientModule } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
-import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerModule } from '@nestjs/throttler';
+import { SystemAdminThrottlerGuard, AuthorizationService } from '@shared/authz';
 import { APP_GUARD } from '@nestjs/core';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
 import {
@@ -23,7 +24,7 @@ import {
 } from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
-import { AuthorizationService } from '@shared/authz';
+import { RoleRepository } from './repositories/role.repository';
 
 @Module({
   imports: [
@@ -60,10 +61,11 @@ import { AuthorizationService } from '@shared/authz';
     OrganizationMembershipService,
     UserRepository,
     OrganizationMemberRepository,
+    RoleRepository,
     AuthorizationService,
     {
       provide: APP_GUARD,
-      useClass: ThrottlerGuard,
+      useClass: SystemAdminThrottlerGuard,
     },
   ],
 })

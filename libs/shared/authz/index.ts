@@ -25,6 +25,7 @@ export { CurrentUser } from './current-user.decorator';
 export { PermissionsGuard, UserContext } from './permissions.guard';
 export { JwtAuthGuard } from './jwt-auth.guard';
 export { RolesGuard } from './roles.guard';
+export { SystemAdminThrottlerGuard } from './system-admin-throttler.guard';
 
 // Service
 export {
