@@ -63,7 +63,9 @@ describe('OrganizationMembershipService', () => {
       ],
     }).compile();
 
-    service = module.get<OrganizationMembershipService>(OrganizationMembershipService);
+    service = module.get<OrganizationMembershipService>(
+      OrganizationMembershipService,
+    );
     userRepository = module.get(UserRepository);
     organizationMemberRepository = module.get(OrganizationMemberRepository);
     notificationClient = module.get(RABBITMQ_NOTIFICATION_CLIENT);
@@ -78,15 +80,28 @@ describe('OrganizationMembershipService', () => {
       };
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
-      organizationMemberRepository.create.mockResolvedValue(mockMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        null,
+      );
+      organizationMemberRepository.create.mockResolvedValue(
+        mockMembership as any,
+      );
 
-      const result = await service.inviteMember('org123', inviteDto, 'inviter123');
+      const result = await service.inviteMember(
+        'org123',
+        inviteDto,
+        'inviter123',
+      );
 
       expect(result).toEqual(mockMembership);
-      expect(userRepository.findByEmail).toHaveBeenCalledWith('test@example.com');
+      expect(userRepository.findByEmail).toHaveBeenCalledWith(
+        'test@example.com',
+      );
       expect(organizationMemberRepository.create).toHaveBeenCalled();
-      expect(notificationClient.emit).toHaveBeenCalledWith('organization.member.invited', expect.any(Object));
+      expect(notificationClient.emit).toHaveBeenCalledWith(
+        'organization.member.invited',
+        expect.any(Object),
+      );
     });
 
     it('should invite existing user by username', async () => {
@@ -98,10 +113,18 @@ describe('OrganizationMembershipService', () => {
 
       userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findByUsername.mockResolvedValue(mockUser as any);
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
-      organizationMemberRepository.create.mockResolvedValue(mockMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        null,
+      );
+      organizationMemberRepository.create.mockResolvedValue(
+        mockMembership as any,
+      );
 
-      const result = await service.inviteMember('org123', inviteDto, 'inviter123');
+      const result = await service.inviteMember(
+        'org123',
+        inviteDto,
+        'inviter123',
+      );
 
       expect(result).toEqual(mockMembership);
       expect(userRepository.findByUsername).toHaveBeenCalledWith('testuser');
@@ -115,11 +138,13 @@ describe('OrganizationMembershipService', () => {
       };
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(mockMembership as any);
-
-      await expect(service.inviteMember('org123', inviteDto, 'inviter123')).rejects.toThrow(
-        BadRequestException,
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        mockMembership as any,
       );
+
+      await expect(
+        service.inviteMember('org123', inviteDto, 'inviter123'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should reactivate revoked membership', async () => {
@@ -134,10 +159,18 @@ describe('OrganizationMembershipService', () => {
       };
 
       userRepository.findByEmail.mockResolvedValue(mockUser as any);
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(revokedMembership as any);
-      organizationMemberRepository.update.mockResolvedValue(mockMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        revokedMembership as any,
+      );
+      organizationMemberRepository.update.mockResolvedValue(
+        mockMembership as any,
+      );
 
-      const result = await service.inviteMember('org123', inviteDto, 'inviter123');
+      const result = await service.inviteMember(
+        'org123',
+        inviteDto,
+        'inviter123',
+      );
 
       expect(organizationMemberRepository.update).toHaveBeenCalled();
     });
@@ -151,9 +184,9 @@ describe('OrganizationMembershipService', () => {
       userRepository.findByEmail.mockResolvedValue(null);
       userRepository.findByUsername.mockResolvedValue(null);
 
-      await expect(service.inviteMember('org123', inviteDto, 'inviter123')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.inviteMember('org123', inviteDto, 'inviter123'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -173,12 +206,16 @@ describe('OrganizationMembershipService', () => {
         totalPages: 1,
       };
 
-      organizationMemberRepository.listOrganizationMembers.mockResolvedValue(mockResult as any);
+      organizationMemberRepository.listOrganizationMembers.mockResolvedValue(
+        mockResult as any,
+      );
 
       const result = await service.listOrganizationMembers('org123', query);
 
       expect(result).toEqual(mockResult);
-      expect(organizationMemberRepository.listOrganizationMembers).toHaveBeenCalledWith({
+      expect(
+        organizationMemberRepository.listOrganizationMembers,
+      ).toHaveBeenCalledWith({
         organizationId: 'org123',
         role: TenantRole.ADMIN,
         status: MembershipStatus.ACTIVE,
@@ -194,13 +231,20 @@ describe('OrganizationMembershipService', () => {
         role: TenantRole.ADMIN,
       };
 
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(mockMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        mockMembership as any,
+      );
       organizationMemberRepository.update.mockResolvedValue({
         ...mockMembership,
         role: TenantRole.ADMIN,
       } as any);
 
-      const result = await service.updateMembership('org123', 'user123', updateDto, 'updater123');
+      const result = await service.updateMembership(
+        'org123',
+        'user123',
+        updateDto,
+        'updater123',
+      );
 
       expect(organizationMemberRepository.update).toHaveBeenCalled();
     });
@@ -208,7 +252,9 @@ describe('OrganizationMembershipService', () => {
     it('should throw NotFoundException if membership not found', async () => {
       const updateDto = { role: TenantRole.ADMIN };
 
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        null,
+      );
 
       await expect(
         service.updateMembership('org123', 'user123', updateDto, 'updater123'),
@@ -222,7 +268,9 @@ describe('OrganizationMembershipService', () => {
         role: TenantRole.OWNER,
       };
 
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(ownerMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        ownerMembership as any,
+      );
       organizationMemberRepository.listOrganizationMembers.mockResolvedValue({
         members: [ownerMembership],
         total: 1,
@@ -238,8 +286,12 @@ describe('OrganizationMembershipService', () => {
 
   describe('removeMember', () => {
     it('should remove member successfully', async () => {
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(mockMembership as any);
-      organizationMemberRepository.delete.mockResolvedValue(mockMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        mockMembership as any,
+      );
+      organizationMemberRepository.delete.mockResolvedValue(
+        mockMembership as any,
+      );
       organizationMemberRepository.listOrganizationMembers.mockResolvedValue({
         members: [mockMembership, mockMembership],
         total: 2,
@@ -253,11 +305,13 @@ describe('OrganizationMembershipService', () => {
     });
 
     it('should throw NotFoundException if membership not found', async () => {
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
-
-      await expect(service.removeMember('org123', 'user123', 'remover123')).rejects.toThrow(
-        NotFoundException,
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        null,
       );
+
+      await expect(
+        service.removeMember('org123', 'user123', 'remover123'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should prevent removing last owner', async () => {
@@ -266,7 +320,9 @@ describe('OrganizationMembershipService', () => {
         role: TenantRole.OWNER,
       };
 
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(ownerMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        ownerMembership as any,
+      );
       organizationMemberRepository.listOrganizationMembers.mockResolvedValue({
         members: [ownerMembership],
         total: 1,
@@ -274,15 +330,17 @@ describe('OrganizationMembershipService', () => {
         totalPages: 1,
       } as any);
 
-      await expect(service.removeMember('org123', 'user123', 'remover123')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.removeMember('org123', 'user123', 'remover123'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
   describe('getMembershipDetails', () => {
     it('should return membership details', async () => {
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(mockMembership as any);
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        mockMembership as any,
+      );
 
       const result = await service.getMembershipDetails('org123', 'user123');
 
@@ -290,11 +348,13 @@ describe('OrganizationMembershipService', () => {
     });
 
     it('should throw NotFoundException if membership not found', async () => {
-      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(null);
-
-      await expect(service.getMembershipDetails('org123', 'user123')).rejects.toThrow(
-        NotFoundException,
+      organizationMemberRepository.findByUserAndOrganization.mockResolvedValue(
+        null,
       );
+
+      await expect(
+        service.getMembershipDetails('org123', 'user123'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 });

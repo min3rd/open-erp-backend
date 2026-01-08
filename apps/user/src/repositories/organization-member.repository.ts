@@ -1,7 +1,12 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { OrganizationMember, OrganizationMemberDocument, MemberRole, MemberStatus } from '@shared/schemas';
+import {
+  OrganizationMember,
+  OrganizationMemberDocument,
+  MemberRole,
+  MemberStatus,
+} from '@shared/schemas';
 
 export interface CreateOrganizationMemberDto {
   userId: string;
@@ -54,7 +59,10 @@ export class OrganizationMemberRepository {
       });
       return await membership.save();
     } catch (error) {
-      this.logger.error(`Error creating membership: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating membership: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -63,12 +71,18 @@ export class OrganizationMemberRepository {
     try {
       return await this.memberModel.findById(id).exec();
     } catch (error) {
-      this.logger.error(`Error finding membership by id: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding membership by id: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
-  async findByUserAndOrganization(userId: string, organizationId: string): Promise<OrganizationMember | null> {
+  async findByUserAndOrganization(
+    userId: string,
+    organizationId: string,
+  ): Promise<OrganizationMember | null> {
     try {
       return await this.memberModel
         .findOne({
@@ -77,18 +91,22 @@ export class OrganizationMemberRepository {
         })
         .exec();
     } catch (error) {
-      this.logger.error(`Error finding membership: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding membership: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
   async findUserOrganizations(userId: string): Promise<OrganizationMember[]> {
     try {
-      return await this.memberModel
-        .find({ userId: userId as any })
-        .exec();
+      return await this.memberModel.find({ userId: userId as any }).exec();
     } catch (error) {
-      this.logger.error(`Error finding user organizations: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding user organizations: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -101,7 +119,7 @@ export class OrganizationMemberRepository {
   }> {
     try {
       const { organizationId, role, status, page = 1, limit = 10 } = options;
-      
+
       const query: any = { organizationId: organizationId as any };
       if (role) query.roles = role;
       if (status) query.status = status;
@@ -125,12 +143,18 @@ export class OrganizationMemberRepository {
         totalPages: Math.ceil(total / limit),
       };
     } catch (error) {
-      this.logger.error(`Error listing organization members: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error listing organization members: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
-  async update(id: string, dto: UpdateOrganizationMemberDto): Promise<OrganizationMember | null> {
+  async update(
+    id: string,
+    dto: UpdateOrganizationMemberDto,
+  ): Promise<OrganizationMember | null> {
     try {
       const updateData: any = {};
       if (dto.role) updateData.roles = [dto.role];
@@ -144,7 +168,10 @@ export class OrganizationMemberRepository {
         .findByIdAndUpdate(id, updateData, { new: true })
         .exec();
     } catch (error) {
-      this.logger.error(`Error updating membership: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating membership: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -160,7 +187,10 @@ export class OrganizationMemberRepository {
       await membership.save();
       return membership;
     } catch (error) {
-      this.logger.error(`Error soft deleting membership: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error soft deleting membership: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -170,27 +200,48 @@ export class OrganizationMemberRepository {
       const result = await this.memberModel.findByIdAndDelete(id).exec();
       return !!result;
     } catch (error) {
-      this.logger.error(`Error hard deleting membership: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error hard deleting membership: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
-  async isUserMemberOfOrganization(userId: string, organizationId: string): Promise<boolean> {
+  async isUserMemberOfOrganization(
+    userId: string,
+    organizationId: string,
+  ): Promise<boolean> {
     try {
-      const membership = await this.findByUserAndOrganization(userId, organizationId);
+      const membership = await this.findByUserAndOrganization(
+        userId,
+        organizationId,
+      );
       return !!membership && membership.status === MemberStatus.ACTIVE;
     } catch (error) {
-      this.logger.error(`Error checking membership: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error checking membership: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
 
-  async getUserRole(userId: string, organizationId: string): Promise<MemberRole | null> {
+  async getUserRole(
+    userId: string,
+    organizationId: string,
+  ): Promise<MemberRole | null> {
     try {
-      const membership = await this.findByUserAndOrganization(userId, organizationId);
+      const membership = await this.findByUserAndOrganization(
+        userId,
+        organizationId,
+      );
       return membership?.roles?.[0] || null;
     } catch (error) {
-      this.logger.error(`Error getting user role: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting user role: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

@@ -86,13 +86,20 @@ export class OrganizationController {
     description: 'Organization updated successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @Permissions(['organization.update', 'organization.manage'], { mode: 'any', scope: 'organization' })
+  @Permissions(['organization.update', 'organization.manage'], {
+    mode: 'any',
+    scope: 'organization',
+  })
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateOrganizationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.organizationService.update(id, updateDto as any, req.user.userId);
+    return this.organizationService.update(
+      id,
+      updateDto as any,
+      req.user.userId,
+    );
   }
 
   @Delete(':id')
@@ -102,11 +109,11 @@ export class OrganizationController {
     description: 'Organization deleted successfully',
   })
   @ApiResponse({ status: 404, description: 'Organization not found' })
-  @Permissions(['organization.delete', 'organization.manage'], { mode: 'any', scope: 'organization' })
-  async delete(
-    @Param('id') id: string,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  @Permissions(['organization.delete', 'organization.manage'], {
+    mode: 'any',
+    scope: 'organization',
+  })
+  async delete(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.organizationService.delete(id, req.user.userId);
   }
 }

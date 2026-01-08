@@ -1,7 +1,16 @@
-import { Injectable, Logger, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { UserRepository } from '../repositories/user.repository';
 import { OrganizationMemberRepository } from '../repositories/organization-member.repository';
-import { CreateUserDto, UpdateUserDto, ListUsersQueryDto } from '../dto/user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  ListUsersQueryDto,
+} from '../dto/user.dto';
 import { User } from '@shared/schemas';
 
 @Injectable()
@@ -22,9 +31,13 @@ export class UserManagementService {
       }
 
       if (dto.username) {
-        const existingUsername = await this.userRepository.findByUsername(dto.username);
+        const existingUsername = await this.userRepository.findByUsername(
+          dto.username,
+        );
         if (existingUsername) {
-          throw new BadRequestException('User with this username already exists');
+          throw new BadRequestException(
+            'User with this username already exists',
+          );
         }
       }
 
@@ -34,17 +47,23 @@ export class UserManagementService {
         password: dto.password,
         firstName: dto.firstName,
         lastName: dto.lastName,
-        fullName: dto.displayName || (dto.firstName && dto.lastName ? `${dto.firstName} ${dto.lastName}` : undefined),
+        fullName:
+          dto.displayName ||
+          (dto.firstName && dto.lastName
+            ? `${dto.firstName} ${dto.lastName}`
+            : undefined),
       };
 
       const user = await this.userRepository.create(createData);
-      
+
       // Update additional fields if provided
       // Note: avatarUrl is used for now. Phone field will be added to schema in future update
       if (dto.avatarUrl) {
-        return await this.userRepository.update(user._id.toString(), {
-          avatarUrl: dto.avatarUrl,
-        }) || user;
+        return (
+          (await this.userRepository.update(user._id.toString(), {
+            avatarUrl: dto.avatarUrl,
+          })) || user
+        );
       }
 
       return user;
@@ -54,7 +73,10 @@ export class UserManagementService {
     }
   }
 
-  async findUserById(id: string, includeMemberships: boolean = false): Promise<any> {
+  async findUserById(
+    id: string,
+    includeMemberships: boolean = false,
+  ): Promise<any> {
     try {
       const user = await this.userRepository.findById(id);
       if (!user) {
@@ -62,7 +84,8 @@ export class UserManagementService {
       }
 
       if (includeMemberships) {
-        const memberships = await this.organizationMemberRepository.findUserOrganizations(id);
+        const memberships =
+          await this.organizationMemberRepository.findUserOrganizations(id);
         return {
           ...user.toJSON(),
           memberships,
@@ -92,7 +115,9 @@ export class UserManagementService {
       }
 
       if (dto.username && dto.username !== user.username) {
-        const existingUser = await this.userRepository.findByUsername(dto.username);
+        const existingUser = await this.userRepository.findByUsername(
+          dto.username,
+        );
         if (existingUser) {
           throw new BadRequestException('Username already in use');
         }
@@ -139,23 +164,35 @@ export class UserManagementService {
 
   async listUsers(query: ListUsersQueryDto): Promise<any> {
     try {
-      const { q, email, username, scope, organizationId, page = 1, size = 10, includeMemberships = false } = query;
+      const {
+        q,
+        email,
+        username,
+        scope,
+        organizationId,
+        page = 1,
+        size = 10,
+        includeMemberships = false,
+      } = query;
 
       // If organization scope is requested, we need to filter by organization membership
       if (scope === 'organization') {
         if (!organizationId) {
-          throw new BadRequestException('organizationId is required when scope is organization');
+          throw new BadRequestException(
+            'organizationId is required when scope is organization',
+          );
         }
 
-        const membersResult = await this.organizationMemberRepository.listOrganizationMembers({
-          organizationId,
-          page,
-          limit: size,
-        });
+        const membersResult =
+          await this.organizationMemberRepository.listOrganizationMembers({
+            organizationId,
+            page,
+            limit: size,
+          });
 
         return {
           users: membersResult.members.map((m: any) => ({
-            ...m.userId?.toJSON?.() || m.userId,
+            ...(m.userId?.toJSON?.() || m.userId),
             membership: {
               id: m._id.toString(),
               role: m.role,
@@ -181,7 +218,10 @@ export class UserManagementService {
       if (includeMemberships) {
         const usersWithMemberships = await Promise.all(
           result.users.map(async (user) => {
-            const memberships = await this.organizationMemberRepository.findUserOrganizations(user._id.toString());
+            const memberships =
+              await this.organizationMemberRepository.findUserOrganizations(
+                user._id.toString(),
+              );
             return {
               ...user.toJSON(),
               memberships,

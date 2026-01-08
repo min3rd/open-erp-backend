@@ -310,7 +310,7 @@ export class ConfigService {
         default:
           eventConstant = eventType;
       }
-      
+
       this.userClient.emit(eventConstant, {
         config,
         userId,

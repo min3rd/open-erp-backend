@@ -48,7 +48,9 @@ export class CreateUserDto {
   @ApiPropertyOptional({ description: 'Phone number', example: '+1234567890' })
   @IsString()
   @IsOptional()
-  @Matches(/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/)
+  @Matches(
+    /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
+  )
   phone?: string;
 
   @ApiPropertyOptional({ description: 'Avatar URL' })
@@ -70,7 +72,10 @@ export class UpdateUserDto {
   @MaxLength(50)
   username?: string;
 
-  @ApiPropertyOptional({ description: 'Email address', example: 'john@example.com' })
+  @ApiPropertyOptional({
+    description: 'Email address',
+    example: 'john@example.com',
+  })
   @IsEmail()
   @IsOptional()
   email?: string;
@@ -96,7 +101,9 @@ export class UpdateUserDto {
   @ApiPropertyOptional({ description: 'Phone number', example: '+1234567890' })
   @IsString()
   @IsOptional()
-  @Matches(/^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/)
+  @Matches(
+    /^[\+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
+  )
   phone?: string;
 
   @ApiPropertyOptional({ description: 'Avatar URL' })
@@ -111,7 +118,9 @@ export class UpdateUserDto {
 }
 
 export class ListUsersQueryDto {
-  @ApiPropertyOptional({ description: 'Search query (searches username, email, name)' })
+  @ApiPropertyOptional({
+    description: 'Search query (searches username, email, name)',
+  })
   @IsString()
   @IsOptional()
   q?: string;
@@ -126,12 +135,17 @@ export class ListUsersQueryDto {
   @IsOptional()
   username?: string;
 
-  @ApiPropertyOptional({ description: 'Scope: global or organization', enum: ['global', 'organization'] })
+  @ApiPropertyOptional({
+    description: 'Scope: global or organization',
+    enum: ['global', 'organization'],
+  })
   @IsString()
   @IsOptional()
   scope?: 'global' | 'organization';
 
-  @ApiPropertyOptional({ description: 'Organization ID (required if scope=organization)' })
+  @ApiPropertyOptional({
+    description: 'Organization ID (required if scope=organization)',
+  })
   @IsString()
   @IsOptional()
   organizationId?: string;
@@ -140,7 +154,12 @@ export class ListUsersQueryDto {
   @IsOptional()
   page?: number;
 
-  @ApiPropertyOptional({ description: 'Page size', default: 10, minimum: 1, maximum: 100 })
+  @ApiPropertyOptional({
+    description: 'Page size',
+    default: 10,
+    minimum: 1,
+    maximum: 100,
+  })
   @IsOptional()
   size?: number;
 

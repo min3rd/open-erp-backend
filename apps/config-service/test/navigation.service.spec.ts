@@ -68,7 +68,9 @@ describe('NavigationService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('nav-dashboard');
-      expect(mockNavigationRepository.findRoots).toHaveBeenCalledWith(NavigationScope.GLOBAL);
+      expect(mockNavigationRepository.findRoots).toHaveBeenCalledWith(
+        NavigationScope.GLOBAL,
+      );
     });
 
     it('should filter navigation by permissions', async () => {
@@ -130,7 +132,10 @@ describe('NavigationService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('nav-inventory');
-      expect(mockNavigationRepository.findRoots).toHaveBeenCalledWith(NavigationScope.MODULE, 'inventory');
+      expect(mockNavigationRepository.findRoots).toHaveBeenCalledWith(
+        NavigationScope.MODULE,
+        'inventory',
+      );
     });
   });
 
@@ -165,7 +170,9 @@ describe('NavigationService', () => {
         scope: NavigationScope.MODULE,
       };
 
-      await expect(service.createNavigation(dto as any, 'admin')).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createNavigation(dto as any, 'admin'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should validate parent exists', async () => {
@@ -178,7 +185,9 @@ describe('NavigationService', () => {
 
       mockNavigationRepository.findById.mockResolvedValue(null);
 
-      await expect(service.createNavigation(dto as any, 'admin')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.createNavigation(dto as any, 'admin'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should prevent XSS in label', async () => {
@@ -188,7 +197,9 @@ describe('NavigationService', () => {
         scope: NavigationScope.GLOBAL,
       };
 
-      await expect(service.createNavigation(dto as any, 'admin')).rejects.toThrow(BadRequestException);
+      await expect(
+        service.createNavigation(dto as any, 'admin'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -213,13 +224,19 @@ describe('NavigationService', () => {
       const result = await service.updateNavigation('nav-test', dto, userId);
 
       expect(result).toEqual(updated);
-      expect(mockNavigationRepository.update).toHaveBeenCalledWith('nav-test', dto, userId);
+      expect(mockNavigationRepository.update).toHaveBeenCalledWith(
+        'nav-test',
+        dto,
+        userId,
+      );
     });
 
     it('should throw NotFoundException if item does not exist', async () => {
       mockNavigationRepository.findById.mockResolvedValue(null);
 
-      await expect(service.updateNavigation('nonexistent', {}, 'admin')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateNavigation('nonexistent', {}, 'admin'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -255,7 +272,9 @@ describe('NavigationService', () => {
       mockNavigationRepository.findById.mockResolvedValue(navigation);
       mockNavigationRepository.findChildren.mockResolvedValue(children);
 
-      await expect(service.deleteNavigation('nav-test', 'admin', false)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.deleteNavigation('nav-test', 'admin', false),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -284,7 +303,11 @@ describe('NavigationService', () => {
       mockNavigationRepository.getAncestors.mockResolvedValue([]);
       mockNavigationRepository.update.mockResolvedValue(moved);
 
-      const result = await service.moveNavigation('nav-test', { newParentId: 'new-parent' }, 'admin');
+      const result = await service.moveNavigation(
+        'nav-test',
+        { newParentId: 'new-parent' },
+        'admin',
+      );
 
       expect(result).toEqual(moved);
     });
@@ -311,7 +334,11 @@ describe('NavigationService', () => {
       mockNavigationRepository.getAncestors.mockResolvedValue(['nav-test']);
 
       await expect(
-        service.moveNavigation('nav-test', { newParentId: 'nav-parent' }, 'admin'),
+        service.moveNavigation(
+          'nav-test',
+          { newParentId: 'nav-parent' },
+          'admin',
+        ),
       ).rejects.toThrow(BadRequestException);
     });
   });
@@ -327,12 +354,17 @@ describe('NavigationService', () => {
 
       const result = await service.searchNavigation('dashboard');
 
-      expect(mockNavigationRepository.search).toHaveBeenCalledWith('dashboard', 50);
+      expect(mockNavigationRepository.search).toHaveBeenCalledWith(
+        'dashboard',
+        50,
+      );
       expect(result).toEqual(mockResults);
     });
 
     it('should throw error for empty query', async () => {
-      await expect(service.searchNavigation('')).rejects.toThrow(BadRequestException);
+      await expect(service.searchNavigation('')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

@@ -1,7 +1,11 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { Navigation, NavigationDocument, NavigationScope } from '../schemas/navigation.schema';
+import {
+  Navigation,
+  NavigationDocument,
+  NavigationScope,
+} from '../schemas/navigation.schema';
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 
@@ -10,7 +14,8 @@ export class NavigationRepository {
   private readonly logger = new Logger(NavigationRepository.name);
 
   constructor(
-    @InjectModel(Navigation.name) private navigationModel: Model<NavigationDocument>,
+    @InjectModel(Navigation.name)
+    private navigationModel: Model<NavigationDocument>,
   ) {}
 
   /**
@@ -20,7 +25,10 @@ export class NavigationRepository {
     try {
       return await this.navigationModel.findOne({ id }).exec();
     } catch (error) {
-      this.logger.error(`Error finding navigation by ID: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding navigation by ID: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -28,7 +36,10 @@ export class NavigationRepository {
   /**
    * Find all navigation items by scope and optional module
    */
-  async findByScope(scope: NavigationScope, module?: string): Promise<Navigation[]> {
+  async findByScope(
+    scope: NavigationScope,
+    module?: string,
+  ): Promise<Navigation[]> {
     try {
       const query: any = { scope };
       if (module) {
@@ -39,7 +50,10 @@ export class NavigationRepository {
         .sort({ order: 1, createdAt: 1 })
         .exec();
     } catch (error) {
-      this.logger.error(`Error finding navigation by scope: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding navigation by scope: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -54,7 +68,10 @@ export class NavigationRepository {
         .sort({ order: 1, createdAt: 1 })
         .exec();
     } catch (error) {
-      this.logger.error(`Error finding navigation children: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding navigation children: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -62,9 +79,15 @@ export class NavigationRepository {
   /**
    * Find root navigation items (no parent)
    */
-  async findRoots(scope: NavigationScope, module?: string): Promise<Navigation[]> {
+  async findRoots(
+    scope: NavigationScope,
+    module?: string,
+  ): Promise<Navigation[]> {
     try {
-      const query: any = { scope, $or: [{ parentId: null }, { parentId: { $exists: false } }] };
+      const query: any = {
+        scope,
+        $or: [{ parentId: null }, { parentId: { $exists: false } }],
+      };
       if (module) {
         query.module = module;
       }
@@ -73,7 +96,10 @@ export class NavigationRepository {
         .sort({ order: 1, createdAt: 1 })
         .exec();
     } catch (error) {
-      this.logger.error(`Error finding root navigation items: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding root navigation items: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -91,9 +117,14 @@ export class NavigationRepository {
       return await navigation.save();
     } catch (error) {
       if (error.code === 11000) {
-        throw new BadRequestException(`Navigation item with ID '${dto.id}' already exists`);
+        throw new BadRequestException(
+          `Navigation item with ID '${dto.id}' already exists`,
+        );
       }
-      this.logger.error(`Error creating navigation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error creating navigation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -101,17 +132,20 @@ export class NavigationRepository {
   /**
    * Update a navigation item
    */
-  async update(id: string, dto: UpdateNavigationDto, userId: string): Promise<Navigation | null> {
+  async update(
+    id: string,
+    dto: UpdateNavigationDto,
+    userId: string,
+  ): Promise<Navigation | null> {
     try {
       return await this.navigationModel
-        .findOneAndUpdate(
-          { id },
-          { ...dto, updatedBy: userId },
-          { new: true },
-        )
+        .findOneAndUpdate({ id }, { ...dto, updatedBy: userId }, { new: true })
         .exec();
     } catch (error) {
-      this.logger.error(`Error updating navigation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error updating navigation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -124,7 +158,10 @@ export class NavigationRepository {
       const result = await this.navigationModel.deleteOne({ id }).exec();
       return result.deletedCount > 0;
     } catch (error) {
-      this.logger.error(`Error deleting navigation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error deleting navigation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -141,7 +178,9 @@ export class NavigationRepository {
         // Recursively delete children's children
         deletedCount += await this.deleteChildren(child.id);
         // Delete the child
-        const result = await this.navigationModel.deleteOne({ id: child.id }).exec();
+        const result = await this.navigationModel
+          .deleteOne({ id: child.id })
+          .exec();
         if (result.deletedCount > 0) {
           deletedCount++;
         }
@@ -149,7 +188,10 @@ export class NavigationRepository {
 
       return deletedCount;
     } catch (error) {
-      this.logger.error(`Error deleting navigation children: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error deleting navigation children: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -173,7 +215,10 @@ export class NavigationRepository {
         .sort({ order: 1 })
         .exec();
     } catch (error) {
-      this.logger.error(`Error searching navigation: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error searching navigation: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -189,7 +234,9 @@ export class NavigationRepository {
       while (current?.parentId) {
         if (ancestors.includes(current.parentId)) {
           // Cycle detected
-          throw new BadRequestException('Circular reference detected in navigation hierarchy');
+          throw new BadRequestException(
+            'Circular reference detected in navigation hierarchy',
+          );
         }
         ancestors.push(current.parentId);
         current = await this.findById(current.parentId);
@@ -197,7 +244,10 @@ export class NavigationRepository {
 
       return ancestors;
     } catch (error) {
-      this.logger.error(`Error getting ancestors: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error getting ancestors: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -212,7 +262,10 @@ export class NavigationRepository {
       if (module) query.module = module;
       return await this.navigationModel.countDocuments(query).exec();
     } catch (error) {
-      this.logger.error(`Error counting navigation items: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error counting navigation items: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }

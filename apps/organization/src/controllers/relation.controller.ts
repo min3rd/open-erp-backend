@@ -80,10 +80,7 @@ export class RelationController {
   @ApiOperation({ summary: 'Delete relation' })
   @ApiResponse({ status: 200, description: 'Relation deleted successfully' })
   @Permissions(['relation.delete', 'organization.manage'], { mode: 'any' })
-  async delete(
-    @Param('id') id: string,
-    @Request() req: AuthenticatedRequest,
-  ) {
+  async delete(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
     return this.relationService.delete(id, req.user.userId);
   }
 }

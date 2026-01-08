@@ -16,7 +16,8 @@ export class UserRpcController {
   constructor(
     private readonly userRepository: UserRepository,
     private readonly organizationMemberRepository: OrganizationMemberRepository,
-    @Inject(RABBITMQ_NOTIFICATION_CLIENT) private readonly notificationClient: ClientProxy,
+    @Inject(RABBITMQ_NOTIFICATION_CLIENT)
+    private readonly notificationClient: ClientProxy,
   ) {}
 
   @MessagePattern(RPC_METHODS.USER.GET_USER)
@@ -53,16 +54,17 @@ export class UserRpcController {
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.FIND_USER_BY_USERNAME}`);
     const user = await this.userRepository.findByUsername(params.username);
-    
+
     // If organizationId is provided, check if user is member of that organization
     if (params.organizationId && user) {
-      const isMember = await this.organizationMemberRepository.isUserMemberOfOrganization(
-        user._id.toString(),
-        params.organizationId,
-      );
+      const isMember =
+        await this.organizationMemberRepository.isUserMemberOfOrganization(
+          user._id.toString(),
+          params.organizationId,
+        );
       return isMember ? user : null;
     }
-    
+
     return user;
   }
 
@@ -77,14 +79,14 @@ export class UserRpcController {
     this.logger.log(`RPC: ${RPC_METHODS.USER.CREATE_USER}`);
     try {
       const user = await this.userRepository.create(params);
-      
+
       // Publish event using NestJS ClientProxy (fire-and-forget with error logging)
       try {
         this.notificationClient.emit(EVENT_NAMES.USER.CREATED, user);
       } catch (error) {
         this.logger.warn(`Failed to emit user created event: ${error.message}`);
       }
-      
+
       return user;
     } catch (error) {
       this.logger.error(
@@ -205,7 +207,10 @@ export class UserRpcController {
   async getUserOrganizations(@Payload() params: { userId: string }) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.GET_USER_ORGANIZATIONS}`);
     try {
-      const organizations = await this.organizationMemberRepository.findUserOrganizations(params.userId);
+      const organizations =
+        await this.organizationMemberRepository.findUserOrganizations(
+          params.userId,
+        );
       return organizations;
     } catch (error) {
       this.logger.error(
@@ -218,9 +223,10 @@ export class UserRpcController {
 
   @MessagePattern(RPC_METHODS.USER.ADD_USER_TO_ORGANIZATION)
   async addUserToOrganization(
-    @Payload() params: { 
-      userId: string; 
-      organizationId: string; 
+    @Payload()
+    params: {
+      userId: string;
+      organizationId: string;
       role: string;
       invitedBy?: string;
     },
@@ -252,10 +258,11 @@ export class UserRpcController {
   ) {
     this.logger.log(`RPC: ${RPC_METHODS.USER.REMOVE_USER_FROM_ORGANIZATION}`);
     try {
-      const membership = await this.organizationMemberRepository.findByUserAndOrganization(
-        params.userId,
-        params.organizationId,
-      );
+      const membership =
+        await this.organizationMemberRepository.findByUserAndOrganization(
+          params.userId,
+          params.organizationId,
+        );
       if (!membership) {
         throw new Error('Membership not found');
       }

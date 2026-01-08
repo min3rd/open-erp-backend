@@ -1,5 +1,8 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { NavigationScope, PermissionConfig } from '../schemas/navigation.schema';
+import {
+  NavigationScope,
+  PermissionConfig,
+} from '../schemas/navigation.schema';
 
 export class NavigationItemDto {
   @ApiProperty({ description: 'Unique identifier' })
@@ -26,7 +29,10 @@ export class NavigationItemDto {
   @ApiPropertyOptional({ description: 'Command function name' })
   command?: string;
 
-  @ApiPropertyOptional({ description: 'Nested navigation items', type: [Object] })
+  @ApiPropertyOptional({
+    description: 'Nested navigation items',
+    type: [Object],
+  })
   items?: NavigationItemDto[];
 
   @ApiPropertyOptional({ description: 'Whether disabled' })
@@ -94,7 +100,10 @@ export class NavigationItemDto {
 }
 
 export class NavigationResponseDto {
-  @ApiProperty({ description: 'Navigation tree structure', type: [NavigationItemDto] })
+  @ApiProperty({
+    description: 'Navigation tree structure',
+    type: [NavigationItemDto],
+  })
   items: NavigationItemDto[];
 
   @ApiPropertyOptional({ description: 'Scope filter applied' })

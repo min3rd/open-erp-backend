@@ -203,7 +203,8 @@ export class AuthorizationService {
             role.scope === 'organization' &&
             role.organizationId &&
             effectiveOrganizationId &&
-            role.organizationId.toString() === effectiveOrganizationId.toString()
+            role.organizationId.toString() ===
+              effectiveOrganizationId.toString()
           ) {
             role.permissions.forEach((p) => permissions.add(p));
           }

@@ -5,7 +5,11 @@ import { Model, Schema as MongooseSchema } from 'mongoose';
 import { AuthorizationService } from './authorization.service';
 import { User, UserSchema, UserDocument } from '../schemas/user.schema';
 import { Role, RoleSchema, RoleDocument } from '../schemas/role.schema';
-import { Organization, OrganizationSchema, OrganizationDocument } from '../schemas/organization.schema';
+import {
+  Organization,
+  OrganizationSchema,
+  OrganizationDocument,
+} from '../schemas/organization.schema';
 import { Permission } from '../types/permission.enum';
 
 describe('AuthorizationService', () => {

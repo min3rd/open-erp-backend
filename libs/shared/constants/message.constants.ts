@@ -1,6 +1,6 @@
 /**
  * Message Constants for RPC and Event Handling
- * 
+ *
  * This file contains all RPC method names and event names used across microservices.
  * Using constants instead of hardcoded strings provides:
  * - Type safety and autocompletion
@@ -30,7 +30,7 @@ export const RPC_METHODS = {
     ADD_USER_TO_ORGANIZATION: 'addUserToOrganization',
     REMOVE_USER_FROM_ORGANIZATION: 'removeUserFromOrganization',
   },
-  
+
   // Notification Service RPC Methods
   NOTIFICATION: {
     SEND_NOTIFICATION: 'sendNotification',
@@ -38,17 +38,17 @@ export const RPC_METHODS = {
     SEND_PASSWORD_RESET_EMAIL: 'sendPasswordResetEmail',
     SEND_PASSWORD_CHANGED_EMAIL: 'sendPasswordChangedEmail',
   },
-  
+
   // Auth Service RPC Methods (placeholder for future)
   AUTH: {
     // Add auth RPC methods as needed
   },
-  
+
   // Organization Service RPC Methods (placeholder for future)
   ORGANIZATION: {
     // Add organization RPC methods as needed
   },
-  
+
   // Config Service RPC Methods
   CONFIG: {
     // Navigation RPC Methods
@@ -73,7 +73,7 @@ export const EVENT_NAMES = {
     PROFILE_UPDATED: 'user.profile.updated',
     PASSWORD_CHANGED: 'user.password.changed',
   },
-  
+
   // Auth Events
   AUTH: {
     USER_REGISTERED: 'auth.user.registered',
@@ -83,14 +83,14 @@ export const EVENT_NAMES = {
     USER_PASSWORD_CHANGED: 'auth.user.password.changed', // Use this for new code
     USER_VERIFIED: 'auth.user.verified',
   },
-  
+
   // Notification Events
   NOTIFICATION: {
     EMAIL_SENT: 'notification.email.sent',
     SMS_SENT: 'notification.sms.sent',
     PUSH_SENT: 'notification.push.sent',
   },
-  
+
   // Organization Events
   ORGANIZATION: {
     ORG_CREATED: 'organization.organization.created',
@@ -103,7 +103,7 @@ export const EVENT_NAMES = {
     RELATION_CREATED: 'organization.relation.created',
     RELATION_UPDATED: 'organization.relation.updated',
   },
-  
+
   // Config Events
   CONFIG: {
     GLOBAL_UPSERTED: 'config.global.upserted',
@@ -126,18 +126,29 @@ export const EVENT_NAMES = {
 /**
  * Type helpers for RPC methods
  */
-export type UserRpcMethod = typeof RPC_METHODS.USER[keyof typeof RPC_METHODS.USER];
-export type NotificationRpcMethod = typeof RPC_METHODS.NOTIFICATION[keyof typeof RPC_METHODS.NOTIFICATION];
-export type AuthRpcMethod = typeof RPC_METHODS.AUTH[keyof typeof RPC_METHODS.AUTH];
-export type OrganizationRpcMethod = typeof RPC_METHODS.ORGANIZATION[keyof typeof RPC_METHODS.ORGANIZATION];
-export type ConfigRpcMethod = typeof RPC_METHODS.CONFIG[keyof typeof RPC_METHODS.CONFIG];
+export type UserRpcMethod =
+  (typeof RPC_METHODS.USER)[keyof typeof RPC_METHODS.USER];
+export type NotificationRpcMethod =
+  (typeof RPC_METHODS.NOTIFICATION)[keyof typeof RPC_METHODS.NOTIFICATION];
+export type AuthRpcMethod =
+  (typeof RPC_METHODS.AUTH)[keyof typeof RPC_METHODS.AUTH];
+export type OrganizationRpcMethod =
+  (typeof RPC_METHODS.ORGANIZATION)[keyof typeof RPC_METHODS.ORGANIZATION];
+export type ConfigRpcMethod =
+  (typeof RPC_METHODS.CONFIG)[keyof typeof RPC_METHODS.CONFIG];
 
 /**
  * Type helpers for event names
  */
-export type UserEvent = typeof EVENT_NAMES.USER[keyof typeof EVENT_NAMES.USER];
-export type AuthEvent = typeof EVENT_NAMES.AUTH[keyof typeof EVENT_NAMES.AUTH];
-export type NotificationEvent = typeof EVENT_NAMES.NOTIFICATION[keyof typeof EVENT_NAMES.NOTIFICATION];
-export type OrganizationEvent = typeof EVENT_NAMES.ORGANIZATION[keyof typeof EVENT_NAMES.ORGANIZATION];
-export type ConfigEvent = typeof EVENT_NAMES.CONFIG[keyof typeof EVENT_NAMES.CONFIG];
-export type NavigationEvent = typeof EVENT_NAMES.NAVIGATION[keyof typeof EVENT_NAMES.NAVIGATION];
+export type UserEvent =
+  (typeof EVENT_NAMES.USER)[keyof typeof EVENT_NAMES.USER];
+export type AuthEvent =
+  (typeof EVENT_NAMES.AUTH)[keyof typeof EVENT_NAMES.AUTH];
+export type NotificationEvent =
+  (typeof EVENT_NAMES.NOTIFICATION)[keyof typeof EVENT_NAMES.NOTIFICATION];
+export type OrganizationEvent =
+  (typeof EVENT_NAMES.ORGANIZATION)[keyof typeof EVENT_NAMES.ORGANIZATION];
+export type ConfigEvent =
+  (typeof EVENT_NAMES.CONFIG)[keyof typeof EVENT_NAMES.CONFIG];
+export type NavigationEvent =
+  (typeof EVENT_NAMES.NAVIGATION)[keyof typeof EVENT_NAMES.NAVIGATION];

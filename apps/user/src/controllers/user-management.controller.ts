@@ -10,9 +10,20 @@ import {
   HttpCode,
   HttpStatus,
 } from '@nestjs/common';
-import { ApiTags, ApiOperation, ApiResponse, ApiParam, ApiQuery } from '@nestjs/swagger';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiQuery,
+} from '@nestjs/swagger';
 import { UserManagementService } from '../services/user-management.service';
-import { CreateUserDto, UpdateUserDto, ListUsersQueryDto, UserResponseDto } from '../dto/user.dto';
+import {
+  CreateUserDto,
+  UpdateUserDto,
+  ListUsersQueryDto,
+  UserResponseDto,
+} from '../dto/user.dto';
 
 @ApiTags('users')
 @Controller('users')
@@ -21,12 +32,15 @@ export class UserManagementController {
 
   @Post()
   @ApiOperation({ summary: 'Create a new user (global)' })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'User successfully created',
     type: UserResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Invalid input or user already exists' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input or user already exists',
+  })
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userManagementService.createUser(createUserDto);
     return {
@@ -54,24 +68,24 @@ export class UserManagementController {
   @Get(':id')
   @ApiOperation({ summary: 'Get user by ID' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiQuery({ 
-    name: 'include', 
-    required: false, 
+  @ApiQuery({
+    name: 'include',
+    required: false,
     description: 'Include related data (memberships)',
     example: 'memberships',
   })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Return user details',
     type: UserResponseDto,
   })
   @ApiResponse({ status: 404, description: 'User not found' })
-  async getUser(
-    @Param('id') id: string,
-    @Query('include') include?: string,
-  ) {
+  async getUser(@Param('id') id: string, @Query('include') include?: string) {
     const includeMemberships = include === 'memberships';
-    const user = await this.userManagementService.findUserById(id, includeMemberships);
+    const user = await this.userManagementService.findUserById(
+      id,
+      includeMemberships,
+    );
     return {
       success: true,
       data: user,
@@ -81,8 +95,8 @@ export class UserManagementController {
   @Patch(':id')
   @ApiOperation({ summary: 'Update user profile (global fields)' })
   @ApiParam({ name: 'id', description: 'User ID' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'User successfully updated',
     type: UserResponseDto,
   })

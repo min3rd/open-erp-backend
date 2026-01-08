@@ -2,9 +2,7 @@ import { Module } from '@nestjs/common';
 import { AuthController } from './auth.controller';
 import { MeController } from './me.controller';
 import { AuthService } from './auth.service';
-import {
-  RabbitMQClientModule,
-} from '@shared/rabbitmq';
+import { RabbitMQClientModule } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseModule } from '@shared/database';

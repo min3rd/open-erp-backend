@@ -13,9 +13,9 @@ import {
 import { ApiTags, ApiOperation, ApiResponse, ApiParam } from '@nestjs/swagger';
 import { Throttle } from '@nestjs/throttler';
 import { OrganizationMembershipService } from '../services/organization-membership.service';
-import { 
-  InviteMemberDto, 
-  UpdateMembershipDto, 
+import {
+  InviteMemberDto,
+  UpdateMembershipDto,
   ListOrganizationMembersQueryDto,
   MembershipResponseDto,
 } from '../dto/membership.dto';
@@ -23,18 +23,25 @@ import {
 @ApiTags('organizations')
 @Controller('organizations')
 export class OrganizationMembershipController {
-  constructor(private readonly membershipService: OrganizationMembershipService) {}
+  constructor(
+    private readonly membershipService: OrganizationMembershipService,
+  ) {}
 
   @Post(':organizationId/users')
   @Throttle({ default: { limit: 5, ttl: 60000 } }) // 5 invites per minute per IP
-  @ApiOperation({ summary: 'Invite/create membership for user in organization' })
+  @ApiOperation({
+    summary: 'Invite/create membership for user in organization',
+  })
   @ApiParam({ name: 'organizationId', description: 'Organization ID' })
-  @ApiResponse({ 
-    status: 201, 
+  @ApiResponse({
+    status: 201,
     description: 'User invited/added to organization',
     type: MembershipResponseDto,
   })
-  @ApiResponse({ status: 400, description: 'Invalid input or user already member' })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid input or user already member',
+  })
   @ApiResponse({ status: 429, description: 'Too many requests' })
   async inviteMember(
     @Param('organizationId') organizationId: string,
@@ -44,13 +51,13 @@ export class OrganizationMembershipController {
   ) {
     // Temporary: Use a hardcoded inviter ID until auth is integrated
     const invitedById = 'system';
-    
+
     const membership = await this.membershipService.inviteMember(
       organizationId,
       inviteDto,
       invitedById,
     );
-    
+
     return {
       success: true,
       data: membership,
@@ -60,12 +67,18 @@ export class OrganizationMembershipController {
   @Get(':organizationId/users')
   @ApiOperation({ summary: 'List users in organization' })
   @ApiParam({ name: 'organizationId', description: 'Organization ID' })
-  @ApiResponse({ status: 200, description: 'Return list of organization members' })
+  @ApiResponse({
+    status: 200,
+    description: 'Return list of organization members',
+  })
   async listOrganizationMembers(
     @Param('organizationId') organizationId: string,
     @Query() query: ListOrganizationMembersQueryDto,
   ) {
-    const result = await this.membershipService.listOrganizationMembers(organizationId, query);
+    const result = await this.membershipService.listOrganizationMembers(
+      organizationId,
+      query,
+    );
     return {
       success: true,
       data: result.members,
@@ -78,11 +91,13 @@ export class OrganizationMembershipController {
   }
 
   @Get(':organizationId/users/:userId')
-  @ApiOperation({ summary: 'Get membership details for a user in organization' })
+  @ApiOperation({
+    summary: 'Get membership details for a user in organization',
+  })
   @ApiParam({ name: 'organizationId', description: 'Organization ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Return membership details',
     type: MembershipResponseDto,
   })
@@ -91,7 +106,10 @@ export class OrganizationMembershipController {
     @Param('organizationId') organizationId: string,
     @Param('userId') userId: string,
   ) {
-    const membership = await this.membershipService.getMembershipDetails(organizationId, userId);
+    const membership = await this.membershipService.getMembershipDetails(
+      organizationId,
+      userId,
+    );
     return {
       success: true,
       data: membership,
@@ -102,8 +120,8 @@ export class OrganizationMembershipController {
   @ApiOperation({ summary: 'Update membership (role, status)' })
   @ApiParam({ name: 'organizationId', description: 'Organization ID' })
   @ApiParam({ name: 'userId', description: 'User ID' })
-  @ApiResponse({ 
-    status: 200, 
+  @ApiResponse({
+    status: 200,
     description: 'Membership successfully updated',
     type: MembershipResponseDto,
   })
@@ -118,14 +136,14 @@ export class OrganizationMembershipController {
   ) {
     // Temporary: Use a hardcoded updater ID until auth is integrated
     const updatedById = 'system';
-    
+
     const membership = await this.membershipService.updateMembership(
       organizationId,
       userId,
       updateDto,
       updatedById,
     );
-    
+
     return {
       success: true,
       data: membership,
@@ -148,9 +166,13 @@ export class OrganizationMembershipController {
   ) {
     // Temporary: Use a hardcoded remover ID until auth is integrated
     const removedById = 'system';
-    
-    await this.membershipService.removeMember(organizationId, userId, removedById);
-    
+
+    await this.membershipService.removeMember(
+      organizationId,
+      userId,
+      removedById,
+    );
+
     return {
       success: true,
       message: 'User removed from organization successfully',

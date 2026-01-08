@@ -21,9 +21,7 @@ export class NotificationEventController {
 
   @EventPattern(EVENT_NAMES.AUTH.USER_LOGIN)
   async handleUserLogin(@Payload() data: { userId: string }) {
-    this.logger.log(
-      `Event: ${EVENT_NAMES.AUTH.USER_LOGIN} - ${data.userId}`,
-    );
+    this.logger.log(`Event: ${EVENT_NAMES.AUTH.USER_LOGIN} - ${data.userId}`);
     // Could send notification about login activity
   }
 

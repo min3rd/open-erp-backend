@@ -8,15 +8,18 @@ import { OrganizationMembershipController } from './controllers/organization-mem
 import { UserService } from './user.service';
 import { UserManagementService } from './services/user-management.service';
 import { OrganizationMembershipService } from './services/organization-membership.service';
-import {
-  RabbitMQClientModule,
-} from '@shared/rabbitmq';
+import { RabbitMQClientModule } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
-import { User, UserSchema, OrganizationMember, OrganizationMemberSchema } from '@shared/schemas';
+import {
+  User,
+  UserSchema,
+  OrganizationMember,
+  OrganizationMemberSchema,
+} from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 
