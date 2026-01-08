@@ -120,7 +120,7 @@ export class NavigationService {
     this.invalidateCache(dto.scope, dto.module);
 
     // Publish event
-    await this.publishEvent('navigation.created', navigation, userId);
+    await this.publishEvent(EVENT_NAMES.NAVIGATION.CREATED, navigation, userId);
 
     this.logger.log(`Navigation item '${dto.id}' created by user ${userId}`);
     return navigation;
@@ -152,7 +152,7 @@ export class NavigationService {
     this.invalidateCache(existing.scope, existing.module);
 
     // Publish event
-    await this.publishEvent('navigation.updated', updated, userId);
+    await this.publishEvent(EVENT_NAMES.NAVIGATION.UPDATED, updated, userId);
 
     this.logger.log(`Navigation item '${id}' updated by user ${userId}`);
     return updated;
@@ -191,7 +191,7 @@ export class NavigationService {
     this.invalidateCache(navigation.scope, navigation.module);
 
     // Publish event
-    await this.publishEvent('navigation.deleted', navigation, userId);
+    await this.publishEvent(EVENT_NAMES.NAVIGATION.DELETED, navigation, userId);
 
     this.logger.log(`Navigation item '${id}' deleted by user ${userId}`);
   }
@@ -227,7 +227,7 @@ export class NavigationService {
     this.invalidateCache(navigation.scope, navigation.module);
 
     // Publish event
-    await this.publishEvent('navigation.moved', updated, userId);
+    await this.publishEvent(EVENT_NAMES.NAVIGATION.MOVED, updated, userId);
 
     this.logger.log(`Navigation item '${id}' moved by user ${userId}`);
     return updated;
@@ -390,6 +390,14 @@ export class NavigationService {
    * Map Navigation entity to DTO
    */
   private mapToDto(navigation: Navigation): NavigationItemDto {
+    // Log warning if timestamps are missing
+    if (!navigation.createdAt || !navigation.updatedAt) {
+      this.logger.warn(
+        `Navigation item '${navigation.id}' is missing timestamps. ` +
+        `createdAt: ${navigation.createdAt}, updatedAt: ${navigation.updatedAt}`,
+      );
+    }
+
     return {
       id: navigation.id,
       label: navigation.label,

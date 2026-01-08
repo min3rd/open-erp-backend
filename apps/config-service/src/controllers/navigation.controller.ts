@@ -125,6 +125,37 @@ export class NavigationController {
   // Single Item Operations
   // ========================================
 
+  @Get('search')
+  @Permissions('navigation.read')
+  @ApiOperation({
+    summary: 'Search navigation items',
+    description: 'Search for navigation items by label, icon, command, or subtitle',
+  })
+  @ApiQuery({
+    name: 'q',
+    required: true,
+    type: String,
+    description: 'Search query',
+    example: 'dashboard',
+  })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    description: 'Maximum number of results (default: 50)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Search results',
+    type: [NavigationItemDto],
+  })
+  async searchNavigation(
+    @Query('q') query: string,
+    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
+  ): Promise<any[]> {
+    return await this.navigationService.searchNavigation(query, limit);
+  }
+
   @Get(':id')
   @Permissions('navigation.read')
   @ApiOperation({
@@ -271,44 +302,6 @@ export class NavigationController {
     const userId = req.user?.userId || 'system';
     const navigation = await this.navigationService.moveNavigation(id, dto, userId);
     return this.navigationService.getNavigationById(navigation.id);
-  }
-
-  @Get('search')
-  @Permissions('navigation.read')
-  @ApiOperation({
-    summary: 'Search navigation items',
-    description: 'Search for navigation items by label, icon, command, or subtitle',
-  })
-  @ApiQuery({
-    name: 'q',
-    required: true,
-    type: String,
-    description: 'Search query',
-    example: 'dashboard',
-  })
-  @ApiQuery({
-    name: 'limit',
-    required: false,
-    type: Number,
-    description: 'Maximum number of results (default: 50)',
-  })
-  @ApiResponse({
-    status: 200,
-    description: 'Search results',
-    type: [NavigationItemDto],
-  })
-  async searchNavigation(
-    @Query('q') query: string,
-    @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
-  ): Promise<NavigationItemDto[]> {
-    const results = await this.navigationService.searchNavigation(query, limit);
-    // Map navigation entities to DTOs
-    const dtos: NavigationItemDto[] = [];
-    for (const nav of results) {
-      const dto = await this.navigationService.getNavigationById(nav.id);
-      dtos.push(dto);
-    }
-    return dtos;
   }
 
   // ========================================

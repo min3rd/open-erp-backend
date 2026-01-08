@@ -148,13 +148,13 @@ export class CreateNavigationDto {
   tooltip?: string;
 
   @ApiPropertyOptional({
-    description: 'Keyboard shortcut (e.g., "Ctrl+D")',
+    description: 'Keyboard shortcut (e.g., "Ctrl+D", "Ctrl+Shift+S", "F1")',
     example: 'Ctrl+D',
   })
   @IsOptional()
   @IsString()
-  @Matches(/^([A-Z][a-z]*\+)*[A-Za-z0-9]$/, {
-    message: 'Invalid shortcut format (e.g., Ctrl+D, Alt+Shift+S)',
+  @Matches(/^(Ctrl|Alt|Shift|Meta)(\+(Ctrl|Alt|Shift|Meta))*\+([A-Za-z0-9]|F\d{1,2})$/, {
+    message: 'Invalid shortcut format (e.g., Ctrl+D, Alt+Shift+S, F1, Ctrl+Shift+Delete)',
   })
   @MaxLength(50)
   shortcut?: string;
