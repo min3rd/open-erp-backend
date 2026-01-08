@@ -6,8 +6,7 @@ import { RabbitMQClientModule } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { DatabaseModule } from '@shared/database';
-import { ThrottlerModule } from '@nestjs/throttler';
-import { SystemAdminThrottlerGuard } from '@shared/authz';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
 import { APP_GUARD } from '@nestjs/core';
 import {
   VerificationToken,
@@ -50,7 +49,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
     PasswordResetTokenRepository,
     {
       provide: APP_GUARD,
-      useClass: SystemAdminThrottlerGuard,
+      useClass: ThrottlerGuard,
     },
   ],
 })
