@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Standard API Response Envelope",
+  "description": "JSON Schema for validating API responses conform to the standard envelope format",
+  "type": "object",
+  "required": ["success", "data"],
+  "properties": {
+    "success": {
+      "type": "boolean",
+      "description": "Indicates if the request was successful (true for 2xx responses)"
+    },
+    "message": {
+      "type": ["string", "null"],
+      "description": "Optional human-friendly message"
+    },
+    "error": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "required": ["code", "message", "timestamp"],
+          "properties": {
+            "code": {
+              "type": "string",
+              "description": "Machine-readable error code"
+            },
+            "message": {
+              "type": "string",
+              "description": "Human-friendly error message"
+            },
+            "details": {
+              "type": "object",
+              "description": "Additional error details"
+            },
+            "timestamp": {
+              "type": "string",
+              "format": "date-time",
+              "description": "ISO 8601 timestamp when the error occurred"
+            }
+          }
+        }
+      ]
+    },
+    "data": {
+      "description": "Response payload (can be null, object, array, etc.)"
+    },
+    "meta": {
+      "type": "object",
+      "description": "Optional metadata",
+      "properties": {
+        "etag": {
+          "type": "string"
+        },
+        "cached": {
+          "type": "boolean"
+        },
+        "serverVersion": {
+          "type": "string"
+        }
+      }
+    }
+  },
+  "if": {
+    "properties": {
+      "success": { "const": false }
+    }
+  },
+  "then": {
+    "properties": {
+      "error": {
+        "type": "object",
+        "not": { "type": "null" }
+      },
+      "data": { "type": "null" }
+    }
+  },
+  "else": {
+    "properties": {
+      "error": { "type": "null" }
+    }
+  }
+}
