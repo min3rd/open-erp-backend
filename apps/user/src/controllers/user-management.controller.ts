@@ -71,7 +71,7 @@ export class UserManagementController {
     return paginated(
       result.users,
       result.page,
-      query.limit || 10,
+      query.size || 10,
       result.total,
       undefined,
       'Users retrieved successfully'
