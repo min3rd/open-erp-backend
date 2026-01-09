@@ -243,13 +243,13 @@ export class CreateNavigationDto {
   scope: NavigationScope;
 
   @ApiPropertyOptional({
-    description: 'Module key (required when scope is MODULE)',
+    description: 'Module identifier (required when scope is MODULE)',
     example: 'inventory',
   })
   @IsOptional()
   @IsString()
   @MaxLength(100)
-  module?: string;
+  moduleId?: string;
 
   @ApiPropertyOptional({
     description: 'Parent navigation item ID (for nested items)',

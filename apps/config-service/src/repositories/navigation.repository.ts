@@ -38,12 +38,12 @@ export class NavigationRepository {
    */
   async findByScope(
     scope: NavigationScope,
-    module?: string,
+    moduleId?: string,
   ): Promise<Navigation[]> {
     try {
       const query: any = { scope };
-      if (module) {
-        query.module = module;
+      if (moduleId) {
+        query.moduleId = moduleId;
       }
       return await this.navigationModel
         .find(query)
@@ -81,15 +81,15 @@ export class NavigationRepository {
    */
   async findRoots(
     scope: NavigationScope,
-    module?: string,
+    moduleId?: string,
   ): Promise<Navigation[]> {
     try {
       const query: any = {
         scope,
         $or: [{ parentId: null }, { parentId: { $exists: false } }],
       };
-      if (module) {
-        query.module = module;
+      if (moduleId) {
+        query.moduleId = moduleId;
       }
       return await this.navigationModel
         .find(query)
@@ -255,11 +255,11 @@ export class NavigationRepository {
   /**
    * Count navigation items by scope
    */
-  async count(scope?: NavigationScope, module?: string): Promise<number> {
+  async count(scope?: NavigationScope, moduleId?: string): Promise<number> {
     try {
       const query: any = {};
       if (scope) query.scope = scope;
-      if (module) query.module = module;
+      if (moduleId) query.moduleId = moduleId;
       return await this.navigationModel.countDocuments(query).exec();
     } catch (error) {
       this.logger.error(

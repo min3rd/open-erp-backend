@@ -474,7 +474,7 @@ describe('NavigationService', () => {
       expect(result[1].items).toBeUndefined();
     });
 
-    it('should throw error when moduleKey is missing for module scope', async () => {
+    it('should throw error when moduleId is missing for module scope', async () => {
       await expect(
         service.getUserNavigation('user-123', NavigationScope.MODULE),
       ).rejects.toThrow(BadRequestException);

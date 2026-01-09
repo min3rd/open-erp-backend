@@ -21,7 +21,7 @@ Successfully implemented a comprehensive navigation API with role-based access c
 
 **Query Parameters**:
 - `scope` (optional): `global` or `module` (default: `global`)
-- `moduleKey` (optional): Module identifier (required when scope=module)
+- `moduleId` (optional): Module identifier (required when scope=module)
 - `format` (optional): `tree` or `flat` (default: `tree`)
 
 **Headers**:
@@ -40,7 +40,7 @@ Successfully implemented a comprehensive navigation API with role-based access c
 **Query Parameters**:
 - `asRole` (required): Role code to preview as
 - `scope` (optional): `global` or `module`
-- `moduleKey` (optional): Module identifier
+- `moduleId` (optional): Module identifier
 - `format` (optional): `tree` or `flat`
 
 ### Service Layer Enhancements

@@ -76,7 +76,7 @@ The Navigation API provides a comprehensive system for managing dynamic navigati
 
 **Query Parameters:**
 - `scope` (optional): Navigation scope - `global` or `module`. Default: `global`
-- `moduleKey` (optional): Module key (required when scope=module). Example: `inventory`
+- `moduleId` (optional): Module key (required when scope=module). Example: `inventory`
 - `format` (optional): Response format - `tree` or `flat`. Default: `tree`
 
 **Headers:**
@@ -169,7 +169,7 @@ curl -X GET "https://api.example.com/api/v1/navigations/user?format=flat" \
   -H "Authorization: Bearer YOUR_TOKEN"
 
 # Get module-specific navigation
-curl -X GET "https://api.example.com/api/v1/navigations/user?scope=module&moduleKey=inventory" \
+curl -X GET "https://api.example.com/api/v1/navigations/user?scope=module&moduleId=inventory" \
   -H "Authorization: Bearer YOUR_TOKEN"
 ```
 
@@ -191,7 +191,7 @@ curl -X GET "https://api.example.com/api/v1/navigations/user?scope=module&module
 **Query Parameters:**
 - `asRole` (required): Role code to preview as (e.g., `USER`, `MANAGER`)
 - `scope` (optional): Navigation scope - `global` or `module`. Default: `global`
-- `moduleKey` (optional): Module key (required when scope=module)
+- `moduleId` (optional): Module key (required when scope=module)
 - `format` (optional): Response format - `tree` or `flat`. Default: `tree`
 
 **Response:**
@@ -225,7 +225,7 @@ curl -X GET "https://api.example.com/api/v1/navigations/preview?asRole=USER" \
   -H "Authorization: Bearer ADMIN_TOKEN"
 
 # Preview module navigation for MANAGER role
-curl -X GET "https://api.example.com/api/v1/navigations/preview?asRole=MANAGER&scope=module&moduleKey=inventory&format=flat" \
+curl -X GET "https://api.example.com/api/v1/navigations/preview?asRole=MANAGER&scope=module&moduleId=inventory&format=flat" \
   -H "Authorization: Bearer ADMIN_TOKEN"
 ```
 
@@ -262,12 +262,12 @@ GET /v1/navigations/global?permissions=user.read,user.write
 }
 ```
 
-#### GET /v1/navigations/module/:moduleKey
+#### GET /v1/navigations/module/:moduleId
 
 Returns navigation tree scoped to the specified module.
 
 **Path Parameters:**
-- `moduleKey`: Module identifier (e.g., 'inventory', 'sales')
+- `moduleId`: Module identifier (e.g., 'inventory', 'sales')
 
 **Query Parameters:**
 - `permissions` (optional): Comma-separated permission keys

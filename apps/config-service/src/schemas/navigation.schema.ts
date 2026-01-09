@@ -90,7 +90,7 @@ export class Navigation extends Document {
   scope: NavigationScope;
 
   @Prop({ index: true })
-  module?: string; // Module key when scope='module'
+  moduleId?: string; // Module identifier when scope='module'
 
   @Prop()
   parentId?: string; // Reference to parent navigation item
@@ -114,8 +114,8 @@ export class Navigation extends Document {
 export const NavigationSchema = SchemaFactory.createForClass(Navigation);
 
 // Create indexes for efficient queries
-NavigationSchema.index({ scope: 1, module: 1, order: 1 });
+NavigationSchema.index({ scope: 1, moduleId: 1, order: 1 });
 NavigationSchema.index({ scope: 1, parentId: 1 });
-NavigationSchema.index({ module: 1, order: 1 });
+NavigationSchema.index({ moduleId: 1, order: 1 });
 NavigationSchema.index({ parentId: 1 });
 NavigationSchema.index({ label: 'text', command: 'text' }); // Text search index
