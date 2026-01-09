@@ -23,6 +23,7 @@ import {
 } from '../dto/organization.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
+import { created, fetched, updated, deleted, ok } from '@shared/response';
 
 interface AuthenticatedRequest {
   user: {
@@ -49,7 +50,8 @@ export class OrganizationController {
     @Body() createDto: CreateOrganizationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.organizationService.create(createDto as any, req.user.userId);
+    const organization = await this.organizationService.create(createDto as any, req.user.userId);
+    return created(organization, 'Organization created successfully');
   }
 
   @Get()
@@ -64,7 +66,8 @@ export class OrganizationController {
     @Query('status') status?: string,
     @Query('country') country?: string,
   ) {
-    return this.organizationService.findAll({ type, status, country });
+    const organizations = await this.organizationService.findAll({ type, status, country });
+    return ok(organizations, 'Organizations retrieved successfully');
   }
 
   @Get(':id')
@@ -76,7 +79,8 @@ export class OrganizationController {
   @ApiResponse({ status: 404, description: 'Organization not found' })
   @Permissions('organization.read')
   async findById(@Param('id') id: string) {
-    return this.organizationService.findById(id);
+    const organization = await this.organizationService.findById(id);
+    return fetched(organization, 'Organization retrieved successfully');
   }
 
   @Patch(':id')
