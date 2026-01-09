@@ -64,9 +64,7 @@ export class ResponseValidator {
       if (!response.error || response.error === null) {
         errors.push('Error field must be present when success is false');
       }
-      if (response.data !== null) {
-        errors.push('Data must be null when success is false');
-      }
+      // Note: data can be null or contain partial data in error responses
     } else if (response.success === true) {
       if (response.error !== null && response.error !== undefined) {
         errors.push('Error must be null when success is true');

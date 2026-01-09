@@ -28,7 +28,7 @@ import {
   ListOrganizationMembersQueryDto,
   MembershipResponseDto,
 } from '../dto/membership.dto';
-import { created, fetched, updated, deleted, paginated } from '@shared/response';
+import { created, fetched, updated, deleted, paginated, DEFAULT_PAGE_SIZE } from '@shared/response';
 
 @ApiTags('organizations')
 @Controller('organizations')
@@ -92,7 +92,7 @@ export class OrganizationMembershipController {
     return paginated(
       result.members,
       result.page,
-      query.size || 10,
+      query.size || DEFAULT_PAGE_SIZE,
       result.total,
       undefined,
       'Organization members retrieved successfully'

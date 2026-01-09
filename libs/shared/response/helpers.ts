@@ -125,7 +125,7 @@ export function fetched<T>(
  * Create a paginated response
  * @param items - Array of items
  * @param page - Current page number
- * @param limit - Items per page
+ * @param limit - Items per page (must be greater than 0)
  * @param total - Total number of items
  * @param options - Optional additional data (query, sort)
  * @param message - Optional success message
@@ -143,6 +143,11 @@ export function paginated<T>(
   message?: string,
   meta?: ApiResponseMeta,
 ): ApiResponse<PaginatedData<T>> {
+  // Validate limit to prevent division by zero
+  if (limit <= 0) {
+    throw new Error('Limit must be greater than 0');
+  }
+
   const totalPages = Math.ceil(total / limit);
 
   return {

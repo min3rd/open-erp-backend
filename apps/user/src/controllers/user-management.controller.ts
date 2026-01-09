@@ -30,7 +30,7 @@ import { JwtAuthGuard } from '@shared/authz';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types/permission.enum';
 import { PermissionsGuard } from '@shared/authz';
-import { created, fetched, updated, deleted, paginated } from '@shared/response';
+import { created, fetched, updated, deleted, paginated, DEFAULT_PAGE_SIZE } from '@shared/response';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -71,7 +71,7 @@ export class UserManagementController {
     return paginated(
       result.users,
       result.page,
-      query.size || 10,
+      query.size || DEFAULT_PAGE_SIZE,
       result.total,
       undefined,
       'Users retrieved successfully'
