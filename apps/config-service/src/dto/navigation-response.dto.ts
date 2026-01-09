@@ -77,8 +77,8 @@ export class NavigationItemDto {
   @ApiProperty({ description: 'Scope', enum: NavigationScope })
   scope: NavigationScope;
 
-  @ApiPropertyOptional({ description: 'Module key' })
-  module?: string;
+  @ApiPropertyOptional({ description: 'Module identifier' })
+  moduleId?: string;
 
   @ApiPropertyOptional({ description: 'Parent ID' })
   parentId?: string;
@@ -110,7 +110,7 @@ export class NavigationResponseDto {
   scope?: NavigationScope;
 
   @ApiPropertyOptional({ description: 'Module filter applied' })
-  module?: string;
+  moduleId?: string;
 
   @ApiProperty({ description: 'Total count of items' })
   total: number;

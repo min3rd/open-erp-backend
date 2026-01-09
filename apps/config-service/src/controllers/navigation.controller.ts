@@ -126,11 +126,11 @@ export class NavigationController {
   })
   @ApiResponse({ status: 304, description: 'Not Modified (cached)' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 400, description: 'Bad Request (missing moduleKey)' })
+  @ApiResponse({ status: 400, description: 'Bad Request (missing moduleId)' })
   async getUserNavigation(
     @CurrentUser() user: UserContext,
     @Query('scope') scopeParam?: string,
-    @Query('moduleKey') moduleKey?: string,
+    @Query('moduleId') moduleId?: string,
     @Query('format') formatParam?: string,
     @Headers('if-none-match') ifNoneMatch?: string,
     @Res({ passthrough: true }) res?: Response,
@@ -141,14 +141,14 @@ export class NavigationController {
     const items = await this.navigationService.getUserNavigation(
       user.userId,
       scope,
-      moduleKey,
+      moduleId,
       format,
     );
 
     const response = {
       items,
       scope,
-      module: moduleKey,
+      moduleId,
       format,
       total: items.length,
     };
@@ -190,10 +190,10 @@ export class NavigationController {
     example: 'global',
   })
   @ApiQuery({
-    name: 'moduleKey',
+    name: 'moduleId',
     required: false,
     type: String,
-    description: 'Module key (required when scope=module)',
+    description: 'Module identifier (required when scope=module)',
     example: 'inventory',
   })
   @ApiQuery({
@@ -224,7 +224,7 @@ export class NavigationController {
                   items: { $ref: '#/components/schemas/NavigationItemDto' },
                 },
                 scope: { type: 'string', example: 'global' },
-                module: { type: 'string', nullable: true },
+                moduleId: { type: 'string', nullable: true },
                 format: { type: 'string', example: 'tree' },
                 total: { type: 'number', example: 10 },
                 previewRole: { type: 'string', example: 'USER' },
@@ -240,7 +240,7 @@ export class NavigationController {
   async previewNavigationAsRole(
     @Query('asRole') asRole: string,
     @Query('scope') scopeParam?: string,
-    @Query('moduleKey') moduleKey?: string,
+    @Query('moduleId') moduleId?: string,
     @Query('format') formatParam?: string,
   ) {
     const scope = (scopeParam as NavigationScope) || NavigationScope.GLOBAL;
@@ -249,14 +249,14 @@ export class NavigationController {
     const items = await this.navigationService.previewNavigationAsRole(
       asRole,
       scope,
-      moduleKey,
+      moduleId,
       format,
     );
 
     const response = {
       items,
       scope,
-      module: moduleKey,
+      moduleId,
       format,
       total: items.length,
       previewRole: asRole,
@@ -325,15 +325,15 @@ export class NavigationController {
   // Module Navigation Endpoints
   // ========================================
 
-  @Get('module/:moduleKey')
+  @Get('module/:moduleId')
   @Permissions(Permission.NAVIGATION_READ)
   @ApiOperation({
     summary: 'Get module-specific navigation tree',
     description: 'Returns navigation tree scoped to the specified module',
   })
   @ApiParam({
-    name: 'moduleKey',
-    description: 'Module key identifier',
+    name: 'moduleId',
+    description: 'Module identifier',
     example: 'inventory',
   })
   @ApiQuery({
@@ -363,7 +363,7 @@ export class NavigationController {
     },
   })
   async getModuleNavigation(
-    @Param('moduleKey') moduleKey: string,
+    @Param('moduleId') moduleId: string,
     @Query('permissions') permissionsParam?: string,
   ) {
     const permissions = permissionsParam
@@ -371,20 +371,20 @@ export class NavigationController {
       : undefined;
 
     const items = await this.navigationService.getModuleNavigation(
-      moduleKey,
+      moduleId,
       permissions,
     );
 
     const response = {
       items,
       scope: NavigationScope.MODULE,
-      module: moduleKey,
+      moduleId,
       total: items.length,
     };
 
     return fetched(
       response,
-      `Module navigation for '${moduleKey}' retrieved successfully`,
+      `Module navigation for '${moduleId}' retrieved successfully`,
     );
   }
 
@@ -705,10 +705,10 @@ export class NavigationController {
     description: 'Scope to reload (global or module)',
   })
   @ApiQuery({
-    name: 'module',
+    name: 'moduleId',
     required: false,
     type: String,
-    description: 'Module key (when scope is module)',
+    description: 'Module identifier (when scope is module)',
   })
   @ApiResponse({
     status: 200,
@@ -727,10 +727,10 @@ export class NavigationController {
   @HttpCode(HttpStatus.OK)
   async reloadCache(
     @Query('scope') scope?: string,
-    @Query('module') module?: string,
+    @Query('moduleId') moduleId?: string,
   ) {
     const navigationScope = scope as NavigationScope | undefined;
-    await this.navigationService.reloadCache(navigationScope, module);
+    await this.navigationService.reloadCache(navigationScope, moduleId);
     return ok(null, 'Navigation cache reloaded successfully');
   }
 

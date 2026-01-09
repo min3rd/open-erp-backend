@@ -65,19 +65,19 @@ export class NavigationService {
    * Get module-specific navigation tree with optional permission filtering
    */
   async getModuleNavigation(
-    moduleKey: string,
+    moduleId: string,
     permissions?: string[],
   ): Promise<NavigationItemDto[]> {
-    const cacheKey = `module:${moduleKey}:${permissions?.sort().join(',') || 'all'}`;
+    const cacheKey = `module:${moduleId}:${permissions?.sort().join(',') || 'all'}`;
     const cached = this.getFromCache(cacheKey);
     if (cached) {
-      this.logger.debug(`Returning cached navigation for module ${moduleKey}`);
+      this.logger.debug(`Returning cached navigation for module ${moduleId}`);
       return cached;
     }
 
     const roots = await this.navigationRepository.findRoots(
       NavigationScope.MODULE,
-      moduleKey,
+      moduleId,
     );
     const tree = await this.buildNavigationTree(roots, permissions);
 
@@ -115,9 +115,9 @@ export class NavigationService {
     userId: string,
   ): Promise<Navigation> {
     // Validate module scope
-    if (dto.scope === NavigationScope.MODULE && !dto.module) {
+    if (dto.scope === NavigationScope.MODULE && !dto.moduleId) {
       throw new BadRequestException(
-        'Module key is required for module-scoped navigation',
+        'Module identifier is required for module-scoped navigation',
       );
     }
 
@@ -139,7 +139,7 @@ export class NavigationService {
 
       if (
         dto.scope === NavigationScope.MODULE &&
-        dto.module !== parent.module
+        dto.moduleId !== parent.moduleId
       ) {
         throw new BadRequestException(
           'Navigation item module must match parent module',
@@ -153,7 +153,7 @@ export class NavigationService {
     const navigation = await this.navigationRepository.create(dto, userId);
 
     // Invalidate cache
-    this.invalidateCache(dto.scope, dto.module);
+    this.invalidateCache(dto.scope, dto.moduleId);
 
     // Publish event
     await this.publishEvent(EVENT_NAMES.NAVIGATION.CREATED, navigation, userId);
@@ -189,7 +189,7 @@ export class NavigationService {
     }
 
     // Invalidate cache
-    this.invalidateCache(existing.scope, existing.module);
+    this.invalidateCache(existing.scope, existing.moduleId);
 
     // Publish event
     await this.publishEvent(EVENT_NAMES.NAVIGATION.UPDATED, updated, userId);
@@ -234,7 +234,7 @@ export class NavigationService {
     }
 
     // Invalidate cache
-    this.invalidateCache(navigation.scope, navigation.module);
+    this.invalidateCache(navigation.scope, navigation.moduleId);
 
     // Publish event
     await this.publishEvent(EVENT_NAMES.NAVIGATION.DELETED, navigation, userId);
@@ -278,7 +278,7 @@ export class NavigationService {
     }
 
     // Invalidate cache
-    this.invalidateCache(navigation.scope, navigation.module);
+    this.invalidateCache(navigation.scope, navigation.moduleId);
 
     // Publish event
     await this.publishEvent(EVENT_NAMES.NAVIGATION.MOVED, updated, userId);
@@ -305,14 +305,14 @@ export class NavigationService {
    * Get navigation for authenticated user (with auto permission extraction)
    * @param userId User ID from JWT token
    * @param scope Navigation scope (global or module)
-   * @param moduleKey Module key (required when scope=module)
+   * @param moduleId Module identifier (required when scope=module)
    * @param format Response format (tree or flat)
    * @returns Navigation items in requested format
    */
   async getUserNavigation(
     userId: string,
     scope: NavigationScope,
-    moduleKey?: string,
+    moduleId?: string,
     format: 'tree' | 'flat' = 'tree',
   ): Promise<NavigationItemDto[]> {
     // Get user permissions from authorization service
@@ -323,12 +323,12 @@ export class NavigationService {
     if (scope === NavigationScope.GLOBAL) {
       tree = await this.getGlobalNavigation(permissions);
     } else {
-      if (!moduleKey) {
+      if (!moduleId) {
         throw new BadRequestException(
-          'moduleKey is required when scope is module',
+          'moduleId is required when scope is module',
         );
       }
-      tree = await this.getModuleNavigation(moduleKey, permissions);
+      tree = await this.getModuleNavigation(moduleId, permissions);
     }
 
     // Convert to flat format if requested
@@ -343,14 +343,14 @@ export class NavigationService {
    * Preview navigation as a specific role (admin only)
    * @param roleCode Role code to preview as
    * @param scope Navigation scope
-   * @param moduleKey Module key (for module scope)
+   * @param moduleId Module identifier (for module scope)
    * @param format Response format
    * @returns Navigation items as they would appear for the role
    */
   async previewNavigationAsRole(
     roleCode: string,
     scope: NavigationScope,
-    moduleKey?: string,
+    moduleId?: string,
     format: 'tree' | 'flat' = 'tree',
   ): Promise<NavigationItemDto[]> {
     // Get permissions for the role
@@ -361,12 +361,12 @@ export class NavigationService {
     if (scope === NavigationScope.GLOBAL) {
       tree = await this.getGlobalNavigation(permissions);
     } else {
-      if (!moduleKey) {
+      if (!moduleId) {
         throw new BadRequestException(
-          'moduleKey is required when scope is module',
+          'moduleId is required when scope is module',
         );
       }
-      tree = await this.getModuleNavigation(moduleKey, permissions);
+      tree = await this.getModuleNavigation(moduleId, permissions);
     }
 
     // Convert to flat format if requested
@@ -471,10 +471,10 @@ export class NavigationService {
   /**
    * Reload/invalidate navigation cache
    */
-  async reloadCache(scope?: NavigationScope, module?: string): Promise<void> {
-    this.invalidateCache(scope, module);
+  async reloadCache(scope?: NavigationScope, moduleId?: string): Promise<void> {
+    this.invalidateCache(scope, moduleId);
     this.logger.log(
-      `Navigation cache invalidated for scope=${scope}, module=${module}`,
+      `Navigation cache invalidated for scope=${scope}, moduleId=${moduleId}`,
     );
   }
 
@@ -572,7 +572,7 @@ export class NavigationService {
 
     if (
       current.scope === NavigationScope.MODULE &&
-      current.module !== newParent.module
+      current.moduleId !== newParent.moduleId
     ) {
       throw new BadRequestException(
         'Navigation item module must match parent module',
@@ -664,7 +664,7 @@ export class NavigationService {
       linkClass: navigation.linkClass,
       order: navigation.order,
       scope: navigation.scope,
-      module: navigation.module,
+      moduleId: navigation.moduleId,
       parentId: navigation.parentId,
       meta: navigation.meta,
       createdBy: navigation.createdBy,
@@ -706,7 +706,7 @@ export class NavigationService {
   /**
    * Invalidate cache entries
    */
-  private invalidateCache(scope?: NavigationScope, module?: string): void {
+  private invalidateCache(scope?: NavigationScope, moduleId?: string): void {
     if (!scope) {
       // Clear all cache
       this.cache.clear();
@@ -720,8 +720,8 @@ export class NavigationService {
         keysToDelete.push(key);
       } else if (
         scope === NavigationScope.MODULE &&
-        module &&
-        key.startsWith(`module:${module}:`)
+        moduleId &&
+        key.startsWith(`module:${moduleId}:`)
       ) {
         keysToDelete.push(key);
       }
@@ -742,7 +742,7 @@ export class NavigationService {
       this.userClient.emit(eventName, {
         id: navigation.id,
         scope: navigation.scope,
-        module: navigation.module,
+        moduleId: navigation.moduleId,
         userId,
         timestamp: new Date(),
       });

@@ -72,7 +72,7 @@ describe('Navigation API (e2e)', () => {
 
     it('should support module scope', async () => {
       const response = await request(app.getHttpServer())
-        .get('/v1/navigations/user?scope=module&moduleKey=inventory')
+        .get('/v1/navigations/user?scope=module&moduleId=inventory')
         .set('Authorization', `Bearer ${mockTokens.user}`)
         .expect(200);
 
@@ -80,7 +80,7 @@ describe('Navigation API (e2e)', () => {
       expect(response.body.data.item).toHaveProperty('module', 'inventory');
     });
 
-    it('should return 400 when moduleKey is missing for module scope', async () => {
+    it('should return 400 when moduleId is missing for module scope', async () => {
       const response = await request(app.getHttpServer())
         .get('/v1/navigations/user?scope=module')
         .set('Authorization', `Bearer ${mockTokens.user}`)
@@ -146,10 +146,10 @@ describe('Navigation API (e2e)', () => {
       expect(response.body.data.item).toHaveProperty('format', 'flat');
     });
 
-    it('should support scope and moduleKey in preview', async () => {
+    it('should support scope and moduleId in preview', async () => {
       const response = await request(app.getHttpServer())
         .get(
-          '/v1/navigations/preview?asRole=USER&scope=module&moduleKey=inventory',
+          '/v1/navigations/preview?asRole=USER&scope=module&moduleId=inventory',
         )
         .set('Authorization', `Bearer ${mockTokens.systemAdmin}`)
         .expect(200);
@@ -181,7 +181,7 @@ describe('Navigation API (e2e)', () => {
     });
   });
 
-  describe('GET /v1/navigations/module/:moduleKey', () => {
+  describe('GET /v1/navigations/module/:moduleId', () => {
     it('should return module-specific navigation', async () => {
       const response = await request(app.getHttpServer())
         .get('/v1/navigations/module/inventory')
