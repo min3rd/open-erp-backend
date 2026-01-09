@@ -159,18 +159,11 @@ export class Warehouse extends Document {
 
   // ========== LEGAL/MANAGEMENT ==========
   @Prop({
-    type: String,
-    trim: true,
-    maxlength: 200,
-  })
-  companyName?: string;
-
-  @Prop({
-    type: String,
-    trim: true,
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'Organization',
     index: true,
   })
-  taxCode?: string;
+  organizationId?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: String,
@@ -437,10 +430,9 @@ export const WarehouseSchema = SchemaFactory.createForClass(Warehouse);
 // Compound index on province.code and ward.code
 WarehouseSchema.index({ 'province.code': 1, 'ward.code': 1 });
 
-// Text index for search on name and companyName
+// Text index for search on name
 WarehouseSchema.index({
   name: 'text',
-  companyName: 'text',
 });
 
 // Compound indexes for multi-tenant support
