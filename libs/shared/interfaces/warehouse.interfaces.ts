@@ -2,7 +2,7 @@
  * Warehouse-related TypeScript interfaces
  */
 
-import { Schema as MongooseSchema } from 'mongoose';
+import { Document, Schema as MongooseSchema } from 'mongoose';
 import {
   WarehouseType,
   WarehouseStatus,
