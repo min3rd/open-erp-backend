@@ -27,6 +27,7 @@ import { Config } from '../schemas/config.schema';
 import { PermissionsGuard } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
+import { created, ok, updated, deleted } from '@shared/response';
 
 @ApiTags('configs')
 @Controller({ path: 'configs', version: '1' })
@@ -59,10 +60,10 @@ export class ConfigController {
   async createOrUpdateGlobalConfig(
     @Body() dto: CreateConfigDto,
     @Request() req: any,
-  ): Promise<ConfigResponseDto> {
+  ): Promise<any> {
     const userId = req.user?.userId || 'system';
     const config = await this.configService.upsertGlobalConfig(dto, userId);
-    return this.mapToResponseDto(config);
+    return created(this.mapToResponseDto(config), 'Config created or updated successfully');
   }
 
   @Get()
@@ -84,9 +85,9 @@ export class ConfigController {
   })
   async listGlobalConfigs(
     @Query('limit') limit?: number,
-  ): Promise<ConfigResponseDto[]> {
+  ): Promise<any> {
     const configs = await this.configService.listGlobalConfigs(limit);
-    return configs.map((config) => this.mapToResponseDto(config));
+    return ok(configs.map((config) => this.mapToResponseDto(config)), 'Global configs retrieved successfully');
   }
 
   @Get(':name')
@@ -104,9 +105,9 @@ export class ConfigController {
   @ApiResponse({ status: 404, description: 'Config not found' })
   async getGlobalConfig(
     @Param('name') name: string,
-  ): Promise<ConfigResponseDto> {
+  ): Promise<any> {
     const config = await this.configService.getGlobalConfig(name);
-    return this.mapToResponseDto(config);
+    return ok(this.mapToResponseDto(config), 'Global config retrieved successfully');
   }
 
   @Put(':name')
@@ -128,14 +129,14 @@ export class ConfigController {
     @Param('name') name: string,
     @Body() dto: UpdateConfigDto,
     @Request() req: any,
-  ): Promise<ConfigResponseDto> {
+  ): Promise<any> {
     const userId = req.user?.userId || 'system';
     const config = await this.configService.updateGlobalConfig(
       name,
       dto,
       userId,
     );
-    return this.mapToResponseDto(config);
+    return updated(this.mapToResponseDto(config), 'Global config updated successfully');
   }
 
   @Patch(':name')
@@ -157,14 +158,14 @@ export class ConfigController {
     @Param('name') name: string,
     @Body() dto: UpdateConfigDto,
     @Request() req: any,
-  ): Promise<ConfigResponseDto> {
+  ): Promise<any> {
     const userId = req.user?.userId || 'system';
     const config = await this.configService.updateGlobalConfig(
       name,
       dto,
       userId,
     );
-    return this.mapToResponseDto(config);
+    return updated(this.mapToResponseDto(config), 'Global config patched successfully');
   }
 
   @Delete(':name')
@@ -181,10 +182,10 @@ export class ConfigController {
   async deleteGlobalConfig(
     @Param('name') name: string,
     @Request() req: any,
-  ): Promise<{ message: string }> {
+  ): Promise<any> {
     const userId = req.user?.userId || 'system';
     await this.configService.deleteGlobalConfig(name, userId);
-    return { message: 'Config deleted successfully' };
+    return deleted('Config deleted successfully');
   }
 
   // ========================================
