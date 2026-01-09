@@ -38,7 +38,7 @@ import { JwtAuthGuard, PermissionsGuard, CurrentUser, UserContext } from '@share
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { Permission, Role, RoleGroups } from '@shared/types';
-import { ok, fetched } from '@shared/response';
+import { ok, fetched, created, updated, deleted } from '@shared/response';
 import * as crypto from 'crypto';
 
 @ApiTags('navigations')
@@ -282,22 +282,38 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Global navigation tree retrieved successfully',
-    type: NavigationResponseDto,
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', nullable: true },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: { $ref: '#/components/schemas/NavigationResponseDto' },
+          },
+        },
+      },
+    },
   })
   async getGlobalNavigation(
     @Query('permissions') permissionsParam?: string,
-  ): Promise<NavigationResponseDto> {
+  ) {
     const permissions = permissionsParam
       ? permissionsParam.split(',').map((p) => p.trim())
       : undefined;
 
     const items = await this.navigationService.getGlobalNavigation(permissions);
 
-    return {
+    const response = {
       items,
       scope: NavigationScope.GLOBAL,
       total: items.length,
     };
+
+    return fetched(response, 'Global navigation retrieved successfully');
   }
 
   // ========================================
@@ -325,12 +341,26 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Module navigation tree retrieved successfully',
-    type: NavigationResponseDto,
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', nullable: true },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: { $ref: '#/components/schemas/NavigationResponseDto' },
+          },
+        },
+      },
+    },
   })
   async getModuleNavigation(
     @Param('moduleKey') moduleKey: string,
     @Query('permissions') permissionsParam?: string,
-  ): Promise<NavigationResponseDto> {
+  ) {
     const permissions = permissionsParam
       ? permissionsParam.split(',').map((p) => p.trim())
       : undefined;
@@ -340,12 +370,17 @@ export class NavigationController {
       permissions,
     );
 
-    return {
+    const response = {
       items,
       scope: NavigationScope.MODULE,
       module: moduleKey,
       total: items.length,
     };
+
+    return fetched(
+      response,
+      `Module navigation for '${moduleKey}' retrieved successfully`,
+    );
   }
 
   // ========================================
@@ -375,13 +410,31 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Search results',
-    type: [NavigationItemDto],
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', nullable: true },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: {
+              type: 'array',
+              items: { $ref: '#/components/schemas/NavigationItemDto' },
+            },
+          },
+        },
+      },
+    },
   })
   async searchNavigation(
     @Query('q') query: string,
     @Query('limit', new DefaultValuePipe(50), ParseIntPipe) limit: number,
-  ): Promise<any[]> {
-    return await this.navigationService.searchNavigation(query, limit);
+  ) {
+    const results = await this.navigationService.searchNavigation(query, limit);
+    return fetched(results, `Found ${results.length} navigation items`);
   }
 
   @Get(':id')
@@ -404,18 +457,33 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Navigation item retrieved successfully',
-    type: NavigationItemDto,
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', nullable: true },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: { $ref: '#/components/schemas/NavigationItemDto' },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Navigation item not found' })
   async getNavigationById(
     @Param('id') id: string,
     @Query('permissions') permissionsParam?: string,
-  ): Promise<NavigationItemDto> {
+  ) {
     const permissions = permissionsParam
       ? permissionsParam.split(',').map((p) => p.trim())
       : undefined;
 
-    return await this.navigationService.getNavigationById(id, permissions);
+    const item = await this.navigationService.getNavigationById(id, permissions);
+    return fetched(item, 'Navigation item retrieved successfully');
   }
 
   @Post()
@@ -428,7 +496,21 @@ export class NavigationController {
   @ApiResponse({
     status: 201,
     description: 'Navigation item created successfully',
-    type: NavigationItemDto,
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Navigation item created successfully' },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'create' },
+            item: { $ref: '#/components/schemas/NavigationItemDto' },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -436,13 +518,14 @@ export class NavigationController {
   async createNavigation(
     @Body() dto: CreateNavigationDto,
     @Request() req: { user?: { userId?: string } },
-  ): Promise<NavigationItemDto> {
+  ) {
     const userId = req.user?.userId || 'system';
     const navigation = await this.navigationService.createNavigation(
       dto,
       userId,
     );
-    return this.navigationService.getNavigationById(navigation.id);
+    const item = await this.navigationService.getNavigationById(navigation.id);
+    return created(item, 'Navigation item created successfully');
   }
 
   @Patch(':id')
@@ -460,7 +543,21 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Navigation item updated successfully',
-    type: NavigationItemDto,
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Navigation item updated successfully' },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'update' },
+            item: { $ref: '#/components/schemas/NavigationItemDto' },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Navigation item not found' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -468,14 +565,15 @@ export class NavigationController {
     @Param('id') id: string,
     @Body() dto: UpdateNavigationDto,
     @Request() req: { user?: { userId?: string } },
-  ): Promise<NavigationItemDto> {
+  ) {
     const userId = req.user?.userId || 'system';
     const navigation = await this.navigationService.updateNavigation(
       id,
       dto,
       userId,
     );
-    return this.navigationService.getNavigationById(navigation.id);
+    const item = await this.navigationService.getNavigationById(navigation.id);
+    return updated(item, 'Navigation item updated successfully');
   }
 
   @Delete(':id')
@@ -499,6 +597,21 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Navigation item deleted successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Navigation item deleted successfully' },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'delete' },
+            item: { type: 'null' },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Navigation item not found' })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
@@ -507,10 +620,10 @@ export class NavigationController {
     @Query('cascade', new DefaultValuePipe(true), ParseBoolPipe)
     cascade: boolean,
     @Request() req: { user?: { userId?: string } },
-  ): Promise<{ message: string }> {
+  ) {
     const userId = req.user?.userId || 'system';
     await this.navigationService.deleteNavigation(id, userId, cascade);
-    return { message: 'Navigation item deleted successfully' };
+    return deleted('Navigation item deleted successfully');
   }
 
   // ========================================
@@ -532,7 +645,21 @@ export class NavigationController {
   @ApiResponse({
     status: 200,
     description: 'Navigation item moved successfully',
-    type: NavigationItemDto,
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Navigation item moved successfully' },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'update' },
+            item: { $ref: '#/components/schemas/NavigationItemDto' },
+          },
+        },
+      },
+    },
   })
   @ApiResponse({ status: 404, description: 'Navigation item not found' })
   @ApiResponse({
@@ -544,14 +671,15 @@ export class NavigationController {
     @Param('id') id: string,
     @Body() dto: MoveNavigationDto,
     @Request() req: { user?: { userId?: string } },
-  ): Promise<NavigationItemDto> {
+  ) {
     const userId = req.user?.userId || 'system';
     const navigation = await this.navigationService.moveNavigation(
       id,
       dto,
       userId,
     );
-    return this.navigationService.getNavigationById(navigation.id);
+    const item = await this.navigationService.getNavigationById(navigation.id);
+    return updated(item, 'Navigation item moved successfully');
   }
 
   // ========================================
@@ -577,16 +705,28 @@ export class NavigationController {
     type: String,
     description: 'Module key (when scope is module)',
   })
-  @ApiResponse({ status: 200, description: 'Cache reloaded successfully' })
+  @ApiResponse({
+    status: 200,
+    description: 'Cache reloaded successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Navigation cache reloaded successfully' },
+        error: { type: 'null' },
+        data: { type: 'null' },
+      },
+    },
+  })
   @ApiResponse({ status: 403, description: 'Insufficient permissions' })
   @HttpCode(HttpStatus.OK)
   async reloadCache(
     @Query('scope') scope?: string,
     @Query('module') module?: string,
-  ): Promise<{ message: string }> {
+  ) {
     const navigationScope = scope as NavigationScope | undefined;
     await this.navigationService.reloadCache(navigationScope, module);
-    return { message: 'Navigation cache reloaded successfully' };
+    return ok(null, 'Navigation cache reloaded successfully');
   }
 
   // ========================================
