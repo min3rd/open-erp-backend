@@ -18,6 +18,7 @@ import { MembershipService } from '../services/membership.service';
 import { UpdateMemberRolesDto } from '../dto/membership.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
+import { ok, updated, deleted } from '@shared/response';
 
 interface AuthenticatedRequest {
   user: {
@@ -41,7 +42,8 @@ export class MembershipController {
   })
   @Permissions('membership.read')
   async getUserOrganizations(@Param('userId') userId: string) {
-    return this.membershipService.getUserOrganizations(userId);
+    const organizations = await this.membershipService.getUserOrganizations(userId);
+    return ok(organizations, 'User organizations retrieved successfully');
   }
 
   @Get('organizations/:organizationId/members')
@@ -54,7 +56,8 @@ export class MembershipController {
   async getOrganizationMembers(
     @Param('organizationId') organizationId: string,
   ) {
-    return this.membershipService.getOrganizationMembers(organizationId);
+    const members = await this.membershipService.getOrganizationMembers(organizationId);
+    return ok(members, 'Organization members retrieved successfully');
   }
 
   @Patch(':id/roles')
@@ -69,11 +72,12 @@ export class MembershipController {
     @Body() updateDto: UpdateMemberRolesDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.membershipService.updateMemberRoles(
+    const membership = await this.membershipService.updateMemberRoles(
       id,
       updateDto.roles,
       req.user.userId,
     );
+    return updated(membership, 'Member roles updated successfully');
   }
 
   @Delete(':id')
@@ -84,6 +88,7 @@ export class MembershipController {
     @Param('id') id: string,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.membershipService.removeMember(id, req.user.userId);
+    await this.membershipService.removeMember(id, req.user.userId);
+    return deleted('Member removed successfully');
   }
 }
