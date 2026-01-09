@@ -1,0 +1,61 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Paginated Response Data",
+  "description": "JSON Schema for validating paginated response data structure",
+  "type": "object",
+  "required": ["items", "page", "limit", "total", "totalPages"],
+  "properties": {
+    "items": {
+      "type": "array",
+      "description": "Array of items for the current page"
+    },
+    "query": {
+      "type": "object",
+      "properties": {
+        "q": {
+          "type": "string",
+          "description": "Search query string"
+        },
+        "filters": {
+          "type": "object",
+          "description": "Applied filters"
+        }
+      }
+    },
+    "page": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Current page number (1-indexed)"
+    },
+    "limit": {
+      "type": "integer",
+      "minimum": 1,
+      "description": "Number of items per page"
+    },
+    "total": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of items"
+    },
+    "totalPages": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of pages"
+    },
+    "sort": {
+      "type": "object",
+      "required": ["by", "order"],
+      "properties": {
+        "by": {
+          "type": "string",
+          "description": "Field to sort by"
+        },
+        "order": {
+          "type": "string",
+          "enum": ["asc", "desc"],
+          "description": "Sort order"
+        }
+      }
+    }
+  }
+}

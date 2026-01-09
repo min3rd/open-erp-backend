@@ -10,10 +10,12 @@ import { Response } from 'express';
 import { ErrorFactory } from './error.factory';
 import { ErrorResponse } from './error.interface';
 import { getOrCreateCorrelationId } from './correlation-id.util';
+import { ApiResponse } from '../response/types';
 
 /**
  * Global exception filter that catches all exceptions and transforms them
  * into standardized error responses following RFC 7807 Problem Details
+ * and the standardized API response envelope
  */
 @Catch()
 export class GlobalExceptionFilter implements ExceptionFilter {
@@ -48,8 +50,29 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // Log the error with correlation ID for tracing
     this.logError(exception, errorResponse, request);
 
-    // Send standardized error response
-    response.status(errorResponse.status).json(errorResponse);
+    // Check for legacy format header (for migration compatibility)
+    const apiFormat = request.headers['x-api-format'];
+    if (apiFormat === 'legacy') {
+      // Send legacy format for backwards compatibility
+      response.status(errorResponse.status).json(errorResponse);
+      return;
+    }
+
+    // Transform to standardized API response envelope
+    const envelopeResponse: ApiResponse<null> = {
+      success: false,
+      message: errorResponse.message,
+      error: {
+        code: errorResponse.errorCode,
+        message: errorResponse.message,
+        details: errorResponse.details,
+        timestamp: errorResponse.timestamp,
+      },
+      data: null,
+    };
+
+    // Send standardized envelope error response
+    response.status(errorResponse.status).json(envelopeResponse);
   }
 
   /**
