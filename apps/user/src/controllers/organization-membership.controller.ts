@@ -18,8 +18,8 @@ import {
   PermissionsGuard,
   Permissions,
   CurrentUser,
-  UserContext,
 } from '@shared/authz';
+import type { UserContext } from '@shared/authz';
 import { Permission } from '@shared/types';
 import { OrganizationMembershipService } from '../services/organization-membership.service';
 import {
@@ -92,7 +92,7 @@ export class OrganizationMembershipController {
     return paginated(
       result.members,
       result.page,
-      query.limit || 10,
+      query.size || 10,
       result.total,
       undefined,
       'Organization members retrieved successfully'
