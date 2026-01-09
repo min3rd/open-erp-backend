@@ -18,7 +18,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Public } from '@shared/authz/decorators';
-import { ok } from '@shared/response';
+import { ok, created } from '@shared/response';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -33,7 +33,12 @@ export class AuthController {
   @ApiResponse({ status: 201, description: 'User successfully registered' })
   @ApiResponse({ status: 400, description: 'Invalid input data' })
   async register(@Body() registerDto: RegisterDto) {
-    return this.authService.register(registerDto);
+    const result = await this.authService.register(registerDto);
+    // Auth service returns partial envelope, wrap it properly
+    return created(
+      result.data,
+      result.message || 'Registration successful. Please check your email for verification code.',
+    );
   }
 
   @Post('login')
@@ -44,7 +49,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Successfully logged in' })
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
-    return this.authService.login(loginDto);
+    const result = await this.authService.login(loginDto);
+    return ok(result.data, result.message || 'Successfully logged in');
   }
 
   @Post('verify-email')
@@ -59,7 +65,8 @@ export class AuthController {
   })
   @ApiResponse({ status: 404, description: 'User not found' })
   async verifyEmail(@Body() verifyEmailDto: VerifyEmailDto) {
-    return this.authService.verifyEmail(verifyEmailDto);
+    const result = await this.authService.verifyEmail(verifyEmailDto);
+    return ok(result.data, result.message || 'Email verified successfully');
   }
 
   @Post('resend-verification')
@@ -75,7 +82,8 @@ export class AuthController {
   async resendVerification(
     @Body() resendVerificationDto: ResendVerificationDto,
   ) {
-    return this.authService.resendVerification(resendVerificationDto);
+    const result = await this.authService.resendVerification(resendVerificationDto);
+    return ok(result.data, result.message || 'Verification code sent successfully');
   }
 
   @Post('forgot-password')
@@ -89,7 +97,8 @@ export class AuthController {
   })
   @ApiResponse({ status: 429, description: 'Too many reset requests' })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
-    return this.authService.forgotPassword(forgotPasswordDto);
+    const result = await this.authService.forgotPassword(forgotPasswordDto);
+    return ok(result.data, result.message || 'If email exists, password reset link sent');
   }
 
   @Get('validate-reset-token')
@@ -106,7 +115,8 @@ export class AuthController {
     description: 'Token validation result',
   })
   async validateResetToken(@Query('token') token: string) {
-    return this.authService.validateResetToken(token);
+    const result = await this.authService.validateResetToken(token);
+    return ok(result, 'Token validation completed');
   }
 
   @Post('reset-password')
@@ -117,7 +127,8 @@ export class AuthController {
   @ApiResponse({ status: 200, description: 'Password reset successfully' })
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
-    return this.authService.resetPassword(resetPasswordDto);
+    const result = await this.authService.resetPassword(resetPasswordDto);
+    return ok(result.data, result.message || 'Password reset successfully');
   }
 
   @Get('health')

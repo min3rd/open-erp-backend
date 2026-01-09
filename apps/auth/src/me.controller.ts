@@ -14,6 +14,7 @@ import {
 } from '@nestjs/swagger';
 import { AuthService } from './auth.service';
 import { JwtAuthGuard } from './guards/jwt-auth.guard';
+import { fetched } from '@shared/response';
 
 /**
  * Authenticated request interface with user context
@@ -46,6 +47,7 @@ export class MeController {
   })
   async getMe(@Request() req: AuthenticatedRequest) {
     // JwtAuthGuard ensures user is set, so we can safely access userId
-    return this.authService.getMe(req.user.userId);
+    const result = await this.authService.getMe(req.user.userId);
+    return fetched(result.data, 'User profile retrieved successfully');
   }
 }
