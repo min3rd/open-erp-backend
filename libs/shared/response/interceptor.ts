@@ -4,6 +4,7 @@ import {
   ExecutionContext,
   CallHandler,
   HttpStatus,
+  Logger,
 } from '@nestjs/common';
 import { Observable, throwError } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
@@ -16,6 +17,8 @@ import { wrapLegacyResponse } from './helpers';
  */
 @Injectable()
 export class ResponseInterceptor implements NestInterceptor {
+  private readonly logger = new Logger(ResponseInterceptor.name);
+
   intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
     const request = context.switchToHttp().getRequest();
     const response = context.switchToHttp().getResponse();
@@ -38,6 +41,11 @@ export class ResponseInterceptor implements NestInterceptor {
         return this.wrapResponse(data, response.statusCode);
       }),
       catchError((error) => {
+        // Log error for debugging before letting exception filter handle it
+        this.logger.error(
+          `Error in response interceptor: ${error.message}`,
+          error.stack,
+        );
         // Let the global exception filter handle errors
         return throwError(() => error);
       }),
@@ -69,6 +77,9 @@ export class ResponseInterceptor implements NestInterceptor {
     }
 
     // For error responses (should be handled by exception filter, but just in case)
+    this.logger.warn(
+      `Wrapping error response with status ${statusCode}. This should be handled by the exception filter.`,
+    );
     return {
       success: false,
       message: 'An error occurred',
