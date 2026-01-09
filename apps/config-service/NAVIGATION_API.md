@@ -66,7 +66,174 @@ The Navigation API provides a comprehensive system for managing dynamic navigati
 
 ## API Endpoints
 
-### GET /v1/navigations/global
+### User-Facing Endpoints
+
+#### GET /v1/navigations/user
+
+**NEW** - Returns navigation filtered by authenticated user's permissions. Automatically extracts permissions from JWT token.
+
+**Authentication:** Required (JWT Bearer token)
+
+**Query Parameters:**
+- `scope` (optional): Navigation scope - `global` or `module`. Default: `global`
+- `moduleKey` (optional): Module key (required when scope=module). Example: `inventory`
+- `format` (optional): Response format - `tree` or `flat`. Default: `tree`
+
+**Headers:**
+- `Authorization`: Bearer <token> (required)
+- `If-None-Match`: ETag for conditional requests (optional)
+
+**Response (Tree Format):**
+```json
+{
+  "success": true,
+  "message": "Navigation retrieved successfully",
+  "error": null,
+  "data": {
+    "mode": "get",
+    "item": {
+      "items": [
+        {
+          "id": "nav-dashboard",
+          "label": "Dashboard",
+          "icon": "pi pi-home",
+          "routerLink": "/dashboard",
+          "scope": "global",
+          "order": 1,
+          "items": [...]
+        }
+      ],
+      "scope": "global",
+      "format": "tree",
+      "total": 1
+    }
+  },
+  "meta": {
+    "etag": "\"abc123\""
+  }
+}
+```
+
+**Response (Flat Format):**
+```json
+{
+  "success": true,
+  "message": "Navigation retrieved successfully",
+  "error": null,
+  "data": {
+    "mode": "get",
+    "item": {
+      "items": [
+        {
+          "id": "nav-dashboard",
+          "label": "Dashboard",
+          "icon": "pi pi-home",
+          "routerLink": "/dashboard",
+          "scope": "global",
+          "order": 1
+        },
+        {
+          "id": "nav-dashboard-overview",
+          "label": "Overview",
+          "routerLink": "/dashboard/overview",
+          "scope": "global",
+          "order": 1,
+          "parentId": "nav-dashboard"
+        }
+      ],
+      "scope": "global",
+      "format": "flat",
+      "total": 2
+    }
+  },
+  "meta": {
+    "etag": "\"abc123\""
+  }
+}
+```
+
+**Status Codes:**
+- `200 OK`: Navigation retrieved successfully
+- `304 Not Modified`: Content not modified (when ETag matches)
+- `400 Bad Request`: Invalid parameters
+- `401 Unauthorized`: Missing or invalid token
+
+**Examples:**
+```bash
+# Get global navigation in tree format
+curl -X GET "https://api.example.com/api/v1/navigations/user" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Get global navigation in flat format
+curl -X GET "https://api.example.com/api/v1/navigations/user?format=flat" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+
+# Get module-specific navigation
+curl -X GET "https://api.example.com/api/v1/navigations/user?scope=module&moduleKey=inventory" \
+  -H "Authorization: Bearer YOUR_TOKEN"
+```
+
+**Features:**
+- ✅ Automatic permission extraction from JWT
+- ✅ Server-side permission filtering
+- ✅ ETag-based client caching
+- ✅ Tree and flat format support
+- ✅ SYSTEM_ADMIN bypass
+
+---
+
+#### GET /v1/navigations/preview
+
+**NEW** - Preview navigation as a specific role (admin only). Useful for testing and debugging.
+
+**Authentication:** Required (SYSTEM_ADMIN role)
+
+**Query Parameters:**
+- `asRole` (required): Role code to preview as (e.g., `USER`, `MANAGER`)
+- `scope` (optional): Navigation scope - `global` or `module`. Default: `global`
+- `moduleKey` (optional): Module key (required when scope=module)
+- `format` (optional): Response format - `tree` or `flat`. Default: `tree`
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Navigation preview for role 'USER'",
+  "error": null,
+  "data": {
+    "mode": "get",
+    "item": {
+      "items": [...],
+      "scope": "global",
+      "format": "tree",
+      "total": 5,
+      "previewRole": "USER"
+    }
+  }
+}
+```
+
+**Status Codes:**
+- `200 OK`: Preview retrieved successfully
+- `401 Unauthorized`: Missing or invalid token
+- `403 Forbidden`: User is not SYSTEM_ADMIN
+
+**Examples:**
+```bash
+# Preview navigation for USER role
+curl -X GET "https://api.example.com/api/v1/navigations/preview?asRole=USER" \
+  -H "Authorization: Bearer ADMIN_TOKEN"
+
+# Preview module navigation for MANAGER role
+curl -X GET "https://api.example.com/api/v1/navigations/preview?asRole=MANAGER&scope=module&moduleKey=inventory&format=flat" \
+  -H "Authorization: Bearer ADMIN_TOKEN"
+```
+
+---
+
+### Legacy Endpoints (for backward compatibility)
+
+#### GET /v1/navigations/global
 
 Returns the full global navigation tree, optionally filtered by user permissions.
 
@@ -81,23 +248,21 @@ GET /v1/navigations/global?permissions=user.read,user.write
 **Response:**
 ```json
 {
-  "items": [
-    {
-      "id": "nav-dashboard",
-      "label": "Dashboard",
-      "icon": "pi pi-home",
-      "routerLink": "/dashboard",
-      "order": 1,
+  "success": true,
+  "message": "Global navigation retrieved successfully",
+  "error": null,
+  "data": {
+    "mode": "get",
+    "item": {
+      "items": [...],
       "scope": "global",
-      "items": []
+      "total": 1
     }
-  ],
-  "scope": "global",
-  "total": 1
+  }
 }
 ```
 
-### GET /v1/navigations/module/:moduleKey
+#### GET /v1/navigations/module/:moduleKey
 
 Returns navigation tree scoped to the specified module.
 
