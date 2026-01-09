@@ -15,7 +15,9 @@ import {
   DefaultValuePipe,
   ParseIntPipe,
   Headers,
+  Res,
 } from '@nestjs/common';
+import { Response } from 'express';
 import {
   ApiTags,
   ApiOperation,
@@ -131,6 +133,7 @@ export class NavigationController {
     @Query('moduleKey') moduleKey?: string,
     @Query('format') formatParam?: string,
     @Headers('if-none-match') ifNoneMatch?: string,
+    @Res({ passthrough: true }) res?: Response,
   ) {
     const scope = (scopeParam as NavigationScope) || NavigationScope.GLOBAL;
     const format = (formatParam as 'tree' | 'flat') || 'tree';
@@ -155,9 +158,11 @@ export class NavigationController {
 
     // Check if client has cached version
     if (ifNoneMatch && ifNoneMatch === etag) {
-      return {
-        statusCode: HttpStatus.NOT_MODIFIED,
-      };
+      // Set status to 304 and return empty body
+      if (res) {
+        res.status(HttpStatus.NOT_MODIFIED);
+      }
+      return;
     }
 
     return fetched(response, 'Navigation retrieved successfully', { etag });
@@ -737,8 +742,11 @@ export class NavigationController {
    * Generate ETag for navigation response
    * @param data Response data to hash
    * @returns ETag string
+   * Note: Using MD5 for ETag generation (not for security, just for cache validation)
    */
   private generateETag(data: any): string {
+    // MD5 is sufficient for ETags (cache validation, not security)
+    // It's fast and collision risk is acceptable for this use case
     const hash = crypto
       .createHash('md5')
       .update(JSON.stringify(data))
