@@ -12,6 +12,9 @@ import {
   SpecialCondition,
 } from '../constants/warehouse.constants';
 
+// TTL expiration time for soft-deleted warehouses (2 years)
+const TTL_SOFT_DELETE_SECONDS = 2 * 365 * 24 * 60 * 60; // 63072000 seconds
+
 /**
  * Province sub-schema (embedded in warehouse)
  */
@@ -448,8 +451,8 @@ WarehouseSchema.index({ tenantId: 1, status: 1 });
 WarehouseSchema.index({ type: 1, status: 1 });
 WarehouseSchema.index({ region: 1, status: 1 });
 
-// TTL index for soft-deleted warehouses (optional: auto-delete after 730 days / 2 years)
-WarehouseSchema.index({ deletedAt: 1 }, { expireAfterSeconds: 63072000 });
+// TTL index for soft-deleted warehouses (auto-delete after 2 years)
+WarehouseSchema.index({ deletedAt: 1 }, { expireAfterSeconds: TTL_SOFT_DELETE_SECONDS });
 
 // ========== VIRTUALS ==========
 
