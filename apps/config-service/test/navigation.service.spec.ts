@@ -4,6 +4,9 @@ import { NavigationRepository } from '../src/repositories/navigation.repository'
 import { NavigationScope } from '../src/schemas/navigation.schema';
 import { NotFoundException, BadRequestException } from '@nestjs/common';
 import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
+import { AuthorizationService } from '@shared/authz/authorization.service';
+import { getModelToken } from '@nestjs/mongoose';
+import { Role } from '@shared/schemas';
 
 const mockRabbitMQClient = {
   emit: jest.fn().mockResolvedValue(undefined),
@@ -23,6 +26,18 @@ const mockNavigationRepository = {
   count: jest.fn(),
 };
 
+const mockAuthorizationService = {
+  getEffectivePermissions: jest.fn(),
+  hasPermission: jest.fn(),
+  hasAnyPermission: jest.fn(),
+  hasAllPermissions: jest.fn(),
+};
+
+const mockRoleModel = {
+  findOne: jest.fn().mockReturnThis(),
+  exec: jest.fn(),
+};
+
 describe('NavigationService', () => {
   let service: NavigationService;
 
@@ -37,6 +52,14 @@ describe('NavigationService', () => {
         {
           provide: RABBITMQ_USER_CLIENT,
           useValue: mockRabbitMQClient,
+        },
+        {
+          provide: AuthorizationService,
+          useValue: mockAuthorizationService,
+        },
+        {
+          provide: getModelToken(Role.name),
+          useValue: mockRoleModel,
         },
       ],
     }).compile();
@@ -366,6 +389,205 @@ describe('NavigationService', () => {
       await expect(service.searchNavigation('')).rejects.toThrow(
         BadRequestException,
       );
+    });
+  });
+
+  describe('getUserNavigation', () => {
+    it('should return user navigation in tree format', async () => {
+      const mockRoots = [
+        {
+          id: 'nav-dashboard',
+          label: 'Dashboard',
+          scope: NavigationScope.GLOBAL,
+          order: 1,
+          createdBy: 'admin',
+          updatedBy: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      mockAuthorizationService.getEffectivePermissions.mockResolvedValue([
+        'user.read',
+      ]);
+      mockNavigationRepository.findRoots.mockResolvedValue(mockRoots);
+      mockNavigationRepository.findChildren.mockResolvedValue([]);
+
+      const result = await service.getUserNavigation(
+        'user-123',
+        NavigationScope.GLOBAL,
+        undefined,
+        'tree',
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('nav-dashboard');
+      expect(mockAuthorizationService.getEffectivePermissions).toHaveBeenCalledWith(
+        'user-123',
+        'organization',
+      );
+    });
+
+    it('should return user navigation in flat format', async () => {
+      const mockParent = {
+        id: 'nav-parent',
+        label: 'Parent',
+        scope: NavigationScope.GLOBAL,
+        order: 1,
+        createdBy: 'admin',
+        updatedBy: 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      const mockChild = {
+        id: 'nav-child',
+        label: 'Child',
+        scope: NavigationScope.GLOBAL,
+        order: 1,
+        createdBy: 'admin',
+        updatedBy: 'admin',
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      };
+
+      mockAuthorizationService.getEffectivePermissions.mockResolvedValue([
+        'user.read',
+      ]);
+      mockNavigationRepository.findRoots.mockResolvedValue([mockParent]);
+      mockNavigationRepository.findChildren
+        .mockResolvedValueOnce([mockChild])
+        .mockResolvedValueOnce([]);
+
+      const result = await service.getUserNavigation(
+        'user-123',
+        NavigationScope.GLOBAL,
+        undefined,
+        'flat',
+      );
+
+      expect(result).toHaveLength(2);
+      expect(result[0].id).toBe('nav-parent');
+      expect(result[1].id).toBe('nav-child');
+      expect(result[1].parentId).toBe('nav-parent');
+      expect(result[0].items).toBeUndefined();
+      expect(result[1].items).toBeUndefined();
+    });
+
+    it('should throw error when moduleKey is missing for module scope', async () => {
+      await expect(
+        service.getUserNavigation('user-123', NavigationScope.MODULE),
+      ).rejects.toThrow(BadRequestException);
+    });
+  });
+
+  describe('convertTreeToFlat', () => {
+    it('should convert navigation tree to flat array', () => {
+      const tree = [
+        {
+          id: 'nav-1',
+          label: 'Item 1',
+          scope: NavigationScope.GLOBAL,
+          order: 1,
+          createdBy: 'admin',
+          updatedBy: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          items: [
+            {
+              id: 'nav-1-1',
+              label: 'Item 1-1',
+              scope: NavigationScope.GLOBAL,
+              order: 1,
+              createdBy: 'admin',
+              updatedBy: 'admin',
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              items: [],
+            },
+          ],
+        },
+        {
+          id: 'nav-2',
+          label: 'Item 2',
+          scope: NavigationScope.GLOBAL,
+          order: 2,
+          createdBy: 'admin',
+          updatedBy: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          items: [],
+        },
+      ];
+
+      const result = service.convertTreeToFlat(tree);
+
+      expect(result).toHaveLength(3);
+      expect(result[0].id).toBe('nav-1');
+      expect(result[0].items).toBeUndefined();
+      expect(result[1].id).toBe('nav-1-1');
+      expect(result[1].parentId).toBe('nav-1');
+      expect(result[1].items).toBeUndefined();
+      expect(result[2].id).toBe('nav-2');
+      expect(result[2].items).toBeUndefined();
+    });
+
+    it('should handle empty tree', () => {
+      const result = service.convertTreeToFlat([]);
+      expect(result).toHaveLength(0);
+    });
+  });
+
+  describe('previewNavigationAsRole', () => {
+    it('should return navigation for a specific role', async () => {
+      const mockRoots = [
+        {
+          id: 'nav-dashboard',
+          label: 'Dashboard',
+          scope: NavigationScope.GLOBAL,
+          permissions: { include: ['user.read'] },
+          order: 1,
+          createdBy: 'admin',
+          updatedBy: 'admin',
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+      ];
+
+      const mockRole = {
+        code: 'USER',
+        permissions: ['user.read'],
+        status: 'active',
+      };
+
+      mockRoleModel.exec.mockResolvedValue(mockRole);
+      mockNavigationRepository.findRoots.mockResolvedValue(mockRoots);
+      mockNavigationRepository.findChildren.mockResolvedValue([]);
+
+      const result = await service.previewNavigationAsRole(
+        'USER',
+        NavigationScope.GLOBAL,
+      );
+
+      expect(result).toHaveLength(1);
+      expect(result[0].id).toBe('nav-dashboard');
+      expect(mockRoleModel.findOne).toHaveBeenCalledWith({
+        code: 'USER',
+        status: 'active',
+      });
+    });
+
+    it('should return empty array when role not found', async () => {
+      mockRoleModel.exec.mockResolvedValue(null);
+      mockNavigationRepository.findRoots.mockResolvedValue([]);
+      mockNavigationRepository.findChildren.mockResolvedValue([]);
+
+      const result = await service.previewNavigationAsRole(
+        'NONEXISTENT',
+        NavigationScope.GLOBAL,
+      );
+
+      expect(result).toHaveLength(0);
     });
   });
 
