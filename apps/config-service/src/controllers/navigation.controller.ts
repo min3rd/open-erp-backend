@@ -35,7 +35,7 @@ import {
   NavigationItemDto,
   NavigationResponseDto,
 } from '../dto/navigation-response.dto';
-import { NavigationScope } from '../schemas/navigation.schema';
+import { NavigationScope, NavigationFormat } from '../schemas/navigation.schema';
 import { JwtAuthGuard, PermissionsGuard, CurrentUser, UserContext } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -78,9 +78,9 @@ export class NavigationController {
   @ApiQuery({
     name: 'format',
     required: false,
-    enum: ['tree', 'flat'],
+    enum: NavigationFormat,
     description: 'Response format (default: tree)',
-    example: 'tree',
+    example: NavigationFormat.TREE,
   })
   @ApiHeader({
     name: 'If-None-Match',
@@ -108,8 +108,8 @@ export class NavigationController {
                   items: { $ref: '#/components/schemas/NavigationItemDto' },
                 },
                 scope: { type: 'string', example: 'global' },
-                module: { type: 'string', nullable: true },
-                format: { type: 'string', example: 'tree' },
+                moduleId: { type: 'string', nullable: true },
+                format: { type: 'string', example: NavigationFormat.TREE },
                 total: { type: 'number', example: 10 },
               },
             },
@@ -136,7 +136,7 @@ export class NavigationController {
     @Res({ passthrough: true }) res?: Response,
   ) {
     const scope = (scopeParam as NavigationScope) || NavigationScope.GLOBAL;
-    const format = (formatParam as 'tree' | 'flat') || 'tree';
+    const format = (formatParam as NavigationFormat) || NavigationFormat.TREE;
 
     const items = await this.navigationService.getUserNavigation(
       user.userId,
@@ -199,9 +199,9 @@ export class NavigationController {
   @ApiQuery({
     name: 'format',
     required: false,
-    enum: ['tree', 'flat'],
+    enum: NavigationFormat,
     description: 'Response format (default: tree)',
-    example: 'tree',
+    example: NavigationFormat.TREE,
   })
   @ApiResponse({
     status: 200,
@@ -225,7 +225,7 @@ export class NavigationController {
                 },
                 scope: { type: 'string', example: 'global' },
                 moduleId: { type: 'string', nullable: true },
-                format: { type: 'string', example: 'tree' },
+                format: { type: 'string', example: NavigationFormat.TREE },
                 total: { type: 'number', example: 10 },
                 previewRole: { type: 'string', example: 'USER' },
               },
@@ -244,7 +244,7 @@ export class NavigationController {
     @Query('format') formatParam?: string,
   ) {
     const scope = (scopeParam as NavigationScope) || NavigationScope.GLOBAL;
-    const format = (formatParam as 'tree' | 'flat') || 'tree';
+    const format = (formatParam as NavigationFormat) || NavigationFormat.TREE;
 
     const items = await this.navigationService.previewNavigationAsRole(
       asRole,

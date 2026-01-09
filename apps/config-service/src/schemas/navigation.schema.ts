@@ -8,6 +8,11 @@ export enum NavigationScope {
   MODULE = 'module',
 }
 
+export enum NavigationFormat {
+  TREE = 'tree',
+  FLAT = 'flat',
+}
+
 export interface PermissionConfig {
   include?: string[];
   exclude?: string[];
@@ -15,6 +20,8 @@ export interface PermissionConfig {
 
 @Schema({ timestamps: true, collection: 'navigations' })
 export class Navigation extends Document {
+  // Custom string identifier (e.g., 'nav-dashboard', 'nav-settings')
+  // This is NOT the MongoDB _id, but a business-level unique key
   @Prop({ required: true, unique: true, index: true })
   id: string;
 
