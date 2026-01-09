@@ -19,6 +19,7 @@ import { RelationService } from '../services/relation.service';
 import { CreateRelationDto, UpdateRelationDto } from '../dto/relation.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
+import { created, ok, updated, deleted } from '@shared/response';
 
 interface AuthenticatedRequest {
   user: {
@@ -43,7 +44,7 @@ export class RelationController {
     @Body() createDto: CreateRelationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.relationService.create(
+    const relation = await this.relationService.create(
       organizationId,
       createDto.childId,
       createDto.relationType,
@@ -54,6 +55,7 @@ export class RelationController {
         notes: createDto.notes,
       },
     );
+    return created(relation, 'Relation created successfully');
   }
 
   @Get('organizations/:organizationId')
@@ -61,7 +63,8 @@ export class RelationController {
   @ApiResponse({ status: 200, description: 'Relations retrieved successfully' })
   @Permissions('relation.read')
   async findByOrganization(@Param('organizationId') organizationId: string) {
-    return this.relationService.findByOrganization(organizationId);
+    const relations = await this.relationService.findByOrganization(organizationId);
+    return ok(relations, 'Relations retrieved successfully');
   }
 
   @Patch(':id')
@@ -73,7 +76,8 @@ export class RelationController {
     @Body() updateDto: UpdateRelationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.relationService.update(id, updateDto as any, req.user.userId);
+    const relation = await this.relationService.update(id, updateDto as any, req.user.userId);
+    return updated(relation, 'Relation updated successfully');
   }
 
   @Delete(':id')
@@ -81,6 +85,7 @@ export class RelationController {
   @ApiResponse({ status: 200, description: 'Relation deleted successfully' })
   @Permissions(['relation.delete', 'organization.manage'], { mode: 'any' })
   async delete(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    return this.relationService.delete(id, req.user.userId);
+    await this.relationService.delete(id, req.user.userId);
+    return deleted('Relation deleted successfully');
   }
 }

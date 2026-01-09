@@ -22,6 +22,7 @@ import {
 } from '../dto/invitation.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
+import { created, ok, deleted } from '@shared/response';
 
 interface AuthenticatedRequest {
   user: {
@@ -46,7 +47,7 @@ export class InvitationController {
     @Body() createDto: CreateInvitationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.invitationService.create(
+    const invitation = await this.invitationService.create(
       organizationId,
       createDto.inviteeEmail,
       createDto.roles,
@@ -56,6 +57,7 @@ export class InvitationController {
         message: createDto.message,
       },
     );
+    return created(invitation, 'Invitation created successfully');
   }
 
   @Post('accept')
@@ -65,7 +67,8 @@ export class InvitationController {
     @Body() acceptDto: AcceptInvitationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    return this.invitationService.accept(acceptDto.token, req.user.userId);
+    const result = await this.invitationService.accept(acceptDto.token, req.user.userId);
+    return ok(result, 'Invitation accepted successfully');
   }
 
   @Get('organizations/:organizationId')
@@ -79,10 +82,11 @@ export class InvitationController {
     @Param('organizationId') organizationId: string,
     @Query('status') status?: string,
   ) {
-    return this.invitationService.findByOrganization(
+    const invitations = await this.invitationService.findByOrganization(
       organizationId,
       status as any,
     );
+    return ok(invitations, 'Invitations retrieved successfully');
   }
 
   @Delete(':id')
@@ -90,6 +94,7 @@ export class InvitationController {
   @ApiResponse({ status: 200, description: 'Invitation revoked successfully' })
   @Permissions(['invitation.revoke', 'organization.manage'], { mode: 'any' })
   async revoke(@Param('id') id: string, @Request() req: AuthenticatedRequest) {
-    return this.invitationService.revoke(id, req.user.userId);
+    await this.invitationService.revoke(id, req.user.userId);
+    return deleted('Invitation revoked successfully');
   }
 }
