@@ -51,11 +51,7 @@ export class SystemAdminController {
       );
 
       if (!systemAdminRole) {
-        return {
-          success: true,
-          data: [],
-          message: 'No SYSTEM_ADMIN role found',
-        };
+        return ok([], 'No SYSTEM_ADMIN role found');
       }
 
       // Find all users with this role
@@ -86,11 +82,10 @@ export class SystemAdminController {
 
       this.logger.log(`Listed ${adminsWithDetails.length} SYSTEM_ADMIN users`);
 
-      return {
-        success: true,
-        data: adminsWithDetails,
-        count: adminsWithDetails.length,
-      };
+      return ok(
+        { admins: adminsWithDetails, count: adminsWithDetails.length },
+        `Found ${adminsWithDetails.length} SYSTEM_ADMIN users`
+      );
     } catch (error) {
       this.logger.error(
         `Error listing SYSTEM_ADMIN users: ${error.message}`,
@@ -137,11 +132,10 @@ export class SystemAdminController {
       );
 
       if (hasRole) {
-        return {
-          success: true,
-          message: 'User already has SYSTEM_ADMIN role',
-          data: { userId, email: user.email },
-        };
+        return ok(
+          { userId, email: user.email },
+          'User already has SYSTEM_ADMIN role'
+        );
       }
 
       // Add SYSTEM_ADMIN role to user
@@ -160,15 +154,14 @@ export class SystemAdminController {
         timestamp: new Date().toISOString(),
       });
 
-      return {
-        success: true,
-        message: 'SYSTEM_ADMIN role granted successfully',
-        data: {
+      return ok(
+        {
           userId,
           email: user.email,
           grantedBy: currentUser.email,
         },
-      };
+        'SYSTEM_ADMIN role granted successfully'
+      );
     } catch (error) {
       this.logger.error(
         `Error granting SYSTEM_ADMIN role: ${error.message}`,
@@ -216,11 +209,10 @@ export class SystemAdminController {
       );
 
       if (!hasRole) {
-        return {
-          success: true,
-          message: 'User does not have SYSTEM_ADMIN role',
-          data: { userId, email: user.email },
-        };
+        return ok(
+          { userId, email: user.email },
+          'User does not have SYSTEM_ADMIN role'
+        );
       }
 
       // Check if this is the last SYSTEM_ADMIN
@@ -253,15 +245,14 @@ export class SystemAdminController {
         timestamp: new Date().toISOString(),
       });
 
-      return {
-        success: true,
-        message: 'SYSTEM_ADMIN role revoked successfully',
-        data: {
+      return ok(
+        {
           userId,
           email: user.email,
           revokedBy: currentUser.email,
         },
-      };
+        'SYSTEM_ADMIN role revoked successfully'
+      );
     } catch (error) {
       this.logger.error(
         `Error revoking SYSTEM_ADMIN role: ${error.message}`,
