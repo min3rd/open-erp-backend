@@ -14,6 +14,10 @@ import { MoveNavigationDto } from '../dto/move-navigation.dto';
 import { NavigationItemDto } from '../dto/navigation-response.dto';
 import { EVENT_NAMES } from '@shared/constants/message.constants';
 import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
+import { AuthorizationService } from '@shared/authz/authorization.service';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { Role, RoleDocument } from '@shared/schemas';
 
 // Simple in-memory cache
 interface CacheEntry {
@@ -31,6 +35,8 @@ export class NavigationService {
   constructor(
     private readonly navigationRepository: NavigationRepository,
     @Inject(RABBITMQ_USER_CLIENT) private readonly userClient: ClientProxy,
+    private readonly authorizationService: AuthorizationService,
+    @InjectModel(Role.name) private readonly roleModel: Model<RoleDocument>,
   ) {}
 
   /**
@@ -293,6 +299,173 @@ export class NavigationService {
     }
 
     return await this.navigationRepository.search(query, limit);
+  }
+
+  /**
+   * Get navigation for authenticated user (with auto permission extraction)
+   * @param userId User ID from JWT token
+   * @param scope Navigation scope (global or module)
+   * @param moduleKey Module key (required when scope=module)
+   * @param format Response format (tree or flat)
+   * @returns Navigation items in requested format
+   */
+  async getUserNavigation(
+    userId: string,
+    scope: NavigationScope,
+    moduleKey?: string,
+    format: 'tree' | 'flat' = 'tree',
+  ): Promise<NavigationItemDto[]> {
+    // Get user permissions from authorization service
+    const permissions = await this.getUserPermissions(userId);
+
+    // Get navigation based on scope
+    let tree: NavigationItemDto[];
+    if (scope === NavigationScope.GLOBAL) {
+      tree = await this.getGlobalNavigation(permissions);
+    } else {
+      if (!moduleKey) {
+        throw new BadRequestException(
+          'moduleKey is required when scope is module',
+        );
+      }
+      tree = await this.getModuleNavigation(moduleKey, permissions);
+    }
+
+    // Convert to flat format if requested
+    if (format === 'flat') {
+      return this.convertTreeToFlat(tree);
+    }
+
+    return tree;
+  }
+
+  /**
+   * Preview navigation as a specific role (admin only)
+   * @param roleCode Role code to preview as
+   * @param scope Navigation scope
+   * @param moduleKey Module key (for module scope)
+   * @param format Response format
+   * @returns Navigation items as they would appear for the role
+   */
+  async previewNavigationAsRole(
+    roleCode: string,
+    scope: NavigationScope,
+    moduleKey?: string,
+    format: 'tree' | 'flat' = 'tree',
+  ): Promise<NavigationItemDto[]> {
+    // Get permissions for the role
+    const permissions = await this.getRolePermissions(roleCode);
+
+    // Get navigation based on scope
+    let tree: NavigationItemDto[];
+    if (scope === NavigationScope.GLOBAL) {
+      tree = await this.getGlobalNavigation(permissions);
+    } else {
+      if (!moduleKey) {
+        throw new BadRequestException(
+          'moduleKey is required when scope is module',
+        );
+      }
+      tree = await this.getModuleNavigation(moduleKey, permissions);
+    }
+
+    // Convert to flat format if requested
+    if (format === 'flat') {
+      return this.convertTreeToFlat(tree);
+    }
+
+    return tree;
+  }
+
+  /**
+   * Convert navigation tree to flat format
+   * @param tree Navigation tree
+   * @returns Flat array of navigation items
+   */
+  convertTreeToFlat(tree: NavigationItemDto[]): NavigationItemDto[] {
+    const flat: NavigationItemDto[] = [];
+
+    const flatten = (items: NavigationItemDto[], parentId?: string) => {
+      for (const item of items) {
+        const children = item.items || [];
+        const flatItem = { ...item };
+
+        // Remove items array and set parentId
+        delete flatItem.items;
+        if (parentId) {
+          flatItem.parentId = parentId;
+        }
+
+        flat.push(flatItem);
+
+        // Recursively flatten children
+        if (children.length > 0) {
+          flatten(children, item.id);
+        }
+      }
+    };
+
+    flatten(tree);
+    return flat;
+  }
+
+  /**
+   * Get user permissions from authorization service
+   * @param userId User ID
+   * @returns Array of permission strings
+   */
+  private async getUserPermissions(userId: string): Promise<string[]> {
+    try {
+      // Get effective permissions from authorization service
+      // Use 'organization' scope to include both global and tenant permissions
+      const permissions = await this.authorizationService.getEffectivePermissions(
+        userId,
+        'organization',
+      );
+
+      this.logger.debug(
+        `Retrieved ${permissions.length} permissions for user ${userId}`,
+      );
+      return permissions;
+    } catch (error) {
+      this.logger.error(
+        `Error getting permissions for user ${userId}: ${error.message}`,
+        error.stack,
+      );
+      // Return empty array on error to fail gracefully
+      return [];
+    }
+  }
+
+  /**
+   * Get permissions for a specific role
+   * @param roleCode Role code
+   * @returns Array of permission strings
+   */
+  private async getRolePermissions(roleCode: string): Promise<string[]> {
+    try {
+      // Look up role by code
+      const role = await this.roleModel
+        .findOne({ code: roleCode, status: 'active' })
+        .exec();
+
+      if (!role) {
+        this.logger.warn(`Role '${roleCode}' not found or inactive`);
+        return [];
+      }
+
+      this.logger.debug(
+        `Retrieved ${role.permissions.length} permissions for role ${roleCode}`,
+      );
+      return role.permissions;
+    } catch (error) {
+      this.logger.error(
+        `Error getting permissions for role ${roleCode}: ${error.message}`,
+        error.stack,
+      );
+      // Return empty array on error to fail gracefully
+      return [];
+    }
   }
 
   /**

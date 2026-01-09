@@ -14,6 +14,7 @@ import {
   ParseBoolPipe,
   DefaultValuePipe,
   ParseIntPipe,
+  Headers,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -22,6 +23,7 @@ import {
   ApiParam,
   ApiQuery,
   ApiBearerAuth,
+  ApiHeader,
 } from '@nestjs/swagger';
 import { NavigationService } from '../services/navigation.service';
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
@@ -32,10 +34,12 @@ import {
   NavigationResponseDto,
 } from '../dto/navigation-response.dto';
 import { NavigationScope } from '../schemas/navigation.schema';
-import { JwtAuthGuard, PermissionsGuard } from '@shared/authz';
+import { JwtAuthGuard, PermissionsGuard, CurrentUser, UserContext } from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { Permission, Role, RoleGroups } from '@shared/types';
+import { ok, fetched } from '@shared/response';
+import * as crypto from 'crypto';
 
 @ApiTags('navigations')
 @Controller({ path: 'navigations', version: '1' })
@@ -43,6 +47,218 @@ import { Permission, Role, RoleGroups } from '@shared/types';
 @ApiBearerAuth()
 export class NavigationController {
   constructor(private readonly navigationService: NavigationService) {}
+
+  // ========================================
+  // User-Facing Navigation Endpoints
+  // ========================================
+
+  @Get('user')
+  @ApiOperation({
+    summary: 'Get navigation for authenticated user',
+    description:
+      'Returns navigation filtered by user permissions. Automatically extracts permissions from JWT token. ' +
+      'Supports both tree and flat formats, and can be scoped to global or module level.',
+  })
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: NavigationScope,
+    description: 'Navigation scope (default: global)',
+    example: 'global',
+  })
+  @ApiQuery({
+    name: 'moduleKey',
+    required: false,
+    type: String,
+    description: 'Module key (required when scope=module)',
+    example: 'inventory',
+  })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: ['tree', 'flat'],
+    description: 'Response format (default: tree)',
+    example: 'tree',
+  })
+  @ApiHeader({
+    name: 'If-None-Match',
+    required: false,
+    description: 'ETag for conditional requests',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Navigation retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', nullable: true },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: {
+              type: 'object',
+              properties: {
+                items: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/NavigationItemDto' },
+                },
+                scope: { type: 'string', example: 'global' },
+                module: { type: 'string', nullable: true },
+                format: { type: 'string', example: 'tree' },
+                total: { type: 'number', example: 10 },
+              },
+            },
+          },
+        },
+        meta: {
+          type: 'object',
+          properties: {
+            etag: { type: 'string' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 304, description: 'Not Modified (cached)' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 400, description: 'Bad Request (missing moduleKey)' })
+  async getUserNavigation(
+    @CurrentUser() user: UserContext,
+    @Query('scope') scopeParam?: string,
+    @Query('moduleKey') moduleKey?: string,
+    @Query('format') formatParam?: string,
+    @Headers('if-none-match') ifNoneMatch?: string,
+  ) {
+    const scope = (scopeParam as NavigationScope) || NavigationScope.GLOBAL;
+    const format = (formatParam as 'tree' | 'flat') || 'tree';
+
+    const items = await this.navigationService.getUserNavigation(
+      user.userId,
+      scope,
+      moduleKey,
+      format,
+    );
+
+    const response = {
+      items,
+      scope,
+      module: moduleKey,
+      format,
+      total: items.length,
+    };
+
+    // Generate ETag for caching
+    const etag = this.generateETag(response);
+
+    // Check if client has cached version
+    if (ifNoneMatch && ifNoneMatch === etag) {
+      return {
+        statusCode: HttpStatus.NOT_MODIFIED,
+      };
+    }
+
+    return fetched(response, 'Navigation retrieved successfully', { etag });
+  }
+
+  @Get('preview')
+  @Roles([Role.SYSTEM_ADMIN])
+  @ApiOperation({
+    summary: 'Preview navigation as a specific role (admin only)',
+    description:
+      'Returns navigation as it would appear for a specific role. Only system admins can use this endpoint.',
+  })
+  @ApiQuery({
+    name: 'asRole',
+    required: true,
+    type: String,
+    description: 'Role code to preview as',
+    example: 'USER',
+  })
+  @ApiQuery({
+    name: 'scope',
+    required: false,
+    enum: NavigationScope,
+    description: 'Navigation scope (default: global)',
+    example: 'global',
+  })
+  @ApiQuery({
+    name: 'moduleKey',
+    required: false,
+    type: String,
+    description: 'Module key (required when scope=module)',
+    example: 'inventory',
+  })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: ['tree', 'flat'],
+    description: 'Response format (default: tree)',
+    example: 'tree',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Navigation preview retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', nullable: true },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: {
+              type: 'object',
+              properties: {
+                items: {
+                  type: 'array',
+                  items: { $ref: '#/components/schemas/NavigationItemDto' },
+                },
+                scope: { type: 'string', example: 'global' },
+                module: { type: 'string', nullable: true },
+                format: { type: 'string', example: 'tree' },
+                total: { type: 'number', example: 10 },
+                previewRole: { type: 'string', example: 'USER' },
+              },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden (not system admin)' })
+  async previewNavigationAsRole(
+    @Query('asRole') asRole: string,
+    @Query('scope') scopeParam?: string,
+    @Query('moduleKey') moduleKey?: string,
+    @Query('format') formatParam?: string,
+  ) {
+    const scope = (scopeParam as NavigationScope) || NavigationScope.GLOBAL;
+    const format = (formatParam as 'tree' | 'flat') || 'tree';
+
+    const items = await this.navigationService.previewNavigationAsRole(
+      asRole,
+      scope,
+      moduleKey,
+      format,
+    );
+
+    const response = {
+      items,
+      scope,
+      module: moduleKey,
+      format,
+      total: items.length,
+      previewRole: asRole,
+    };
+
+    return fetched(response, `Navigation preview for role '${asRole}'`);
+  }
 
   // ========================================
   // Global Navigation Endpoints
@@ -371,5 +587,22 @@ export class NavigationController {
     const navigationScope = scope as NavigationScope | undefined;
     await this.navigationService.reloadCache(navigationScope, module);
     return { message: 'Navigation cache reloaded successfully' };
+  }
+
+  // ========================================
+  // Helper Methods
+  // ========================================
+
+  /**
+   * Generate ETag for navigation response
+   * @param data Response data to hash
+   * @returns ETag string
+   */
+  private generateETag(data: any): string {
+    const hash = crypto
+      .createHash('md5')
+      .update(JSON.stringify(data))
+      .digest('hex');
+    return `"${hash}"`;
   }
 }
