@@ -15,6 +15,12 @@ import {
   OrganizationInvitationSchema,
   OrganizationAuditEvent,
   OrganizationAuditEventSchema,
+  Warehouse,
+  WarehouseSchema,
+  Province,
+  ProvinceSchema,
+  Ward,
+  WardSchema,
 } from '@shared/schemas';
 
 // Controllers
@@ -23,6 +29,7 @@ import { InvitationController } from './controllers/invitation.controller';
 import { MembershipController } from './controllers/membership.controller';
 import { RelationController } from './controllers/relation.controller';
 import { HealthController } from './controllers/health.controller';
+import { WarehouseController } from './controllers/warehouse.controller';
 
 // Services
 import { OrganizationService } from './services/organization.service';
@@ -30,6 +37,7 @@ import { InvitationService } from './services/invitation.service';
 import { MembershipService } from './services/membership.service';
 import { RelationService } from './services/relation.service';
 import { AuditService } from './services/audit.service';
+import { WarehouseService } from './services/warehouse.service';
 
 // Repositories
 import { OrganizationRepository } from './repositories/organization.repository';
@@ -37,6 +45,7 @@ import { OrganizationRelationRepository } from './repositories/organization-rela
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 import { InvitationRepository } from './repositories/invitation.repository';
 import { AuditEventRepository } from './repositories/audit-event.repository';
+import { WarehouseRepository } from './repositories/warehouse.repository';
 
 @Module({
   imports: [
@@ -59,6 +68,9 @@ import { AuditEventRepository } from './repositories/audit-event.repository';
         name: OrganizationAuditEvent.name,
         schema: OrganizationAuditEventSchema,
       },
+      { name: Warehouse.name, schema: WarehouseSchema },
+      { name: Province.name, schema: ProvinceSchema },
+      { name: Ward.name, schema: WardSchema },
     ]),
   ],
   controllers: [
@@ -67,6 +79,7 @@ import { AuditEventRepository } from './repositories/audit-event.repository';
     MembershipController,
     RelationController,
     HealthController,
+    WarehouseController,
   ],
   providers: [
     OrganizationService,
@@ -74,11 +87,13 @@ import { AuditEventRepository } from './repositories/audit-event.repository';
     MembershipService,
     RelationService,
     AuditService,
+    WarehouseService,
     OrganizationRepository,
     OrganizationRelationRepository,
     OrganizationMemberRepository,
     InvitationRepository,
     AuditEventRepository,
+    WarehouseRepository,
   ],
 })
 export class OrganizationModule {}

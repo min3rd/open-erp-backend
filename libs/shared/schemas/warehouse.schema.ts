@@ -13,10 +13,10 @@ import {
 } from '../constants/warehouse.constants';
 
 /**
- * Province sub-schema
+ * Province sub-schema (embedded in warehouse)
  */
 @Schema({ _id: false })
-export class Province {
+export class WarehouseProvince {
   @Prop({ required: true, type: String })
   code: string;
 
@@ -25,10 +25,10 @@ export class Province {
 }
 
 /**
- * Ward sub-schema
+ * Ward sub-schema (embedded in warehouse)
  */
 @Schema({ _id: false })
-export class Ward {
+export class WarehouseWard {
   @Prop({ required: true, type: String })
   code: string;
 
@@ -197,16 +197,16 @@ export class Warehouse extends Document {
   addressDetail: string;
 
   @Prop({
-    type: Ward,
+    type: WarehouseWard,
     required: true,
   })
-  ward: Ward;
+  ward: WarehouseWard;
 
   @Prop({
-    type: Province,
+    type: WarehouseProvince,
     required: true,
   })
-  province: Province;
+  province: WarehouseProvince;
 
   @Prop({
     type: String,
