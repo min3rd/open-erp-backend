@@ -431,12 +431,6 @@ export const WarehouseSchema = SchemaFactory.createForClass(Warehouse);
 
 // ========== INDEXES ==========
 
-// Unique index on code (already defined with unique: true, but for clarity)
-WarehouseSchema.index({ code: 1 }, { unique: true });
-
-// Index on taxCode
-WarehouseSchema.index({ taxCode: 1 });
-
 // Compound index on province.code and ward.code
 WarehouseSchema.index({ 'province.code': 1, 'ward.code': 1 });
 
@@ -445,9 +439,6 @@ WarehouseSchema.index({
   name: 'text',
   companyName: 'text',
 });
-
-// 2dsphere index for geo queries (already defined in @Prop but for clarity)
-WarehouseSchema.index({ location: '2dsphere' });
 
 // Compound indexes for multi-tenant support
 WarehouseSchema.index({ tenantId: 1, code: 1 }, { unique: true, sparse: true });
