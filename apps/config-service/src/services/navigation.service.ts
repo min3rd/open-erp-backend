@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { NavigationRepository } from '../repositories/navigation.repository';
-import { Navigation, NavigationScope } from '../schemas/navigation.schema';
+import { Navigation, NavigationScope, NavigationFormat } from '../schemas/navigation.schema';
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
@@ -313,7 +313,7 @@ export class NavigationService {
     userId: string,
     scope: NavigationScope,
     moduleId?: string,
-    format: 'tree' | 'flat' = 'tree',
+    format: NavigationFormat = NavigationFormat.TREE,
   ): Promise<NavigationItemDto[]> {
     // Get user permissions from authorization service
     const permissions = await this.getUserPermissions(userId);
@@ -332,7 +332,7 @@ export class NavigationService {
     }
 
     // Convert to flat format if requested
-    if (format === 'flat') {
+    if (format === NavigationFormat.FLAT) {
       return this.convertTreeToFlat(tree);
     }
 
@@ -351,7 +351,7 @@ export class NavigationService {
     roleCode: string,
     scope: NavigationScope,
     moduleId?: string,
-    format: 'tree' | 'flat' = 'tree',
+    format: NavigationFormat = NavigationFormat.TREE,
   ): Promise<NavigationItemDto[]> {
     // Get permissions for the role
     const permissions = await this.getRolePermissions(roleCode);
@@ -370,7 +370,7 @@ export class NavigationService {
     }
 
     // Convert to flat format if requested
-    if (format === 'flat') {
+    if (format === NavigationFormat.FLAT) {
       return this.convertTreeToFlat(tree);
     }
 
