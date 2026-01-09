@@ -9,4 +9,5 @@ export * from './organization-audit-event.schema';
 export * from './warehouse.schema';
 export * from './province.schema';
 export * from './ward.schema';
+export * from './district.schema';
 export * from './warehouse-type.schema';

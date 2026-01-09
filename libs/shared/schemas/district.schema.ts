@@ -1,14 +1,14 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, HydratedDocument } from 'mongoose';
 
-export type ProvinceDocument = HydratedDocument<Province>;
+export type DistrictDocument = HydratedDocument<District>;
 
 @Schema({
   timestamps: true,
-  collection: 'provinces',
+  collection: 'districts',
   versionKey: false,
 })
-export class Province extends Document {
+export class District extends Document {
   @Prop({
     type: String,
     required: true,
@@ -35,9 +35,10 @@ export class Province extends Document {
 
   @Prop({
     type: String,
-    trim: true,
+    required: true,
+    index: true,
   })
-  region?: string;
+  provinceCode: string;
 
   @Prop({
     type: Number,
@@ -59,16 +60,20 @@ export class Province extends Document {
   isLegacy?: boolean;
 }
 
-export const ProvinceSchema = SchemaFactory.createForClass(Province);
+export const DistrictSchema = SchemaFactory.createForClass(District);
+
+// Compound index for efficient queries
+DistrictSchema.index({ provinceCode: 1, code: 1 });
+DistrictSchema.index({ provinceCode: 1, name: 1 });
 
 // Text index for search
-ProvinceSchema.index({
+DistrictSchema.index({
   name: 'text',
   nameEn: 'text',
 });
 
 // Ensure virtuals are included in JSON output
-ProvinceSchema.set('toJSON', {
+DistrictSchema.set('toJSON', {
   virtuals: true,
   transform: function (doc: any, ret: any) {
     ret.id = ret._id.toString();
@@ -77,7 +82,7 @@ ProvinceSchema.set('toJSON', {
   },
 });
 
-ProvinceSchema.set('toObject', {
+DistrictSchema.set('toObject', {
   virtuals: true,
   transform: function (doc: any, ret: any) {
     ret.id = ret._id.toString();

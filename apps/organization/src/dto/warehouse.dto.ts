@@ -172,16 +172,10 @@ export class CreateWarehouseDto {
   @IsEnum(WarehouseStatus)
   status?: WarehouseStatus;
 
-  @ApiPropertyOptional({ example: 'Công ty TNHH ABC', description: 'Company name' })
+  @ApiPropertyOptional({ example: '507f1f77bcf86cd799439011', description: 'Organization ID reference' })
   @IsOptional()
   @IsString()
-  @MaxLength(200)
-  companyName?: string;
-
-  @ApiPropertyOptional({ example: '0123456789', description: 'Tax code' })
-  @IsOptional()
-  @IsString()
-  taxCode?: string;
+  organizationId?: string;
 
   @ApiPropertyOptional({ example: 'GPKD-001', description: 'Business license number' })
   @IsOptional()

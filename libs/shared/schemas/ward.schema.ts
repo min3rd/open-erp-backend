@@ -41,9 +41,29 @@ export class Ward extends Document {
   provinceCode: string;
 
   @Prop({
+    type: String,
+    index: true,
+  })
+  districtCode?: string;
+
+  @Prop({
     type: Number,
   })
   sortOrder?: number;
+
+  @Prop({
+    type: String,
+    default: '1.0',
+    index: true,
+  })
+  version?: string;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+    index: true,
+  })
+  isLegacy?: boolean;
 }
 
 export const WardSchema = SchemaFactory.createForClass(Ward);
@@ -51,6 +71,8 @@ export const WardSchema = SchemaFactory.createForClass(Ward);
 // Compound index for efficient queries
 WardSchema.index({ provinceCode: 1, code: 1 });
 WardSchema.index({ provinceCode: 1, name: 1 });
+WardSchema.index({ districtCode: 1, code: 1 });
+WardSchema.index({ provinceCode: 1, districtCode: 1 });
 
 // Text index for search
 WardSchema.index({

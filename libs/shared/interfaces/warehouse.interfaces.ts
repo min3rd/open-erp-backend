@@ -163,8 +163,7 @@ export interface IWarehouse {
   status: WarehouseStatus;
   
   // Legal/Management
-  companyName?: string;
-  taxCode?: string;
+  organizationId?: MongooseSchema.Types.ObjectId | string;
   businessLicense?: string;
   warehouseLicense?: string;
   customsCode?: string;
