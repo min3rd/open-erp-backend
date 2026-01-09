@@ -6,3 +6,7 @@ export * from './organization-relation.schema';
 export * from './organization-member.schema';
 export * from './organization-invitation.schema';
 export * from './organization-audit-event.schema';
+export * from './warehouse.schema';
+export * from './province.schema';
+export * from './ward.schema';
+export * from './warehouse-type.schema';
