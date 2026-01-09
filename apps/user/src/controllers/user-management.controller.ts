@@ -30,6 +30,7 @@ import { JwtAuthGuard } from '@shared/authz';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types/permission.enum';
 import { PermissionsGuard } from '@shared/authz';
+import { created, fetched, updated, deleted, paginated } from '@shared/response';
 
 @ApiTags('users')
 @ApiBearerAuth()
@@ -55,10 +56,7 @@ export class UserManagementController {
   })
   async createUser(@Body() createUserDto: CreateUserDto) {
     const user = await this.userManagementService.createUser(createUserDto);
-    return {
-      success: true,
-      data: user,
-    };
+    return created(user, 'User created successfully');
   }
 
   @Get()
@@ -70,15 +68,14 @@ export class UserManagementController {
   })
   async listUsers(@Query() query: ListUsersQueryDto) {
     const result = await this.userManagementService.listUsers(query);
-    return {
-      success: true,
-      data: result.users,
-      pagination: {
-        page: result.page,
-        totalPages: result.totalPages,
-        total: result.total,
-      },
-    };
+    return paginated(
+      result.users,
+      result.page,
+      query.limit || 10,
+      result.total,
+      undefined,
+      'Users retrieved successfully'
+    );
   }
 
   @Get(':id')
@@ -106,10 +103,7 @@ export class UserManagementController {
       id,
       includeMemberships,
     );
-    return {
-      success: true,
-      data: user,
-    };
+    return fetched(user, 'User retrieved successfully');
   }
 
   @Patch(':id')
@@ -131,10 +125,7 @@ export class UserManagementController {
     @Body() updateUserDto: UpdateUserDto,
   ) {
     const user = await this.userManagementService.updateUser(id, updateUserDto);
-    return {
-      success: true,
-      data: user,
-    };
+    return updated(user, 'User updated successfully');
   }
 
   @Delete(':id')
@@ -149,9 +140,6 @@ export class UserManagementController {
   })
   async deleteUser(@Param('id') id: string) {
     await this.userManagementService.deleteUser(id);
-    return {
-      success: true,
-      message: 'User deleted successfully',
-    };
+    return deleted('User deleted successfully');
   }
 }

@@ -18,6 +18,7 @@ import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Public } from '@shared/authz/decorators';
+import { ok } from '@shared/response';
 
 @ApiTags('auth')
 @Controller('auth')
@@ -124,6 +125,6 @@ export class AuthController {
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   health() {
-    return { status: 'ok', service: 'auth' };
+    return ok({ status: 'ok', service: 'auth' }, 'Auth service is healthy');
   }
 }

@@ -28,6 +28,7 @@ import {
   ListOrganizationMembersQueryDto,
   MembershipResponseDto,
 } from '../dto/membership.dto';
+import { created, fetched, updated, deleted, paginated } from '@shared/response';
 
 @ApiTags('organizations')
 @Controller('organizations')
@@ -68,10 +69,7 @@ export class OrganizationMembershipController {
       invitedById,
     );
 
-    return {
-      success: true,
-      data: membership,
-    };
+    return created(membership, 'User invited to organization successfully');
   }
 
   @Get(':organizationId/users')
@@ -91,15 +89,14 @@ export class OrganizationMembershipController {
       organizationId,
       query,
     );
-    return {
-      success: true,
-      data: result.members,
-      pagination: {
-        page: result.page,
-        totalPages: result.totalPages,
-        total: result.total,
-      },
-    };
+    return paginated(
+      result.members,
+      result.page,
+      query.limit || 10,
+      result.total,
+      undefined,
+      'Organization members retrieved successfully'
+    );
   }
 
   @Get(':organizationId/users/:userId')
@@ -124,10 +121,7 @@ export class OrganizationMembershipController {
       organizationId,
       userId,
     );
-    return {
-      success: true,
-      data: membership,
-    };
+    return fetched(membership, 'Membership details retrieved successfully');
   }
 
   @Patch(':organizationId/users/:userId')
@@ -158,10 +152,7 @@ export class OrganizationMembershipController {
       updatedById,
     );
 
-    return {
-      success: true,
-      data: membership,
-    };
+    return updated(membership, 'Membership updated successfully');
   }
 
   @Delete(':organizationId/users/:userId')
@@ -187,9 +178,6 @@ export class OrganizationMembershipController {
       removedById,
     );
 
-    return {
-      success: true,
-      message: 'User removed from organization successfully',
-    };
+    return deleted('User removed from organization successfully');
   }
 }
