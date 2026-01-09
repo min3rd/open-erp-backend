@@ -420,7 +420,7 @@ export class NavigationService {
       // Use 'organization' scope to include both global and tenant permissions
       const permissions = await this.authorizationService.getEffectivePermissions(
         userId,
-        'organization',
+        'organization', // PermissionScope constant
       );
 
       this.logger.debug(
