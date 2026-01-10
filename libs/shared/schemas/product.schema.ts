@@ -94,6 +94,36 @@ export class CategorySnapshot {
   description?: string;
 }
 
+/**
+ * Media item sub-schema (images, videos, documents)
+ */
+@Schema({ _id: false })
+export class MediaItem {
+  @Prop({ required: true, type: String, enum: ['image', 'video', 'document'] })
+  type: string;
+
+  @Prop({ required: true, type: String })
+  url: string;
+
+  @Prop({ type: String })
+  title?: string;
+
+  @Prop({ type: String })
+  description?: string;
+
+  @Prop({ type: String })
+  mimeType?: string;
+
+  @Prop({ type: Number, min: 0 })
+  size?: number; // Size in bytes
+
+  @Prop({ type: Number, min: 0, default: 0 })
+  order: number; // Display order
+
+  @Prop({ type: Boolean, default: false })
+  isPrimary: boolean; // Primary/featured image
+}
+
 // Define interface for instance methods
 export interface ProductMethods {
   softDelete(): Promise<this>;
@@ -147,6 +177,13 @@ export class Product extends Document {
     index: true,
   })
   barcode?: string;
+
+  // ========== MEDIA ==========
+  @Prop({
+    type: [MediaItem],
+    default: [],
+  })
+  media: MediaItem[];
 
   // ========== SCOPE & OWNERSHIP ==========
   @Prop({
