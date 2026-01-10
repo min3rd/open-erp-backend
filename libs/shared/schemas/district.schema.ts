@@ -1,5 +1,12 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { Document, HydratedDocument } from 'mongoose';
+import { Document, HydratedDocument, Schema as MongooseSchema } from 'mongoose';
+import type {
+  AdminGeometry,
+  Centroid,
+  BBox,
+  GeometryMeta,
+} from '@shared/types/geometry.types';
+import { GeometrySource } from '@shared/types/geometry.types';
 
 export type DistrictDocument = HydratedDocument<District>;
 
@@ -58,6 +65,65 @@ export class District extends Document {
     index: true,
   })
   isLegacy?: boolean;
+
+  // Geometry fields for GeoJSON support
+  @Prop({
+    type: MongooseSchema.Types.Mixed,
+    required: false,
+  })
+  geometry?: AdminGeometry;
+
+  @Prop({
+    type: MongooseSchema.Types.Mixed,
+    required: false,
+  })
+  geometrySimplified?: AdminGeometry;
+
+  @Prop({
+    type: Object,
+    required: false,
+  })
+  centroid?: Centroid;
+
+  @Prop({
+    type: [Number],
+    required: false,
+  })
+  bbox?: BBox;
+
+  @Prop({
+    type: Number,
+    required: false,
+  })
+  areaSqKm?: number;
+
+  @Prop({
+    type: String,
+    enum: Object.values(GeometrySource),
+    required: false,
+  })
+  geometrySource?: GeometrySource;
+
+  @Prop({
+    type: Number,
+    default: 1,
+  })
+  geometryVersion?: number;
+
+  @Prop({
+    type: Date,
+  })
+  geometryUpdatedAt?: Date;
+
+  @Prop({
+    type: String,
+  })
+  geometryUpdatedBy?: string;
+
+  @Prop({
+    type: MongooseSchema.Types.Mixed,
+  })
+  geometryMeta?: GeometryMeta;
 }
 
 export const DistrictSchema = SchemaFactory.createForClass(District);
@@ -71,6 +137,12 @@ DistrictSchema.index({
   name: 'text',
   nameEn: 'text',
 });
+
+// 2dsphere index for spatial queries
+DistrictSchema.index({ geometry: '2dsphere' });
+
+// Compound index for centroid-based queries
+DistrictSchema.index({ 'centroid.lat': 1, 'centroid.lon': 1 });
 
 // Ensure virtuals are included in JSON output
 DistrictSchema.set('toJSON', {

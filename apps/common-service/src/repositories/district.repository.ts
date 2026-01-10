@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { District, DistrictDocument } from '@shared/schemas';
+import { AdminGeometry, BBox } from '@shared/types/geometry.types';
 
 @Injectable()
 export class DistrictRepository {
@@ -103,5 +104,85 @@ export class DistrictRepository {
     ]);
 
     return { items, total };
+  }
+
+  /**
+   * Find districts within a bounding box
+   */
+  async findWithinBBox(bbox: BBox): Promise<District[]> {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    
+    return this.districtModel
+      .find({
+        geometry: {
+          $geoWithin: {
+            $box: [
+              [minLon, minLat],
+              [maxLon, maxLat],
+            ],
+          },
+        },
+      })
+      .exec();
+  }
+
+  /**
+   * Find districts that intersect with a geometry
+   */
+  async findIntersecting(geometry: AdminGeometry): Promise<District[]> {
+    return this.districtModel
+      .find({
+        geometry: {
+          $geoIntersects: {
+            $geometry: geometry,
+          },
+        },
+      })
+      .exec();
+  }
+
+  /**
+   * Find districts near a point
+   */
+  async findNearPoint(
+    longitude: number,
+    latitude: number,
+    maxDistanceMeters?: number,
+  ): Promise<District[]> {
+    const query: any = {
+      geometry: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+        },
+      },
+    };
+
+    if (maxDistanceMeters) {
+      query.geometry.$near.$maxDistance = maxDistanceMeters;
+    }
+
+    return this.districtModel.find(query).exec();
+  }
+
+  /**
+   * Update geometry fields
+   */
+  async updateGeometry(
+    code: string,
+    geometryData: Partial<District>,
+  ): Promise<District | null> {
+    return this.districtModel
+      .findOneAndUpdate(
+        { code },
+        {
+          ...geometryData,
+          geometryUpdatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
   }
 }

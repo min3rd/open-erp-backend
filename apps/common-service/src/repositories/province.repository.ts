@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Province, ProvinceDocument } from '@shared/schemas';
+import { AdminGeometry, BBox } from '@shared/types/geometry.types';
 
 @Injectable()
 export class ProvinceRepository {
@@ -96,5 +97,85 @@ export class ProvinceRepository {
     ]);
 
     return { items, total };
+  }
+
+  /**
+   * Find provinces within a bounding box
+   */
+  async findWithinBBox(bbox: BBox): Promise<Province[]> {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    
+    return this.provinceModel
+      .find({
+        geometry: {
+          $geoWithin: {
+            $box: [
+              [minLon, minLat],
+              [maxLon, maxLat],
+            ],
+          },
+        },
+      })
+      .exec();
+  }
+
+  /**
+   * Find provinces that intersect with a geometry
+   */
+  async findIntersecting(geometry: AdminGeometry): Promise<Province[]> {
+    return this.provinceModel
+      .find({
+        geometry: {
+          $geoIntersects: {
+            $geometry: geometry,
+          },
+        },
+      })
+      .exec();
+  }
+
+  /**
+   * Find provinces near a point
+   */
+  async findNearPoint(
+    longitude: number,
+    latitude: number,
+    maxDistanceMeters?: number,
+  ): Promise<Province[]> {
+    const query: any = {
+      geometry: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+        },
+      },
+    };
+
+    if (maxDistanceMeters) {
+      query.geometry.$near.$maxDistance = maxDistanceMeters;
+    }
+
+    return this.provinceModel.find(query).exec();
+  }
+
+  /**
+   * Update geometry fields
+   */
+  async updateGeometry(
+    code: string,
+    geometryData: Partial<Province>,
+  ): Promise<Province | null> {
+    return this.provinceModel
+      .findOneAndUpdate(
+        { code },
+        {
+          ...geometryData,
+          geometryUpdatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
   }
 }

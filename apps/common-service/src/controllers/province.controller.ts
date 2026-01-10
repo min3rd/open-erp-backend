@@ -12,6 +12,7 @@ import {
   UseGuards,
   ParseIntPipe,
   DefaultValuePipe,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -34,6 +35,12 @@ import {
 } from '@shared/response';
 import { JwtAuthGuard, RolesGuard } from '@shared/authz';
 import { Roles } from '@shared/authz/decorators';
+import {
+  UpdateGeometryDto,
+  ImportGeoJsonDto,
+  ExportGeometryDto,
+} from '../dto/geometry.dto';
+import { GeometryDetail } from '@shared/types/geometry.types';
 
 @ApiTags('provinces')
 @Controller('provinces')
@@ -277,6 +284,225 @@ export class ProvinceController {
       }
       throw new HttpException(
         error('PROVINCE_DELETE_ERROR', err.message || 'Failed to delete province'),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  // ============ Geometry Endpoints ============
+
+  @Get(':code/geometry')
+  @ApiOperation({
+    summary: 'Get province geometry',
+    description: 'Retrieve geometry data (GeoJSON) for a province',
+  })
+  @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
+  @ApiQuery({
+    name: 'detail',
+    required: false,
+    enum: GeometryDetail,
+    description: 'Geometry detail level (simple or full)',
+  })
+  @ApiResponse({ status: 200, description: 'Geometry retrieved successfully' })
+  @ApiResponse({ status: 404, description: 'Province or geometry not found' })
+  async getGeometry(
+    @Param('code') code: string,
+    @Query('detail') detail?: GeometryDetail,
+  ) {
+    try {
+      const geometry = await this.provinceService.getGeometry(
+        code,
+        detail || GeometryDetail.FULL,
+      );
+      return fetched(geometry);
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        error('GEOMETRY_FETCH_ERROR', err.message || 'Failed to fetch geometry'),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Patch(':code/geometry')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Update province geometry (Admin only)',
+    description: 'Update or upload geometry for a province',
+  })
+  @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
+  @ApiResponse({ status: 200, description: 'Geometry updated successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 404, description: 'Province not found' })
+  async updateGeometry(
+    @Param('code') code: string,
+    @Body() updateDto: UpdateGeometryDto,
+  ) {
+    try {
+      const province = await this.provinceService.updateGeometry(
+        code,
+        updateDto.geometry,
+        updateDto.updatedBy,
+        updateDto.geometrySource,
+        updateDto.geometryMeta,
+      );
+      return updated(province, 'Geometry updated successfully');
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        error('GEOMETRY_UPDATE_ERROR', err.message || 'Failed to update geometry'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Post('import-geojson')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Import geometries from GeoJSON FeatureCollection (Admin only)',
+    description: 'Bulk import province geometries from GeoJSON',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Import completed with success and failure counts',
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  async importGeoJson(@Body() importDto: ImportGeoJsonDto) {
+    try {
+      const result = await this.provinceService.importGeoJSON(
+        importDto.featureCollection,
+        importDto.geometrySource,
+        importDto.geometryMeta,
+        importDto.simplificationTolerance,
+      );
+      return ok(result, 'GeoJSON import completed');
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        error('IMPORT_ERROR', err.message || 'Failed to import GeoJSON'),
+        HttpStatus.BAD_REQUEST,
+      );
+    }
+  }
+
+  @Get(':code/export')
+  @ApiOperation({
+    summary: 'Export province geometry as GeoJSON',
+    description: 'Export a single province as GeoJSON Feature',
+  })
+  @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
+  @ApiQuery({
+    name: 'format',
+    required: false,
+    enum: ['geojson'],
+    description: 'Export format (only geojson supported)',
+  })
+  @ApiQuery({
+    name: 'detail',
+    required: false,
+    enum: GeometryDetail,
+    description: 'Geometry detail level',
+  })
+  @ApiResponse({ status: 200, description: 'GeoJSON Feature' })
+  @ApiResponse({ status: 404, description: 'Province or geometry not found' })
+  async exportGeometry(
+    @Param('code') code: string,
+    @Query('format') format?: string,
+    @Query('detail') detail?: GeometryDetail,
+  ) {
+    try {
+      if (format && format !== 'geojson') {
+        throw new BadRequestException('Only geojson format is supported');
+      }
+
+      const feature = await this.provinceService.exportGeoJSON(
+        code,
+        detail || GeometryDetail.FULL,
+      );
+      return ok(feature);
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        error('EXPORT_ERROR', err.message || 'Failed to export geometry'),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Get(':code/geometry/versions')
+  @ApiOperation({
+    summary: 'Get geometry version history',
+    description: 'Retrieve version history of geometry updates for a province',
+  })
+  @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
+  @ApiQuery({
+    name: 'limit',
+    required: false,
+    type: Number,
+    example: 10,
+    description: 'Number of versions to retrieve',
+  })
+  @ApiResponse({ status: 200, description: 'Version history retrieved' })
+  @ApiResponse({ status: 404, description: 'Province not found' })
+  async getGeometryVersions(
+    @Param('code') code: string,
+    @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
+  ) {
+    try {
+      const versions = await this.provinceService.getGeometryVersionHistory(code, limit);
+      return ok(versions);
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        error('VERSION_FETCH_ERROR', err.message || 'Failed to fetch versions'),
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
+  }
+
+  @Post(':code/geometry/rollback/:version')
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
+  @ApiBearerAuth()
+  @ApiOperation({
+    summary: 'Rollback geometry to a specific version (Admin only)',
+    description: 'Restore geometry from a previous version',
+  })
+  @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
+  @ApiParam({ name: 'version', example: 2, description: 'Version number to rollback to' })
+  @ApiResponse({ status: 200, description: 'Geometry rolled back successfully' })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({ status: 404, description: 'Province or version not found' })
+  async rollbackGeometry(
+    @Param('code') code: string,
+    @Param('version', ParseIntPipe) version: number,
+  ) {
+    try {
+      const province = await this.provinceService.rollbackGeometryVersion(code, version);
+      return updated(province, 'Geometry rolled back successfully');
+    } catch (err) {
+      if (err instanceof HttpException) {
+        throw err;
+      }
+      throw new HttpException(
+        error('ROLLBACK_ERROR', err.message || 'Failed to rollback geometry'),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

@@ -2,6 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Ward, WardDocument } from '@shared/schemas';
+import { AdminGeometry, BBox } from '@shared/types/geometry.types';
 
 @Injectable()
 export class WardRepository {
@@ -110,5 +111,85 @@ export class WardRepository {
     ]);
 
     return { items, total };
+  }
+
+  /**
+   * Find wards within a bounding box
+   */
+  async findWithinBBox(bbox: BBox): Promise<Ward[]> {
+    const [minLon, minLat, maxLon, maxLat] = bbox;
+    
+    return this.wardModel
+      .find({
+        geometry: {
+          $geoWithin: {
+            $box: [
+              [minLon, minLat],
+              [maxLon, maxLat],
+            ],
+          },
+        },
+      })
+      .exec();
+  }
+
+  /**
+   * Find wards that intersect with a geometry
+   */
+  async findIntersecting(geometry: AdminGeometry): Promise<Ward[]> {
+    return this.wardModel
+      .find({
+        geometry: {
+          $geoIntersects: {
+            $geometry: geometry,
+          },
+        },
+      })
+      .exec();
+  }
+
+  /**
+   * Find wards near a point
+   */
+  async findNearPoint(
+    longitude: number,
+    latitude: number,
+    maxDistanceMeters?: number,
+  ): Promise<Ward[]> {
+    const query: any = {
+      geometry: {
+        $near: {
+          $geometry: {
+            type: 'Point',
+            coordinates: [longitude, latitude],
+          },
+        },
+      },
+    };
+
+    if (maxDistanceMeters) {
+      query.geometry.$near.$maxDistance = maxDistanceMeters;
+    }
+
+    return this.wardModel.find(query).exec();
+  }
+
+  /**
+   * Update geometry fields
+   */
+  async updateGeometry(
+    code: string,
+    geometryData: Partial<Ward>,
+  ): Promise<Ward | null> {
+    return this.wardModel
+      .findOneAndUpdate(
+        { code },
+        {
+          ...geometryData,
+          geometryUpdatedAt: new Date(),
+        },
+        { new: true },
+      )
+      .exec();
   }
 }

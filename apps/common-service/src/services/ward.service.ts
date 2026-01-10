@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { WardRepository } from '../repositories/ward.repository';
 import { Ward } from '@shared/schemas';
+import { BBox } from '@shared/types/geometry.types';
 
 @Injectable()
 export class WardService {
@@ -76,5 +77,23 @@ export class WardService {
     if (!ward) {
       throw new NotFoundException(`Ward with code ${code} not found`);
     }
+  }
+
+  /**
+   * Find wards within bounding box
+   */
+  async findWithinBBox(bbox: BBox): Promise<Ward[]> {
+    return this.wardRepository.findWithinBBox(bbox);
+  }
+
+  /**
+   * Find wards near a point
+   */
+  async findNearPoint(
+    longitude: number,
+    latitude: number,
+    maxDistanceMeters?: number,
+  ): Promise<Ward[]> {
+    return this.wardRepository.findNearPoint(longitude, latitude, maxDistanceMeters);
   }
 }
