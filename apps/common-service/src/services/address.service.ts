@@ -32,7 +32,7 @@ export class AddressService {
     const skip = (page - 1) * limit;
 
     const filter: any = { isDeleted: false };
-    
+
     if (scope) {
       filter.scope = scope;
     }
@@ -61,23 +61,35 @@ export class AddressService {
   async create(dto: CreateAddressDto): Promise<Address> {
     // Validate scope-specific requirements
     if (dto.scope === AddressScope.GLOBAL && !dto.userId) {
-      throw new BadRequestException('userId is required for global scope addresses');
+      throw new BadRequestException(
+        'userId is required for global scope addresses',
+      );
     }
     if (dto.scope === AddressScope.ORGANIZATION && !dto.organizationId) {
-      throw new BadRequestException('organizationId is required for organization scope addresses');
+      throw new BadRequestException(
+        'organizationId is required for organization scope addresses',
+      );
     }
 
     // Validate province code exists
-    const province = await this.provinceRepository.findByCode(dto.province.code);
+    const province = await this.provinceRepository.findByCode(
+      dto.province.code,
+    );
     if (!province) {
-      throw new BadRequestException(`Province with code ${dto.province.code} not found`);
+      throw new BadRequestException(
+        `Province with code ${dto.province.code} not found`,
+      );
     }
 
     // Validate district code if provided
     if (dto.district) {
-      const district = await this.districtRepository.findByCode(dto.district.code);
+      const district = await this.districtRepository.findByCode(
+        dto.district.code,
+      );
       if (!district) {
-        throw new BadRequestException(`District with code ${dto.district.code} not found`);
+        throw new BadRequestException(
+          `District with code ${dto.district.code} not found`,
+        );
       }
       // Verify district belongs to province
       if (district.provinceCode !== dto.province.code) {
@@ -91,7 +103,9 @@ export class AddressService {
     if (dto.ward) {
       const ward = await this.wardRepository.findByCode(dto.ward.code);
       if (!ward) {
-        throw new BadRequestException(`Ward with code ${dto.ward.code} not found`);
+        throw new BadRequestException(
+          `Ward with code ${dto.ward.code} not found`,
+        );
       }
       // Verify ward belongs to province
       if (ward.provinceCode !== dto.province.code) {
@@ -127,17 +141,25 @@ export class AddressService {
 
     // Validate province code if provided
     if (dto.province) {
-      const province = await this.provinceRepository.findByCode(dto.province.code);
+      const province = await this.provinceRepository.findByCode(
+        dto.province.code,
+      );
       if (!province) {
-        throw new BadRequestException(`Province with code ${dto.province.code} not found`);
+        throw new BadRequestException(
+          `Province with code ${dto.province.code} not found`,
+        );
       }
     }
 
     // Validate district code if provided
     if (dto.district) {
-      const district = await this.districtRepository.findByCode(dto.district.code);
+      const district = await this.districtRepository.findByCode(
+        dto.district.code,
+      );
       if (!district) {
-        throw new BadRequestException(`District with code ${dto.district.code} not found`);
+        throw new BadRequestException(
+          `District with code ${dto.district.code} not found`,
+        );
       }
       // Verify district belongs to province (use existing or new province)
       const provinceCode = dto.province?.code || existingAddress.province.code;
@@ -152,7 +174,9 @@ export class AddressService {
     if (dto.ward) {
       const ward = await this.wardRepository.findByCode(dto.ward.code);
       if (!ward) {
-        throw new BadRequestException(`Ward with code ${dto.ward.code} not found`);
+        throw new BadRequestException(
+          `Ward with code ${dto.ward.code} not found`,
+        );
       }
       // Verify ward belongs to province
       const provinceCode = dto.province?.code || existingAddress.province.code;

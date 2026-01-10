@@ -39,15 +39,20 @@ export class WardController {
   constructor(private readonly wardService: WardService) {}
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'List all wards',
-    description: 'Get paginated list of wards with optional filters'
+    description: 'Get paginated list of wards with optional filters',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 100 })
   @ApiQuery({ name: 'provinceCode', required: false, type: String })
   @ApiQuery({ name: 'districtCode', required: false, type: String })
-  @ApiQuery({ name: 'q', required: false, type: String, description: 'Search term' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    type: String,
+    description: 'Search term',
+  })
   @ApiQuery({ name: 'version', required: false, type: String })
   @ApiQuery({ name: 'isLegacy', required: false, type: Boolean })
   @ApiResponse({
@@ -75,7 +80,10 @@ export class WardController {
       });
 
       return paginated(items, page, limit, total, {
-        query: { q, filters: { provinceCode, districtCode, version, isLegacy } },
+        query: {
+          q,
+          filters: { provinceCode, districtCode, version, isLegacy },
+        },
         sort: { by: 'sortOrder', order: 'asc' },
       });
     } catch (err) {
@@ -87,9 +95,9 @@ export class WardController {
   }
 
   @Get(':code')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get ward by code',
-    description: 'Retrieve a single ward by its code'
+    description: 'Retrieve a single ward by its code',
   })
   @ApiParam({ name: 'code', example: '00001', description: 'Ward code' })
   @ApiResponse({
@@ -116,16 +124,19 @@ export class WardController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create a new ward (Admin only)',
-    description: 'Create a new ward in the system'
+    description: 'Create a new ward in the system',
   })
   @ApiResponse({
     status: 201,
     description: 'Ward created successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async create(@Body() createDto: any) {
     try {
       const ward = await this.wardService.create(createDto);
@@ -145,9 +156,9 @@ export class WardController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update ward by code (Admin only)',
-    description: 'Update an existing ward'
+    description: 'Update an existing ward',
   })
   @ApiParam({ name: 'code', example: '00001', description: 'Ward code' })
   @ApiResponse({
@@ -155,7 +166,10 @@ export class WardController {
     description: 'Ward updated successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Ward not found' })
   async update(@Param('code') code: string, @Body() updateDto: any) {
     try {
@@ -176,9 +190,9 @@ export class WardController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete ward by code (Admin only)',
-    description: 'Delete a ward from the system'
+    description: 'Delete a ward from the system',
   })
   @ApiParam({ name: 'code', example: '00001', description: 'Ward code' })
   @ApiResponse({
@@ -186,7 +200,10 @@ export class WardController {
     description: 'Ward deleted successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Ward not found' })
   async delete(@Param('code') code: string) {
     try {

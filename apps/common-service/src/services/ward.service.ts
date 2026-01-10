@@ -16,7 +16,15 @@ export class WardService {
     version?: string;
     isLegacy?: boolean;
   }): Promise<{ items: Ward[]; total: number }> {
-    const { page = 1, limit = 100, provinceCode, districtCode, q, version, isLegacy } = options;
+    const {
+      page = 1,
+      limit = 100,
+      provinceCode,
+      districtCode,
+      q,
+      version,
+      isLegacy,
+    } = options;
     const skip = (page - 1) * limit;
 
     const filter: any = {};
@@ -94,6 +102,10 @@ export class WardService {
     latitude: number,
     maxDistanceMeters?: number,
   ): Promise<Ward[]> {
-    return this.wardRepository.findNearPoint(longitude, latitude, maxDistanceMeters);
+    return this.wardRepository.findNearPoint(
+      longitude,
+      latitude,
+      maxDistanceMeters,
+    );
   }
 }

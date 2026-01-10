@@ -51,14 +51,24 @@ export class ProvinceController {
   ) {}
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'List all provinces',
-    description: 'Get paginated list of provinces with optional filters'
+    description: 'Get paginated list of provinces with optional filters',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 100 })
-  @ApiQuery({ name: 'region', required: false, type: String, example: 'northern' })
-  @ApiQuery({ name: 'q', required: false, type: String, description: 'Search term' })
+  @ApiQuery({
+    name: 'region',
+    required: false,
+    type: String,
+    example: 'northern',
+  })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    type: String,
+    description: 'Search term',
+  })
   @ApiQuery({ name: 'version', required: false, type: String, example: '2.0' })
   @ApiQuery({ name: 'isLegacy', required: false, type: Boolean })
   @ApiResponse({
@@ -107,16 +117,19 @@ export class ProvinceController {
       });
     } catch (err) {
       throw new HttpException(
-        error('PROVINCES_FETCH_ERROR', err.message || 'Failed to fetch provinces'),
+        error(
+          'PROVINCES_FETCH_ERROR',
+          err.message || 'Failed to fetch provinces',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get(':code')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get province by code',
-    description: 'Retrieve a single province by its code'
+    description: 'Retrieve a single province by its code',
   })
   @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
   @ApiResponse({
@@ -148,16 +161,19 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('PROVINCE_FETCH_ERROR', err.message || 'Failed to fetch province'),
+        error(
+          'PROVINCE_FETCH_ERROR',
+          err.message || 'Failed to fetch province',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get(':code/districts')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get districts by province code',
-    description: 'Retrieve all districts belonging to a province'
+    description: 'Retrieve all districts belonging to a province',
   })
   @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
   @ApiResponse({
@@ -169,7 +185,7 @@ export class ProvinceController {
     try {
       // First verify province exists
       await this.provinceService.findByCode(code);
-      
+
       const districts = await this.districtService.findByProvinceCode(code);
       return ok(districts);
     } catch (err) {
@@ -177,7 +193,10 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('DISTRICTS_FETCH_ERROR', err.message || 'Failed to fetch districts'),
+        error(
+          'DISTRICTS_FETCH_ERROR',
+          err.message || 'Failed to fetch districts',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -187,9 +206,9 @@ export class ProvinceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create a new province (Admin only)',
-    description: 'Create a new province in the system'
+    description: 'Create a new province in the system',
   })
   @ApiResponse({
     status: 201,
@@ -211,7 +230,10 @@ export class ProvinceController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async create(@Body() createDto: any) {
     try {
       const province = await this.provinceService.create(createDto);
@@ -221,7 +243,10 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('PROVINCE_CREATE_ERROR', err.message || 'Failed to create province'),
+        error(
+          'PROVINCE_CREATE_ERROR',
+          err.message || 'Failed to create province',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -231,9 +256,9 @@ export class ProvinceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update province by code (Admin only)',
-    description: 'Update an existing province'
+    description: 'Update an existing province',
   })
   @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
   @ApiResponse({
@@ -241,7 +266,10 @@ export class ProvinceController {
     description: 'Province updated successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Province not found' })
   async update(@Param('code') code: string, @Body() updateDto: any) {
     try {
@@ -252,7 +280,10 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('PROVINCE_UPDATE_ERROR', err.message || 'Failed to update province'),
+        error(
+          'PROVINCE_UPDATE_ERROR',
+          err.message || 'Failed to update province',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -262,9 +293,9 @@ export class ProvinceController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete province by code (Admin only)',
-    description: 'Delete a province from the system'
+    description: 'Delete a province from the system',
   })
   @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
   @ApiResponse({
@@ -272,7 +303,10 @@ export class ProvinceController {
     description: 'Province deleted successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Province not found' })
   async delete(@Param('code') code: string) {
     try {
@@ -283,7 +317,10 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('PROVINCE_DELETE_ERROR', err.message || 'Failed to delete province'),
+        error(
+          'PROVINCE_DELETE_ERROR',
+          err.message || 'Failed to delete province',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -320,7 +357,10 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('GEOMETRY_FETCH_ERROR', err.message || 'Failed to fetch geometry'),
+        error(
+          'GEOMETRY_FETCH_ERROR',
+          err.message || 'Failed to fetch geometry',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -337,7 +377,10 @@ export class ProvinceController {
   @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
   @ApiResponse({ status: 200, description: 'Geometry updated successfully' })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Province not found' })
   async updateGeometry(
     @Param('code') code: string,
@@ -357,7 +400,10 @@ export class ProvinceController {
         throw err;
       }
       throw new HttpException(
-        error('GEOMETRY_UPDATE_ERROR', err.message || 'Failed to update geometry'),
+        error(
+          'GEOMETRY_UPDATE_ERROR',
+          err.message || 'Failed to update geometry',
+        ),
         HttpStatus.BAD_REQUEST,
       );
     }
@@ -376,7 +422,10 @@ export class ProvinceController {
     description: 'Import completed with success and failure counts',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async importGeoJson(@Body() importDto: ImportGeoJsonDto) {
     try {
       const result = await this.provinceService.importGeoJSON(
@@ -463,7 +512,10 @@ export class ProvinceController {
     @Query('limit', new DefaultValuePipe(10), ParseIntPipe) limit: number,
   ) {
     try {
-      const versions = await this.provinceService.getGeometryVersionHistory(code, limit);
+      const versions = await this.provinceService.getGeometryVersionHistory(
+        code,
+        limit,
+      );
       return ok(versions);
     } catch (err) {
       if (err instanceof HttpException) {
@@ -485,17 +537,30 @@ export class ProvinceController {
     description: 'Restore geometry from a previous version',
   })
   @ApiParam({ name: 'code', example: 'P01', description: 'Province code' })
-  @ApiParam({ name: 'version', example: 2, description: 'Version number to rollback to' })
-  @ApiResponse({ status: 200, description: 'Geometry rolled back successfully' })
+  @ApiParam({
+    name: 'version',
+    example: 2,
+    description: 'Version number to rollback to',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Geometry rolled back successfully',
+  })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'Province or version not found' })
   async rollbackGeometry(
     @Param('code') code: string,
     @Param('version', ParseIntPipe) version: number,
   ) {
     try {
-      const province = await this.provinceService.rollbackGeometryVersion(code, version);
+      const province = await this.provinceService.rollbackGeometryVersion(
+        code,
+        version,
+      );
       return updated(province, 'Geometry rolled back successfully');
     } catch (err) {
       if (err instanceof HttpException) {

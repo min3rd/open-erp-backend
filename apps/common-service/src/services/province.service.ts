@@ -1,9 +1,19 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { ProvinceRepository } from '../repositories/province.repository';
 import { Province } from '@shared/schemas';
 import { GeometryUtilService } from './geometry-util.service';
 import { GeometryVersionService } from './geometry-version.service';
-import { AdminGeometry, BBox, GeometrySource, GeometryMeta, GeometryDetail } from '@shared/types/geometry.types';
+import {
+  AdminGeometry,
+  BBox,
+  GeometrySource,
+  GeometryMeta,
+  GeometryDetail,
+} from '@shared/types/geometry.types';
 import { FeatureCollection } from 'geojson';
 
 @Injectable()
@@ -77,16 +87,20 @@ export class ProvinceService {
   /**
    * Get geometry for a province
    */
-  async getGeometry(code: string, detail: GeometryDetail = GeometryDetail.FULL): Promise<any> {
+  async getGeometry(
+    code: string,
+    detail: GeometryDetail = GeometryDetail.FULL,
+  ): Promise<any> {
     const province = await this.findByCode(code);
-    
+
     if (!province.geometry) {
       throw new NotFoundException(`Province ${code} has no geometry data`);
     }
 
-    const geometry = detail === GeometryDetail.SIMPLE 
-      ? province.geometrySimplified || province.geometry
-      : province.geometry;
+    const geometry =
+      detail === GeometryDetail.SIMPLE
+        ? province.geometrySimplified || province.geometry
+        : province.geometry;
 
     return {
       geometry,
@@ -166,12 +180,16 @@ export class ProvinceService {
     geometryMeta?: GeometryMeta,
     simplificationTolerance?: number,
     updatedBy?: string,
-  ): Promise<{ success: string[]; failed: Array<{ code: string; error: string }> }> {
+  ): Promise<{
+    success: string[];
+    failed: Array<{ code: string; error: string }>;
+  }> {
     // Validate file size
     this.geometryUtilService.validateFileSize(featureCollection);
 
     // Parse features
-    const featuresMap = this.geometryUtilService.parseFeatureCollection(featureCollection);
+    const featuresMap =
+      this.geometryUtilService.parseFeatureCollection(featureCollection);
 
     const success: string[] = [];
     const failed: Array<{ code: string; error: string }> = [];
@@ -180,7 +198,7 @@ export class ProvinceService {
     for (const [code, feature] of featuresMap.entries()) {
       try {
         const geometry = feature.geometry as AdminGeometry;
-        
+
         // Check if province exists
         const province = await this.provinceRepository.findByCode(code);
         if (!province) {
@@ -210,16 +228,20 @@ export class ProvinceService {
   /**
    * Export geometry as GeoJSON
    */
-  async exportGeoJSON(code: string, detail: GeometryDetail = GeometryDetail.FULL): Promise<any> {
+  async exportGeoJSON(
+    code: string,
+    detail: GeometryDetail = GeometryDetail.FULL,
+  ): Promise<any> {
     const province = await this.findByCode(code);
-    
+
     if (!province.geometry) {
       throw new NotFoundException(`Province ${code} has no geometry data`);
     }
 
-    const geometry = detail === GeometryDetail.SIMPLE
-      ? province.geometrySimplified || province.geometry
-      : province.geometry;
+    const geometry =
+      detail === GeometryDetail.SIMPLE
+        ? province.geometrySimplified || province.geometry
+        : province.geometry;
 
     return {
       type: 'Feature',
@@ -261,15 +283,26 @@ export class ProvinceService {
     latitude: number,
     maxDistanceMeters?: number,
   ): Promise<Province[]> {
-    return this.provinceRepository.findNearPoint(longitude, latitude, maxDistanceMeters);
+    return this.provinceRepository.findNearPoint(
+      longitude,
+      latitude,
+      maxDistanceMeters,
+    );
   }
 
   /**
    * Get geometry version history
    */
-  async getGeometryVersionHistory(code: string, limit: number = 10): Promise<any[]> {
+  async getGeometryVersionHistory(
+    code: string,
+    limit: number = 10,
+  ): Promise<any[]> {
     await this.findByCode(code); // Verify province exists
-    return this.geometryVersionService.getVersionHistory('province', code, limit);
+    return this.geometryVersionService.getVersionHistory(
+      'province',
+      code,
+      limit,
+    );
   }
 
   /**
@@ -281,11 +314,17 @@ export class ProvinceService {
     updatedBy?: string,
   ): Promise<Province> {
     const province = await this.findByCode(code);
-    
+
     // Get the version
-    const versionDoc = await this.geometryVersionService.getVersion('province', code, version);
+    const versionDoc = await this.geometryVersionService.getVersion(
+      'province',
+      code,
+      version,
+    );
     if (!versionDoc) {
-      throw new NotFoundException(`Version ${version} not found for province ${code}`);
+      throw new NotFoundException(
+        `Version ${version} not found for province ${code}`,
+      );
     }
 
     // Update with the old geometry

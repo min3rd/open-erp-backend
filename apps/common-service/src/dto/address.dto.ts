@@ -41,7 +41,8 @@ export class CreateAddressDto {
   @ApiProperty({
     enum: AddressScope,
     example: AddressScope.GLOBAL,
-    description: 'Address scope (global for personal, organization for company)',
+    description:
+      'Address scope (global for personal, organization for company)',
   })
   @IsEnum(AddressScope)
   @IsNotEmpty()

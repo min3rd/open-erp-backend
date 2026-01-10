@@ -42,9 +42,9 @@ export class AddressController {
   constructor(private readonly addressService: AddressService) {}
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'List addresses',
-    description: 'Get paginated list of addresses with scope filters'
+    description: 'Get paginated list of addresses with scope filters',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 20 })
@@ -96,16 +96,19 @@ export class AddressController {
       });
     } catch (err) {
       throw new HttpException(
-        error('ADDRESSES_FETCH_ERROR', err.message || 'Failed to fetch addresses'),
+        error(
+          'ADDRESSES_FETCH_ERROR',
+          err.message || 'Failed to fetch addresses',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get address by ID',
-    description: 'Retrieve a single address by its ID'
+    description: 'Retrieve a single address by its ID',
   })
   @ApiParam({ name: 'id', description: 'Address ID' })
   @ApiResponse({
@@ -145,9 +148,9 @@ export class AddressController {
   }
 
   @Post()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create a new address',
-    description: 'Create a new address with validation against master data'
+    description: 'Create a new address with validation against master data',
   })
   @ApiResponse({
     status: 201,
@@ -179,16 +182,19 @@ export class AddressController {
         throw err;
       }
       throw new HttpException(
-        error('ADDRESS_CREATE_ERROR', err.message || 'Failed to create address'),
+        error(
+          'ADDRESS_CREATE_ERROR',
+          err.message || 'Failed to create address',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Patch(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update address by ID',
-    description: 'Update an existing address'
+    description: 'Update an existing address',
   })
   @ApiParam({ name: 'id', description: 'Address ID' })
   @ApiResponse({
@@ -222,16 +228,19 @@ export class AddressController {
         throw err;
       }
       throw new HttpException(
-        error('ADDRESS_UPDATE_ERROR', err.message || 'Failed to update address'),
+        error(
+          'ADDRESS_UPDATE_ERROR',
+          err.message || 'Failed to update address',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Delete(':id')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete address by ID (soft delete)',
-    description: 'Soft delete an address from the system'
+    description: 'Soft delete an address from the system',
   })
   @ApiParam({ name: 'id', description: 'Address ID' })
   @ApiResponse({
@@ -264,7 +273,10 @@ export class AddressController {
         throw err;
       }
       throw new HttpException(
-        error('ADDRESS_DELETE_ERROR', err.message || 'Failed to delete address'),
+        error(
+          'ADDRESS_DELETE_ERROR',
+          err.message || 'Failed to delete address',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

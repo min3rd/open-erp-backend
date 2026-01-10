@@ -39,14 +39,19 @@ export class DistrictController {
   constructor(private readonly districtService: DistrictService) {}
 
   @Get()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'List all districts',
-    description: 'Get paginated list of districts with optional filters'
+    description: 'Get paginated list of districts with optional filters',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 100 })
   @ApiQuery({ name: 'provinceCode', required: false, type: String })
-  @ApiQuery({ name: 'q', required: false, type: String, description: 'Search term' })
+  @ApiQuery({
+    name: 'q',
+    required: false,
+    type: String,
+    description: 'Search term',
+  })
   @ApiQuery({ name: 'version', required: false, type: String })
   @ApiQuery({ name: 'isLegacy', required: false, type: Boolean })
   @ApiResponse({
@@ -77,16 +82,19 @@ export class DistrictController {
       });
     } catch (err) {
       throw new HttpException(
-        error('DISTRICTS_FETCH_ERROR', err.message || 'Failed to fetch districts'),
+        error(
+          'DISTRICTS_FETCH_ERROR',
+          err.message || 'Failed to fetch districts',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get(':code')
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Get district by code',
-    description: 'Retrieve a single district by its code'
+    description: 'Retrieve a single district by its code',
   })
   @ApiParam({ name: 'code', example: 'D001', description: 'District code' })
   @ApiResponse({
@@ -103,7 +111,10 @@ export class DistrictController {
         throw err;
       }
       throw new HttpException(
-        error('DISTRICT_FETCH_ERROR', err.message || 'Failed to fetch district'),
+        error(
+          'DISTRICT_FETCH_ERROR',
+          err.message || 'Failed to fetch district',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -113,16 +124,19 @@ export class DistrictController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Create a new district (Admin only)',
-    description: 'Create a new district in the system'
+    description: 'Create a new district in the system',
   })
   @ApiResponse({
     status: 201,
     description: 'District created successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   async create(@Body() createDto: any) {
     try {
       const district = await this.districtService.create(createDto);
@@ -132,7 +146,10 @@ export class DistrictController {
         throw err;
       }
       throw new HttpException(
-        error('DISTRICT_CREATE_ERROR', err.message || 'Failed to create district'),
+        error(
+          'DISTRICT_CREATE_ERROR',
+          err.message || 'Failed to create district',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -142,9 +159,9 @@ export class DistrictController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Update district by code (Admin only)',
-    description: 'Update an existing district'
+    description: 'Update an existing district',
   })
   @ApiParam({ name: 'code', example: 'D001', description: 'District code' })
   @ApiResponse({
@@ -152,7 +169,10 @@ export class DistrictController {
     description: 'District updated successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'District not found' })
   async update(@Param('code') code: string, @Body() updateDto: any) {
     try {
@@ -163,7 +183,10 @@ export class DistrictController {
         throw err;
       }
       throw new HttpException(
-        error('DISTRICT_UPDATE_ERROR', err.message || 'Failed to update district'),
+        error(
+          'DISTRICT_UPDATE_ERROR',
+          err.message || 'Failed to update district',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -173,9 +196,9 @@ export class DistrictController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
-  @ApiOperation({ 
+  @ApiOperation({
     summary: 'Delete district by code (Admin only)',
-    description: 'Delete a district from the system'
+    description: 'Delete a district from the system',
   })
   @ApiParam({ name: 'code', example: 'D001', description: 'District code' })
   @ApiResponse({
@@ -183,7 +206,10 @@ export class DistrictController {
     description: 'District deleted successfully',
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  @ApiResponse({ status: 403, description: 'Forbidden - Admin access required' })
+  @ApiResponse({
+    status: 403,
+    description: 'Forbidden - Admin access required',
+  })
   @ApiResponse({ status: 404, description: 'District not found' })
   async delete(@Param('code') code: string) {
     try {
@@ -194,7 +220,10 @@ export class DistrictController {
         throw err;
       }
       throw new HttpException(
-        error('DISTRICT_DELETE_ERROR', err.message || 'Failed to delete district'),
+        error(
+          'DISTRICT_DELETE_ERROR',
+          err.message || 'Failed to delete district',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
