@@ -1,0 +1,43 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "P01",
+        "name": "Hà Nội"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [105.5, 20.8],
+            [106.0, 20.8],
+            [106.0, 21.3],
+            [105.5, 21.3],
+            [105.5, 20.8]
+          ]
+        ]
+      }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "code": "P79",
+        "name": "Hồ Chí Minh"
+      },
+      "geometry": {
+        "type": "Polygon",
+        "coordinates": [
+          [
+            [106.4, 10.5],
+            [107.0, 10.5],
+            [107.0, 11.0],
+            [106.4, 11.0],
+            [106.4, 10.5]
+          ]
+        ]
+      }
+    }
+  ]
+}
