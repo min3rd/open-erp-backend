@@ -1,4 +1,9 @@
-import { Injectable, NotFoundException, BadRequestException, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+  ConflictException,
+} from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ProductRepository } from '../repositories/product.repository';
 import { ProductVersionRepository } from '../repositories/product-version.repository';
@@ -14,8 +19,13 @@ export class ProductService {
 
   async create(createDto: CreateProductDto) {
     // Validate scope and organizationId
-    if (createDto.scope === ProductScope.ORGANIZATION && !createDto.organizationId) {
-      throw new BadRequestException('Organization ID is required for organization-scoped products');
+    if (
+      createDto.scope === ProductScope.ORGANIZATION &&
+      !createDto.organizationId
+    ) {
+      throw new BadRequestException(
+        'Organization ID is required for organization-scoped products',
+      );
     }
 
     // Check if SKU already exists
@@ -227,7 +237,10 @@ export class ProductService {
   }
 
   async getVersion(productId: string, version: number) {
-    const versionDoc = await this.versionRepository.findByVersion(productId, version);
+    const versionDoc = await this.versionRepository.findByVersion(
+      productId,
+      version,
+    );
     if (!versionDoc) {
       throw new NotFoundException('Product version not found');
     }
@@ -235,7 +248,10 @@ export class ProductService {
   }
 
   async rollbackToVersion(productId: string, version: number, userId: string) {
-    const versionDoc = await this.versionRepository.findByVersion(productId, version);
+    const versionDoc = await this.versionRepository.findByVersion(
+      productId,
+      version,
+    );
     if (!versionDoc) {
       throw new NotFoundException('Product version not found');
     }
@@ -246,7 +262,8 @@ export class ProductService {
     }
 
     // Restore data from version snapshot (excluding system fields)
-    const { _id, createdAt, updatedAt, deletedAt, createdBy, ...versionData } = versionDoc.data;
+    const { _id, createdAt, updatedAt, deletedAt, createdBy, ...versionData } =
+      versionDoc.data;
 
     // Create new version for rollback
     const newVersion = product.currentVersion + 1;
@@ -257,7 +274,10 @@ export class ProductService {
       updatedBy: new Types.ObjectId(userId),
     };
 
-    const updatedProduct = await this.productRepository.update(productId, updateData);
+    const updatedProduct = await this.productRepository.update(
+      productId,
+      updateData,
+    );
 
     if (!updatedProduct) {
       throw new NotFoundException('Product not found after rollback');

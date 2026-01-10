@@ -42,7 +42,8 @@ export class MembershipController {
   })
   @Permissions('membership.read')
   async getUserOrganizations(@Param('userId') userId: string) {
-    const organizations = await this.membershipService.getUserOrganizations(userId);
+    const organizations =
+      await this.membershipService.getUserOrganizations(userId);
     return ok(organizations, 'User organizations retrieved successfully');
   }
 
@@ -56,7 +57,8 @@ export class MembershipController {
   async getOrganizationMembers(
     @Param('organizationId') organizationId: string,
   ) {
-    const members = await this.membershipService.getOrganizationMembers(organizationId);
+    const members =
+      await this.membershipService.getOrganizationMembers(organizationId);
     return ok(members, 'Organization members retrieved successfully');
   }
 

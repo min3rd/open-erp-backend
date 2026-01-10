@@ -10,7 +10,9 @@ export class ProductVersionRepository {
     private readonly versionModel: Model<ProductVersionDocument>,
   ) {}
 
-  async create(versionData: Partial<ProductVersion>): Promise<ProductVersionDocument> {
+  async create(
+    versionData: Partial<ProductVersion>,
+  ): Promise<ProductVersionDocument> {
     const version = new this.versionModel(versionData);
     return version.save();
   }
@@ -36,7 +38,10 @@ export class ProductVersionRepository {
     return { items, total };
   }
 
-  async findByVersion(productId: string, version: number): Promise<ProductVersionDocument | null> {
+  async findByVersion(
+    productId: string,
+    version: number,
+  ): Promise<ProductVersionDocument | null> {
     return this.versionModel
       .findOne({
         productId: new Types.ObjectId(productId),
@@ -45,7 +50,9 @@ export class ProductVersionRepository {
       .exec();
   }
 
-  async getLatestVersion(productId: string): Promise<ProductVersionDocument | null> {
+  async getLatestVersion(
+    productId: string,
+  ): Promise<ProductVersionDocument | null> {
     return this.versionModel
       .findOne({ productId: new Types.ObjectId(productId) } as any)
       .sort({ version: -1 })

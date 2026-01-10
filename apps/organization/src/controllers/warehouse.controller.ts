@@ -27,7 +27,14 @@ import {
 } from '../dto/warehouse.dto';
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
-import { created, fetched, updated, deleted, ok, paginated } from '@shared/response';
+import {
+  created,
+  fetched,
+  updated,
+  deleted,
+  ok,
+  paginated,
+} from '@shared/response';
 
 interface AuthenticatedRequest {
   user: {
@@ -77,7 +84,10 @@ export class WarehouseController {
     @Body() createDto: CreateWarehouseDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    const warehouse = await this.warehouseService.create(createDto, req.user.userId);
+    const warehouse = await this.warehouseService.create(
+      createDto,
+      req.user.userId,
+    );
     return created(warehouse, 'Warehouse created successfully');
   }
 
@@ -90,7 +100,10 @@ export class WarehouseController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Warehouses retrieved successfully' },
+        message: {
+          type: 'string',
+          example: 'Warehouses retrieved successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
@@ -113,7 +126,8 @@ export class WarehouseController {
   })
   @Permissions('warehouse.read')
   async findAll(@Query() query: QueryWarehouseDto) {
-    const { items, total, page, limit } = await this.warehouseService.findAll(query);
+    const { items, total, page, limit } =
+      await this.warehouseService.findAll(query);
     return paginated(items, page, limit, total, {
       query: {
         filters: {
@@ -144,7 +158,11 @@ export class WarehouseController {
 
   @Get('provinces/:provinceCode/wards')
   @ApiOperation({ summary: 'Get wards by province code' })
-  @ApiParam({ name: 'provinceCode', description: 'Province code', example: '01' })
+  @ApiParam({
+    name: 'provinceCode',
+    description: 'Province code',
+    example: '01',
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Wards retrieved successfully',
@@ -159,8 +177,17 @@ export class WarehouseController {
   @ApiOperation({ summary: 'Find warehouses nearby a location' })
   @ApiQuery({ name: 'longitude', description: 'Longitude', example: 105.8342 })
   @ApiQuery({ name: 'latitude', description: 'Latitude', example: 21.0285 })
-  @ApiQuery({ name: 'radiusKm', description: 'Radius in kilometers', example: 10 })
-  @ApiQuery({ name: 'limit', description: 'Maximum results', example: 10, required: false })
+  @ApiQuery({
+    name: 'radiusKm',
+    description: 'Radius in kilometers',
+    example: 10,
+  })
+  @ApiQuery({
+    name: 'limit',
+    description: 'Maximum results',
+    example: 10,
+    required: false,
+  })
   @ApiResponse({
     status: HttpStatus.OK,
     description: 'Nearby warehouses retrieved successfully',
@@ -191,7 +218,10 @@ export class WarehouseController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Warehouse retrieved successfully' },
+        message: {
+          type: 'string',
+          example: 'Warehouse retrieved successfully',
+        },
         error: { type: 'null' },
         data: { type: 'object' },
       },
@@ -249,7 +279,11 @@ export class WarehouseController {
     @Body() updateDto: UpdateWarehouseDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    const warehouse = await this.warehouseService.update(id, updateDto, req.user.userId);
+    const warehouse = await this.warehouseService.update(
+      id,
+      updateDto,
+      req.user.userId,
+    );
     return updated(warehouse, 'Warehouse updated successfully');
   }
 

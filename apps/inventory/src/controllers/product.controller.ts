@@ -21,7 +21,14 @@ import {
 } from '@nestjs/swagger';
 import { ProductService } from '../services/product.service';
 import { CreateProductDto, UpdateProductDto } from '../dto/product.dto';
-import { created, updated, deleted, fetched, paginated, error } from '@shared/response';
+import {
+  created,
+  updated,
+  deleted,
+  fetched,
+  paginated,
+  error,
+} from '@shared/response';
 import { ProductScope, ProductType, ProductStatus } from '@shared/constants';
 
 @ApiTags('products')
@@ -66,7 +73,10 @@ export class ProductController {
         throw err;
       }
       throw new HttpException(
-        error('PRODUCT_CREATE_ERROR', err.message || 'Failed to create product'),
+        error(
+          'PRODUCT_CREATE_ERROR',
+          err.message || 'Failed to create product',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -80,7 +90,12 @@ export class ProductController {
   @ApiQuery({ name: 'type', required: false, enum: ProductType })
   @ApiQuery({ name: 'status', required: false, enum: ProductStatus })
   @ApiQuery({ name: 'organizationId', required: false, type: String })
-  @ApiQuery({ name: 'search', required: false, type: String, description: 'Full-text search' })
+  @ApiQuery({
+    name: 'search',
+    required: false,
+    type: String,
+    description: 'Full-text search',
+  })
   @ApiResponse({
     status: 200,
     description: 'Products retrieved successfully',
@@ -133,12 +148,7 @@ export class ProductController {
         { page, limit },
       );
 
-      return paginated(
-        result.items,
-        result.page,
-        result.limit,
-        result.total,
-      );
+      return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
       throw new HttpException(
         error('PRODUCT_FETCH_ERROR', err.message || 'Failed to fetch products'),
@@ -244,7 +254,10 @@ export class ProductController {
         throw err;
       }
       throw new HttpException(
-        error('PRODUCT_UPDATE_ERROR', err.message || 'Failed to update product'),
+        error(
+          'PRODUCT_UPDATE_ERROR',
+          err.message || 'Failed to update product',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -282,7 +295,10 @@ export class ProductController {
         throw err;
       }
       throw new HttpException(
-        error('PRODUCT_DELETE_ERROR', err.message || 'Failed to delete product'),
+        error(
+          'PRODUCT_DELETE_ERROR',
+          err.message || 'Failed to delete product',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -305,7 +321,10 @@ export class ProductController {
         throw err;
       }
       throw new HttpException(
-        error('PRODUCT_RESTORE_ERROR', err.message || 'Failed to restore product'),
+        error(
+          'PRODUCT_RESTORE_ERROR',
+          err.message || 'Failed to restore product',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -327,16 +346,17 @@ export class ProductController {
     @Query('limit') limit?: number,
   ) {
     try {
-      const result = await this.productService.getVersionHistory(id, { page, limit });
-      return paginated(
-        result.items,
-        result.page,
-        result.limit,
-        result.total,
-      );
+      const result = await this.productService.getVersionHistory(id, {
+        page,
+        limit,
+      });
+      return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
       throw new HttpException(
-        error('VERSION_FETCH_ERROR', err.message || 'Failed to fetch version history'),
+        error(
+          'VERSION_FETCH_ERROR',
+          err.message || 'Failed to fetch version history',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -369,8 +389,16 @@ export class ProductController {
   @Post(':id/rollback/:version')
   @ApiOperation({ summary: 'Rollback product to a specific version' })
   @ApiParam({ name: 'id', description: 'Product ID' })
-  @ApiParam({ name: 'version', description: 'Version number to rollback to', type: Number })
-  @ApiQuery({ name: 'userId', required: true, description: 'User ID performing the rollback' })
+  @ApiParam({
+    name: 'version',
+    description: 'Version number to rollback to',
+    type: Number,
+  })
+  @ApiQuery({
+    name: 'userId',
+    required: true,
+    description: 'User ID performing the rollback',
+  })
   @ApiResponse({
     status: 200,
     description: 'Product rolled back successfully',
@@ -382,7 +410,11 @@ export class ProductController {
     @Query('userId') userId: string,
   ) {
     try {
-      const product = await this.productService.rollbackToVersion(id, version, userId);
+      const product = await this.productService.rollbackToVersion(
+        id,
+        version,
+        userId,
+      );
       return updated(product, `Product rolled back to version ${version}`);
     } catch (err) {
       if (err instanceof HttpException) {

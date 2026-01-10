@@ -79,7 +79,10 @@ export class LocationDto {
  * Manager DTO
  */
 export class ManagerDto {
-  @ApiPropertyOptional({ example: '507f1f77bcf86cd799439011', description: 'Manager user ID' })
+  @ApiPropertyOptional({
+    example: '507f1f77bcf86cd799439011',
+    description: 'Manager user ID',
+  })
   @IsOptional()
   @IsString()
   id?: string;
@@ -105,7 +108,10 @@ export class CameraSystemDto {
   @IsString()
   coverage?: string;
 
-  @ApiPropertyOptional({ example: 30, description: 'Number of days recordings are kept' })
+  @ApiPropertyOptional({
+    example: 30,
+    description: 'Number of days recordings are kept',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -120,16 +126,25 @@ export class CameraSystemDto {
  * Access Control DTO
  */
 export class AccessControlDto {
-  @ApiPropertyOptional({ example: 'RFID', description: 'Access control system type' })
+  @ApiPropertyOptional({
+    example: 'RFID',
+    description: 'Access control system type',
+  })
   @IsOptional()
   @IsString()
   system?: string;
 
-  @ApiPropertyOptional({ example: true, description: 'Biometric access control' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Biometric access control',
+  })
   @IsOptional()
   biometric?: boolean;
 
-  @ApiPropertyOptional({ example: true, description: 'Card-based access control' })
+  @ApiPropertyOptional({
+    example: true,
+    description: 'Card-based access control',
+  })
   @IsOptional()
   cardAccess?: boolean;
 
@@ -144,7 +159,10 @@ export class AccessControlDto {
  * Create Warehouse DTO
  */
 export class CreateWarehouseDto {
-  @ApiPropertyOptional({ example: 'WH-001', description: 'Warehouse ID (optional)' })
+  @ApiPropertyOptional({
+    example: 'WH-001',
+    description: 'Warehouse ID (optional)',
+  })
   @IsOptional()
   @IsString()
   warehouseId?: string;
@@ -162,27 +180,44 @@ export class CreateWarehouseDto {
   @MaxLength(200)
   name: string;
 
-  @ApiProperty({ enum: WarehouseType, example: WarehouseType.GENERAL, description: 'Warehouse type' })
+  @ApiProperty({
+    enum: WarehouseType,
+    example: WarehouseType.GENERAL,
+    description: 'Warehouse type',
+  })
   @IsEnum(WarehouseType)
   @IsNotEmpty()
   type: WarehouseType;
 
-  @ApiPropertyOptional({ enum: WarehouseStatus, example: WarehouseStatus.ACTIVE, description: 'Warehouse status' })
+  @ApiPropertyOptional({
+    enum: WarehouseStatus,
+    example: WarehouseStatus.ACTIVE,
+    description: 'Warehouse status',
+  })
   @IsOptional()
   @IsEnum(WarehouseStatus)
   status?: WarehouseStatus;
 
-  @ApiPropertyOptional({ example: '507f1f77bcf86cd799439011', description: 'Organization ID reference' })
+  @ApiPropertyOptional({
+    example: '507f1f77bcf86cd799439011',
+    description: 'Organization ID reference',
+  })
   @IsOptional()
   @IsString()
   organizationId?: string;
 
-  @ApiPropertyOptional({ example: 'GPKD-001', description: 'Business license number' })
+  @ApiPropertyOptional({
+    example: 'GPKD-001',
+    description: 'Business license number',
+  })
   @IsOptional()
   @IsString()
   businessLicense?: string;
 
-  @ApiPropertyOptional({ example: 'GPKHO-001', description: 'Warehouse license number' })
+  @ApiPropertyOptional({
+    example: 'GPKHO-001',
+    description: 'Warehouse license number',
+  })
   @IsOptional()
   @IsString()
   warehouseLicense?: string;
@@ -210,24 +245,37 @@ export class CreateWarehouseDto {
   @IsNotEmpty()
   province: ProvinceDto;
 
-  @ApiPropertyOptional({ enum: Region, example: Region.NORTHERN, description: 'Region' })
+  @ApiPropertyOptional({
+    enum: Region,
+    example: Region.NORTHERN,
+    description: 'Region',
+  })
   @IsOptional()
   @IsEnum(Region)
   region?: Region;
 
-  @ApiPropertyOptional({ type: LocationDto, description: 'Geographic location' })
+  @ApiPropertyOptional({
+    type: LocationDto,
+    description: 'Geographic location',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => LocationDto)
   location?: LocationDto;
 
-  @ApiPropertyOptional({ example: 5000, description: 'Total area in square meters' })
+  @ApiPropertyOptional({
+    example: 5000,
+    description: 'Total area in square meters',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
   totalAreaM2?: number;
 
-  @ApiPropertyOptional({ example: 4500, description: 'Usable area in square meters' })
+  @ApiPropertyOptional({
+    example: 4500,
+    description: 'Usable area in square meters',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -239,7 +287,11 @@ export class CreateWarehouseDto {
   @Min(0)
   storageCapacity?: number;
 
-  @ApiPropertyOptional({ enum: CapacityUnit, example: CapacityUnit.TON, description: 'Capacity unit' })
+  @ApiPropertyOptional({
+    enum: CapacityUnit,
+    example: CapacityUnit.TON,
+    description: 'Capacity unit',
+  })
   @IsOptional()
   @IsEnum(CapacityUnit)
   capacityUnit?: CapacityUnit;
@@ -262,7 +314,10 @@ export class CreateWarehouseDto {
   @Min(0)
   floorsCount?: number;
 
-  @ApiPropertyOptional({ example: -20, description: 'Minimum temperature (°C)' })
+  @ApiPropertyOptional({
+    example: -20,
+    description: 'Minimum temperature (°C)',
+  })
   @IsOptional()
   @IsNumber()
   @Min(-100)
@@ -307,13 +362,21 @@ export class CreateWarehouseDto {
   @Type(() => ManagerDto)
   manager?: ManagerDto;
 
-  @ApiPropertyOptional({ example: '+84901234567', description: 'Contact phone number' })
+  @ApiPropertyOptional({
+    example: '+84901234567',
+    description: 'Contact phone number',
+  })
   @IsOptional()
   @IsString()
-  @Matches(/^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/)
+  @Matches(
+    /^[+]?[(]?[0-9]{1,4}[)]?[-\s\.]?[(]?[0-9]{1,4}[)]?[-\s\.]?[0-9]{1,9}$/,
+  )
   contactPhone?: string;
 
-  @ApiPropertyOptional({ example: 'warehouse@example.com', description: 'Contact email' })
+  @ApiPropertyOptional({
+    example: 'warehouse@example.com',
+    description: 'Contact email',
+  })
   @IsOptional()
   @IsEmail()
   contactEmail?: string;
@@ -324,39 +387,62 @@ export class CreateWarehouseDto {
   @Min(0)
   workersCount?: number;
 
-  @ApiPropertyOptional({ enum: WorkingShift, example: WorkingShift.FULL_TIME, description: 'Working shift' })
+  @ApiPropertyOptional({
+    enum: WorkingShift,
+    example: WorkingShift.FULL_TIME,
+    description: 'Working shift',
+  })
   @IsOptional()
   @IsEnum(WorkingShift)
   workingShift?: WorkingShift;
 
-  @ApiPropertyOptional({ example: '08:00 - 17:00', description: 'Operating hours' })
+  @ApiPropertyOptional({
+    example: '08:00 - 17:00',
+    description: 'Operating hours',
+  })
   @IsOptional()
   @IsString()
   operatingHours?: string;
 
-  @ApiPropertyOptional({ example: 'CERT-FIRE-001', description: 'Fire protection certificate' })
+  @ApiPropertyOptional({
+    example: 'CERT-FIRE-001',
+    description: 'Fire protection certificate',
+  })
   @IsOptional()
   @IsString()
   fireProtectionCert?: string;
 
-  @ApiPropertyOptional({ enum: SecurityLevel, example: SecurityLevel.STANDARD, description: 'Security level' })
+  @ApiPropertyOptional({
+    enum: SecurityLevel,
+    example: SecurityLevel.STANDARD,
+    description: 'Security level',
+  })
   @IsOptional()
   @IsEnum(SecurityLevel)
   securityLevel?: SecurityLevel;
 
-  @ApiPropertyOptional({ type: CameraSystemDto, description: 'Camera system details' })
+  @ApiPropertyOptional({
+    type: CameraSystemDto,
+    description: 'Camera system details',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => CameraSystemDto)
   cameraSystem?: CameraSystemDto;
 
-  @ApiPropertyOptional({ type: AccessControlDto, description: 'Access control details' })
+  @ApiPropertyOptional({
+    type: AccessControlDto,
+    description: 'Access control details',
+  })
   @IsOptional()
   @ValidateNested()
   @Type(() => AccessControlDto)
   accessControl?: AccessControlDto;
 
-  @ApiPropertyOptional({ example: 'INS-001', description: 'Insurance policy number' })
+  @ApiPropertyOptional({
+    example: 'INS-001',
+    description: 'Insurance policy number',
+  })
   @IsOptional()
   @IsString()
   insurancePolicy?: string;
@@ -373,17 +459,28 @@ export class CreateWarehouseDto {
   @Min(0)
   handlingFee?: number;
 
-  @ApiPropertyOptional({ enum: Currency, example: Currency.VND, description: 'Currency' })
+  @ApiPropertyOptional({
+    enum: Currency,
+    example: Currency.VND,
+    description: 'Currency',
+  })
   @IsOptional()
   @IsEnum(Currency)
   currency?: Currency;
 
-  @ApiPropertyOptional({ enum: PaymentTerm, example: PaymentTerm.NET_30, description: 'Payment term' })
+  @ApiPropertyOptional({
+    enum: PaymentTerm,
+    example: PaymentTerm.NET_30,
+    description: 'Payment term',
+  })
   @IsOptional()
   @IsEnum(PaymentTerm)
   paymentTerm?: PaymentTerm;
 
-  @ApiPropertyOptional({ example: 'tenant-001', description: 'Tenant ID (for multi-tenant)' })
+  @ApiPropertyOptional({
+    example: 'tenant-001',
+    description: 'Tenant ID (for multi-tenant)',
+  })
   @IsOptional()
   @IsString()
   tenantId?: string;
@@ -413,17 +510,26 @@ export class QueryWarehouseDto {
   @Max(100)
   limit?: number = 10;
 
-  @ApiPropertyOptional({ enum: WarehouseType, description: 'Filter by warehouse type' })
+  @ApiPropertyOptional({
+    enum: WarehouseType,
+    description: 'Filter by warehouse type',
+  })
   @IsOptional()
   @IsEnum(WarehouseType)
   type?: WarehouseType;
 
-  @ApiPropertyOptional({ enum: WarehouseStatus, description: 'Filter by status' })
+  @ApiPropertyOptional({
+    enum: WarehouseStatus,
+    description: 'Filter by status',
+  })
   @IsOptional()
   @IsEnum(WarehouseStatus)
   status?: WarehouseStatus;
 
-  @ApiPropertyOptional({ example: '01', description: 'Filter by province code' })
+  @ApiPropertyOptional({
+    example: '01',
+    description: 'Filter by province code',
+  })
   @IsOptional()
   @IsString()
   provinceCode?: string;
@@ -438,12 +544,18 @@ export class QueryWarehouseDto {
   @IsEnum(Region)
   region?: Region;
 
-  @ApiPropertyOptional({ example: 'tenant-001', description: 'Filter by tenant ID' })
+  @ApiPropertyOptional({
+    example: 'tenant-001',
+    description: 'Filter by tenant ID',
+  })
   @IsOptional()
   @IsString()
   tenantId?: string;
 
-  @ApiPropertyOptional({ example: 'kho', description: 'Search by name or company name' })
+  @ApiPropertyOptional({
+    example: 'kho',
+    description: 'Search by name or company name',
+  })
   @IsOptional()
   @IsString()
   search?: string;

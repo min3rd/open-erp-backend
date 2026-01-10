@@ -7,7 +7,11 @@ import {
 } from '@nestjs/common';
 import { ClientProxy } from '@nestjs/microservices';
 import { NavigationRepository } from '../repositories/navigation.repository';
-import { Navigation, NavigationScope, NavigationFormat } from '../schemas/navigation.schema';
+import {
+  Navigation,
+  NavigationScope,
+  NavigationFormat,
+} from '../schemas/navigation.schema';
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
@@ -418,10 +422,11 @@ export class NavigationService {
     try {
       // Get effective permissions from authorization service
       // Use 'organization' scope to include both global and tenant permissions
-      const permissions = await this.authorizationService.getEffectivePermissions(
-        userId,
-        'organization', // PermissionScope constant
-      );
+      const permissions =
+        await this.authorizationService.getEffectivePermissions(
+          userId,
+          'organization', // PermissionScope constant
+        );
 
       this.logger.debug(
         `Retrieved ${permissions.length} permissions for user ${userId}`,

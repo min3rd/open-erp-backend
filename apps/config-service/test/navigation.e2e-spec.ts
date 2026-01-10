@@ -209,7 +209,8 @@ describe('Navigation API (e2e)', () => {
 
       expect(typeof response.body.success).toBe('boolean');
       expect(
-        response.body.message === null || typeof response.body.message === 'string',
+        response.body.message === null ||
+          typeof response.body.message === 'string',
       ).toBe(true);
       expect(response.body.error).toBeNull();
       expect(response.body.data).toBeTruthy();

@@ -11,12 +11,7 @@ import {
   HttpCode,
   ForbiddenException,
 } from '@nestjs/common';
-import {
-  JwtAuthGuard,
-  RolesGuard,
-  Roles,
-  CurrentUser,
-} from '@shared/authz';
+import { JwtAuthGuard, RolesGuard, Roles, CurrentUser } from '@shared/authz';
 import type { UserContext } from '@shared/authz';
 import { Role } from '@shared/types/role.enum';
 import { UserRepository } from '../repositories/user.repository';
@@ -84,7 +79,7 @@ export class SystemAdminController {
 
       return ok(
         { admins: adminsWithDetails, count: adminsWithDetails.length },
-        `Found ${adminsWithDetails.length} SYSTEM_ADMIN users`
+        `Found ${adminsWithDetails.length} SYSTEM_ADMIN users`,
       );
     } catch (error) {
       this.logger.error(
@@ -134,7 +129,7 @@ export class SystemAdminController {
       if (hasRole) {
         return ok(
           { userId, email: user.email },
-          'User already has SYSTEM_ADMIN role'
+          'User already has SYSTEM_ADMIN role',
         );
       }
 
@@ -160,7 +155,7 @@ export class SystemAdminController {
           email: user.email,
           grantedBy: currentUser.email,
         },
-        'SYSTEM_ADMIN role granted successfully'
+        'SYSTEM_ADMIN role granted successfully',
       );
     } catch (error) {
       this.logger.error(
@@ -211,7 +206,7 @@ export class SystemAdminController {
       if (!hasRole) {
         return ok(
           { userId, email: user.email },
-          'User does not have SYSTEM_ADMIN role'
+          'User does not have SYSTEM_ADMIN role',
         );
       }
 
@@ -251,7 +246,7 @@ export class SystemAdminController {
           email: user.email,
           revokedBy: currentUser.email,
         },
-        'SYSTEM_ADMIN role revoked successfully'
+        'SYSTEM_ADMIN role revoked successfully',
       );
     } catch (error) {
       this.logger.error(

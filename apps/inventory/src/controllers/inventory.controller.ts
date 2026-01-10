@@ -34,7 +34,9 @@ export class InventoryController {
   constructor(private readonly inventoryService: InventoryService) {}
 
   @Get('stock/product/:productId')
-  @ApiOperation({ summary: 'Get stock levels for a product across all warehouses' })
+  @ApiOperation({
+    summary: 'Get stock levels for a product across all warehouses',
+  })
   @ApiParam({ name: 'productId', description: 'Product ID' })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
@@ -58,7 +60,10 @@ export class InventoryController {
         throw err;
       }
       throw new HttpException(
-        error('STOCK_FETCH_ERROR', err.message || 'Failed to fetch stock levels'),
+        error(
+          'STOCK_FETCH_ERROR',
+          err.message || 'Failed to fetch stock levels',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -87,14 +92,19 @@ export class InventoryController {
       return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
       throw new HttpException(
-        error('STOCK_FETCH_ERROR', err.message || 'Failed to fetch warehouse stock'),
+        error(
+          'STOCK_FETCH_ERROR',
+          err.message || 'Failed to fetch warehouse stock',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Get('stock/:productId/:warehouseId')
-  @ApiOperation({ summary: 'Get stock level for a specific product in a specific warehouse' })
+  @ApiOperation({
+    summary: 'Get stock level for a specific product in a specific warehouse',
+  })
   @ApiParam({ name: 'productId', description: 'Product ID' })
   @ApiParam({ name: 'warehouseId', description: 'Warehouse ID' })
   @ApiResponse({
@@ -117,7 +127,10 @@ export class InventoryController {
         throw err;
       }
       throw new HttpException(
-        error('STOCK_FETCH_ERROR', err.message || 'Failed to fetch stock level'),
+        error(
+          'STOCK_FETCH_ERROR',
+          err.message || 'Failed to fetch stock level',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -138,14 +151,20 @@ export class InventoryController {
     @Query('limit') limit?: number,
   ) {
     try {
-      const result = await this.inventoryService.getLowStockAlert(organizationId, {
-        page,
-        limit,
-      });
+      const result = await this.inventoryService.getLowStockAlert(
+        organizationId,
+        {
+          page,
+          limit,
+        },
+      );
       return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
       throw new HttpException(
-        error('ALERT_FETCH_ERROR', err.message || 'Failed to fetch low stock alerts'),
+        error(
+          'ALERT_FETCH_ERROR',
+          err.message || 'Failed to fetch low stock alerts',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -179,14 +198,19 @@ export class InventoryController {
       return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
       throw new HttpException(
-        error('ALERT_FETCH_ERROR', err.message || 'Failed to fetch expiring stock alerts'),
+        error(
+          'ALERT_FETCH_ERROR',
+          err.message || 'Failed to fetch expiring stock alerts',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
   }
 
   @Post('transactions')
-  @ApiOperation({ summary: 'Create an inventory transaction (IN/OUT/TRANSFER/etc.)' })
+  @ApiOperation({
+    summary: 'Create an inventory transaction (IN/OUT/TRANSFER/etc.)',
+  })
   @ApiResponse({
     status: 201,
     description: 'Transaction created and processed successfully',
@@ -194,7 +218,10 @@ export class InventoryController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Transaction created successfully' },
+        message: {
+          type: 'string',
+          example: 'Transaction created successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
@@ -210,14 +237,18 @@ export class InventoryController {
   @ApiResponse({ status: 404, description: 'Product or warehouse not found' })
   async createTransaction(@Body() createDto: CreateTransactionDto) {
     try {
-      const transaction = await this.inventoryService.createTransaction(createDto);
+      const transaction =
+        await this.inventoryService.createTransaction(createDto);
       return created(transaction, 'Transaction created successfully');
     } catch (err) {
       if (err instanceof HttpException) {
         throw err;
       }
       throw new HttpException(
-        error('TRANSACTION_CREATE_ERROR', err.message || 'Failed to create transaction'),
+        error(
+          'TRANSACTION_CREATE_ERROR',
+          err.message || 'Failed to create transaction',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -252,11 +283,15 @@ export class InventoryController {
     status: 201,
     description: 'Stock transfer initiated successfully',
   })
-  @ApiResponse({ status: 400, description: 'Bad request - validation error or insufficient stock' })
+  @ApiResponse({
+    status: 400,
+    description: 'Bad request - validation error or insufficient stock',
+  })
   @ApiResponse({ status: 404, description: 'Product or warehouse not found' })
   async transferStock(@Body() transferDto: TransferStockDto) {
     try {
-      const transaction = await this.inventoryService.transferStock(transferDto);
+      const transaction =
+        await this.inventoryService.transferStock(transferDto);
       return created(transaction, 'Stock transfer completed successfully');
     } catch (err) {
       if (err instanceof HttpException) {
@@ -276,8 +311,18 @@ export class InventoryController {
   @ApiQuery({ name: 'organizationId', required: false, type: String })
   @ApiQuery({ name: 'type', required: false, enum: InventoryTransactionType })
   @ApiQuery({ name: 'status', required: false, enum: TransactionStatus })
-  @ApiQuery({ name: 'startDate', required: false, type: String, description: 'ISO 8601 date' })
-  @ApiQuery({ name: 'endDate', required: false, type: String, description: 'ISO 8601 date' })
+  @ApiQuery({
+    name: 'startDate',
+    required: false,
+    type: String,
+    description: 'ISO 8601 date',
+  })
+  @ApiQuery({
+    name: 'endDate',
+    required: false,
+    type: String,
+    description: 'ISO 8601 date',
+  })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 10 })
   @ApiResponse({
@@ -319,7 +364,10 @@ export class InventoryController {
       return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
       throw new HttpException(
-        error('TRANSACTION_FETCH_ERROR', err.message || 'Failed to fetch transaction history'),
+        error(
+          'TRANSACTION_FETCH_ERROR',
+          err.message || 'Failed to fetch transaction history',
+        ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

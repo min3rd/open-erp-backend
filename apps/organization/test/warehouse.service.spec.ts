@@ -1,9 +1,22 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, ConflictException, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  ConflictException,
+  NotFoundException,
+} from '@nestjs/common';
 import { WarehouseService } from '../src/services/warehouse.service';
 import { WarehouseRepository } from '../src/repositories/warehouse.repository';
-import { CreateWarehouseDto, UpdateWarehouseDto, QueryWarehouseDto } from '../src/dto/warehouse.dto';
-import { WarehouseType, WarehouseStatus, CapacityUnit, Region } from '@shared/constants/warehouse.constants';
+import {
+  CreateWarehouseDto,
+  UpdateWarehouseDto,
+  QueryWarehouseDto,
+} from '../src/dto/warehouse.dto';
+import {
+  WarehouseType,
+  WarehouseStatus,
+  CapacityUnit,
+  Region,
+} from '@shared/constants/warehouse.constants';
 
 describe('WarehouseService', () => {
   let service: WarehouseService;
@@ -80,14 +93,19 @@ describe('WarehouseService', () => {
       expect(result).toEqual(mockWarehouse);
       expect(mockRepository.provinceExists).toHaveBeenCalledWith('01');
       expect(mockRepository.wardExists).toHaveBeenCalledWith('00001', '01');
-      expect(mockRepository.findByCode).toHaveBeenCalledWith('WH-HN-001', undefined);
+      expect(mockRepository.findByCode).toHaveBeenCalledWith(
+        'WH-HN-001',
+        undefined,
+      );
       expect(mockRepository.create).toHaveBeenCalledWith(createDto, 'user-id');
     });
 
     it('should throw BadRequestException if province does not exist', async () => {
       mockRepository.provinceExists.mockResolvedValue(false);
 
-      await expect(service.create(createDto, 'user-id')).rejects.toThrow(BadRequestException);
+      await expect(service.create(createDto, 'user-id')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockRepository.provinceExists).toHaveBeenCalledWith('01');
     });
 
@@ -95,7 +113,9 @@ describe('WarehouseService', () => {
       mockRepository.provinceExists.mockResolvedValue(true);
       mockRepository.wardExists.mockResolvedValue(false);
 
-      await expect(service.create(createDto, 'user-id')).rejects.toThrow(BadRequestException);
+      await expect(service.create(createDto, 'user-id')).rejects.toThrow(
+        BadRequestException,
+      );
       expect(mockRepository.wardExists).toHaveBeenCalledWith('00001', '01');
     });
 
@@ -104,8 +124,13 @@ describe('WarehouseService', () => {
       mockRepository.wardExists.mockResolvedValue(true);
       mockRepository.findByCode.mockResolvedValue(mockWarehouse);
 
-      await expect(service.create(createDto, 'user-id')).rejects.toThrow(ConflictException);
-      expect(mockRepository.findByCode).toHaveBeenCalledWith('WH-HN-001', undefined);
+      await expect(service.create(createDto, 'user-id')).rejects.toThrow(
+        ConflictException,
+      );
+      expect(mockRepository.findByCode).toHaveBeenCalledWith(
+        'WH-HN-001',
+        undefined,
+      );
     });
 
     it('should throw BadRequestException if temperature range is invalid', async () => {
@@ -119,7 +144,9 @@ describe('WarehouseService', () => {
       mockRepository.wardExists.mockResolvedValue(true);
       mockRepository.findByCode.mockResolvedValue(null);
 
-      await expect(service.create(invalidDto, 'user-id')).rejects.toThrow(BadRequestException);
+      await expect(service.create(invalidDto, 'user-id')).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw BadRequestException if usable area exceeds total area', async () => {
@@ -133,7 +160,9 @@ describe('WarehouseService', () => {
       mockRepository.wardExists.mockResolvedValue(true);
       mockRepository.findByCode.mockResolvedValue(null);
 
-      await expect(service.create(invalidDto, 'user-id')).rejects.toThrow(BadRequestException);
+      await expect(service.create(invalidDto, 'user-id')).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -163,13 +192,17 @@ describe('WarehouseService', () => {
       const result = await service.findById('507f1f77bcf86cd799439011');
 
       expect(result).toEqual(mockWarehouse);
-      expect(mockRepository.findById).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      expect(mockRepository.findById).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011',
+      );
     });
 
     it('should throw NotFoundException if warehouse not found', async () => {
       mockRepository.findById.mockResolvedValue(null);
 
-      await expect(service.findById('507f1f77bcf86cd799439011')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.findById('507f1f77bcf86cd799439011'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -179,22 +212,33 @@ describe('WarehouseService', () => {
     };
 
     it('should update a warehouse successfully', async () => {
-      const updatedWarehouse = { ...mockWarehouse, name: 'Updated Warehouse Name' };
+      const updatedWarehouse = {
+        ...mockWarehouse,
+        name: 'Updated Warehouse Name',
+      };
       mockRepository.findById.mockResolvedValue(mockWarehouse);
       mockRepository.update.mockResolvedValue(updatedWarehouse);
 
-      const result = await service.update('507f1f77bcf86cd799439011', updateDto, 'user-id');
+      const result = await service.update(
+        '507f1f77bcf86cd799439011',
+        updateDto,
+        'user-id',
+      );
 
       expect(result).toEqual(updatedWarehouse);
-      expect(mockRepository.update).toHaveBeenCalledWith('507f1f77bcf86cd799439011', updateDto, 'user-id');
+      expect(mockRepository.update).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011',
+        updateDto,
+        'user-id',
+      );
     });
 
     it('should throw NotFoundException if warehouse not found', async () => {
       mockRepository.findById.mockResolvedValue(null);
 
-      await expect(service.update('507f1f77bcf86cd799439011', updateDto, 'user-id')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.update('507f1f77bcf86cd799439011', updateDto, 'user-id'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should validate province if provided in update', async () => {
@@ -207,9 +251,16 @@ describe('WarehouseService', () => {
       mockRepository.findById.mockResolvedValue(mockWarehouse);
       mockRepository.provinceExists.mockResolvedValue(true);
       mockRepository.wardExists.mockResolvedValue(true);
-      mockRepository.update.mockResolvedValue({ ...mockWarehouse, ...updateWithProvince });
+      mockRepository.update.mockResolvedValue({
+        ...mockWarehouse,
+        ...updateWithProvince,
+      });
 
-      await service.update('507f1f77bcf86cd799439011', updateWithProvince, 'user-id');
+      await service.update(
+        '507f1f77bcf86cd799439011',
+        updateWithProvince,
+        'user-id',
+      );
 
       expect(mockRepository.provinceExists).toHaveBeenCalledWith('79');
       expect(mockRepository.wardExists).toHaveBeenCalledWith('26734', '79');
@@ -222,13 +273,17 @@ describe('WarehouseService', () => {
 
       await service.delete('507f1f77bcf86cd799439011');
 
-      expect(mockRepository.softDelete).toHaveBeenCalledWith('507f1f77bcf86cd799439011');
+      expect(mockRepository.softDelete).toHaveBeenCalledWith(
+        '507f1f77bcf86cd799439011',
+      );
     });
 
     it('should throw NotFoundException if warehouse not found', async () => {
       mockRepository.softDelete.mockResolvedValue(null);
 
-      await expect(service.delete('507f1f77bcf86cd799439011')).rejects.toThrow(NotFoundException);
+      await expect(service.delete('507f1f77bcf86cd799439011')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -239,13 +294,24 @@ describe('WarehouseService', () => {
       const result = await service.findNearby(105.8342, 21.0285, 10, 10);
 
       expect(result).toEqual([mockWarehouse]);
-      expect(mockRepository.findNearby).toHaveBeenCalledWith(105.8342, 21.0285, 10, 10);
+      expect(mockRepository.findNearby).toHaveBeenCalledWith(
+        105.8342,
+        21.0285,
+        10,
+        10,
+      );
     });
 
     it('should throw BadRequestException for invalid coordinates', async () => {
-      await expect(service.findNearby(200, 21.0285, 10)).rejects.toThrow(BadRequestException);
-      await expect(service.findNearby(105.8342, 100, 10)).rejects.toThrow(BadRequestException);
-      await expect(service.findNearby(105.8342, 21.0285, -1)).rejects.toThrow(BadRequestException);
+      await expect(service.findNearby(200, 21.0285, 10)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.findNearby(105.8342, 100, 10)).rejects.toThrow(
+        BadRequestException,
+      );
+      await expect(service.findNearby(105.8342, 21.0285, -1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 

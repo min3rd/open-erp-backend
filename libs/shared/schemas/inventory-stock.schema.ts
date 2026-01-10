@@ -54,7 +54,10 @@ export interface InventoryStockMethods {
   adjustQuantity(newQuantity: number, reason?: string): Promise<this>;
 }
 
-export type InventoryStockDocument = HydratedDocument<InventoryStock, InventoryStockMethods>;
+export type InventoryStockDocument = HydratedDocument<
+  InventoryStock,
+  InventoryStockMethods
+>;
 
 @Schema({
   timestamps: true,
@@ -209,7 +212,8 @@ export class InventoryStock extends Document {
   metadata?: Map<string, any>;
 }
 
-export const InventoryStockSchema = SchemaFactory.createForClass(InventoryStock);
+export const InventoryStockSchema =
+  SchemaFactory.createForClass(InventoryStock);
 
 // ========== INDEXES ==========
 
@@ -225,7 +229,13 @@ InventoryStockSchema.index({ productId: 1, availableQuantity: 1 });
 InventoryStockSchema.index({ 'lots.expiryDate': 1 });
 
 // Index for location queries
-InventoryStockSchema.index({ warehouseId: 1, zone: 1, aisle: 1, rack: 1, bin: 1 });
+InventoryStockSchema.index({
+  warehouseId: 1,
+  zone: 1,
+  aisle: 1,
+  rack: 1,
+  bin: 1,
+});
 
 // ========== VIRTUALS ==========
 
@@ -266,7 +276,10 @@ InventoryStockSchema.set('toObject', {
 // ========== METHODS ==========
 
 // Add quantity method
-InventoryStockSchema.methods.addQuantity = function (quantity: number, lotInfo?: LotInfo) {
+InventoryStockSchema.methods.addQuantity = function (
+  quantity: number,
+  lotInfo?: LotInfo,
+) {
   if (quantity < 0) {
     throw new Error('Quantity to add must be positive');
   }
@@ -282,7 +295,10 @@ InventoryStockSchema.methods.addQuantity = function (quantity: number, lotInfo?:
 };
 
 // Remove quantity method
-InventoryStockSchema.methods.removeQuantity = function (quantity: number, lotNumber?: string) {
+InventoryStockSchema.methods.removeQuantity = function (
+  quantity: number,
+  lotNumber?: string,
+) {
   if (quantity < 0) {
     throw new Error('Quantity to remove must be positive');
   }
@@ -309,7 +325,10 @@ InventoryStockSchema.methods.removeQuantity = function (quantity: number, lotNum
 };
 
 // Adjust quantity method
-InventoryStockSchema.methods.adjustQuantity = function (newQuantity: number, reason?: string) {
+InventoryStockSchema.methods.adjustQuantity = function (
+  newQuantity: number,
+  reason?: string,
+) {
   if (newQuantity < 0) {
     throw new Error('New quantity must be non-negative');
   }

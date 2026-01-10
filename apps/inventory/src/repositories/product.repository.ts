@@ -19,7 +19,10 @@ export class ProductRepository {
     return this.productModel.findById(id).exec();
   }
 
-  async findBySku(sku: string, organizationId?: string): Promise<ProductDocument | null> {
+  async findBySku(
+    sku: string,
+    organizationId?: string,
+  ): Promise<ProductDocument | null> {
     const query: any = { sku };
     if (organizationId) {
       query.organizationId = new Types.ObjectId(organizationId);
@@ -49,7 +52,10 @@ export class ProductRepository {
     return { items, total };
   }
 
-  async update(id: string, updateData: Partial<Product>): Promise<ProductDocument | null> {
+  async update(
+    id: string,
+    updateData: Partial<Product>,
+  ): Promise<ProductDocument | null> {
     return this.productModel
       .findByIdAndUpdate(id, { $set: updateData }, { new: true })
       .exec();

@@ -355,7 +355,10 @@ export class AuthService {
     );
 
     const refreshTokenValue = generateRefreshToken();
-    const refreshTokenHash = hashRefreshToken(refreshTokenValue, this.jwtSecret);
+    const refreshTokenHash = hashRefreshToken(
+      refreshTokenValue,
+      this.jwtSecret,
+    );
     const refreshTokenExpiresAt = calculateExpirationDate(
       this.jwtRefreshExpiresIn,
     );
@@ -828,7 +831,8 @@ export class AuthService {
     const tokenHash = hashRefreshToken(refreshToken, this.jwtSecret);
 
     // Find the refresh token in database
-    const storedToken = await this.refreshTokenRepository.findByTokenHash(tokenHash);
+    const storedToken =
+      await this.refreshTokenRepository.findByTokenHash(tokenHash);
 
     if (!storedToken) {
       this.logger.warn('Refresh token not found in database');
@@ -965,7 +969,10 @@ export class AuthService {
 
     // Token rotation: Generate new refresh token
     const newRefreshTokenValue = generateRefreshToken();
-    const newRefreshTokenHash = hashRefreshToken(newRefreshTokenValue, this.jwtSecret);
+    const newRefreshTokenHash = hashRefreshToken(
+      newRefreshTokenValue,
+      this.jwtSecret,
+    );
     const newRefreshTokenExpiresAt = calculateExpirationDate(
       this.jwtRefreshExpiresIn,
     );
@@ -982,7 +989,7 @@ export class AuthService {
     // Mark old token as rotated
     await this.refreshTokenRepository.markAsRotated(
       tokenHash,
-      newRefreshToken._id as Types.ObjectId,
+      newRefreshToken._id,
     );
 
     // Log successful refresh

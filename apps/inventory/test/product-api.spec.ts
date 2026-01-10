@@ -4,7 +4,13 @@ import { MongooseModule } from '@nestjs/mongoose';
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import * as request from 'supertest';
 import { InventoryModule } from '../src/inventory.module';
-import { ProductScope, ProductType, ProductStatus, Unit, HazardLevel } from '@shared/constants';
+import {
+  ProductScope,
+  ProductType,
+  ProductStatus,
+  Unit,
+  HazardLevel,
+} from '@shared/constants';
 
 describe('Product API Integration Tests', () => {
   let app: INestApplication;
@@ -18,14 +24,11 @@ describe('Product API Integration Tests', () => {
     const mongoUri = mongoServer.getUri();
 
     const moduleFixture: TestingModule = await Test.createTestingModule({
-      imports: [
-        MongooseModule.forRoot(mongoUri),
-        InventoryModule,
-      ],
+      imports: [MongooseModule.forRoot(mongoUri), InventoryModule],
     }).compile();
 
     app = moduleFixture.createNestApplication();
-    
+
     // Apply global validation pipe
     app.useGlobalPipes(
       new ValidationPipe({
@@ -134,9 +137,11 @@ describe('Product API Integration Tests', () => {
         .expect(200);
 
       expect(response.body.success).toBe(true);
-      expect(response.body.data.items.every((item: any) => 
-        item.scope === ProductScope.ORGANIZATION
-      )).toBe(true);
+      expect(
+        response.body.data.items.every(
+          (item: any) => item.scope === ProductScope.ORGANIZATION,
+        ),
+      ).toBe(true);
     });
   });
 
@@ -153,9 +158,7 @@ describe('Product API Integration Tests', () => {
 
     it('should return 404 for non-existent product', async () => {
       const fakeId = '507f1f77bcf86cd799439099';
-      await request(app.getHttpServer())
-        .get(`/products/${fakeId}`)
-        .expect(404);
+      await request(app.getHttpServer()).get(`/products/${fakeId}`).expect(404);
     });
   });
 

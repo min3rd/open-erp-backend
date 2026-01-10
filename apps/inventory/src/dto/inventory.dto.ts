@@ -34,7 +34,10 @@ export class LotInfoDto {
 }
 
 export class CreateTransactionDto {
-  @ApiProperty({ enum: InventoryTransactionType, example: InventoryTransactionType.IN })
+  @ApiProperty({
+    enum: InventoryTransactionType,
+    example: InventoryTransactionType.IN,
+  })
   @IsEnum(InventoryTransactionType)
   type: InventoryTransactionType;
 
@@ -47,12 +50,16 @@ export class CreateTransactionDto {
   @IsMongoId()
   organizationId?: string;
 
-  @ApiPropertyOptional({ description: 'Source warehouse ID (for OUT, TRANSFER)' })
+  @ApiPropertyOptional({
+    description: 'Source warehouse ID (for OUT, TRANSFER)',
+  })
   @IsOptional()
   @IsMongoId()
   sourceWarehouseId?: string;
 
-  @ApiPropertyOptional({ description: 'Destination warehouse ID (for IN, TRANSFER)' })
+  @ApiPropertyOptional({
+    description: 'Destination warehouse ID (for IN, TRANSFER)',
+  })
   @IsOptional()
   @IsMongoId()
   destinationWarehouseId?: string;
@@ -128,7 +135,11 @@ export class StockAdjustmentDto {
   @IsMongoId()
   warehouseId: string;
 
-  @ApiProperty({ example: 150, minimum: 0, description: 'New quantity after adjustment' })
+  @ApiProperty({
+    example: 150,
+    minimum: 0,
+    description: 'New quantity after adjustment',
+  })
   @IsNumber()
   @Min(0)
   newQuantity: number;
