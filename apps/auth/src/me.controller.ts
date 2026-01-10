@@ -48,6 +48,6 @@ export class MeController {
   async getMe(@Request() req: AuthenticatedRequest) {
     // JwtAuthGuard ensures user is set, so we can safely access userId
     const result = await this.authService.getMe(req.user.userId);
-    return fetched(result.data, 'User profile retrieved successfully');
+    return fetched(result, 'User profile retrieved successfully');
   }
 }

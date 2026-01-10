@@ -50,7 +50,7 @@ export class AuthController {
   @ApiResponse({ status: 401, description: 'Invalid credentials' })
   async login(@Body() loginDto: LoginDto) {
     const result = await this.authService.login(loginDto);
-    return ok(result.data, result.message || 'Successfully logged in');
+    return ok(result, 'Successfully logged in');
   }
 
   @Post('verify-email')
@@ -98,7 +98,7 @@ export class AuthController {
   @ApiResponse({ status: 429, description: 'Too many reset requests' })
   async forgotPassword(@Body() forgotPasswordDto: ForgotPasswordDto) {
     const result = await this.authService.forgotPassword(forgotPasswordDto);
-    return ok(result.data, result.message || 'If email exists, password reset link sent');
+    return ok(result, result.message || 'If email exists, password reset link sent');
   }
 
   @Get('validate-reset-token')
@@ -128,7 +128,7 @@ export class AuthController {
   @ApiResponse({ status: 400, description: 'Invalid or expired token' })
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     const result = await this.authService.resetPassword(resetPasswordDto);
-    return ok(result.data, result.message || 'Password reset successfully');
+    return ok(result, result.message || 'Password reset successfully');
   }
 
   @Get('health')
