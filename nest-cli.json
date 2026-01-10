@@ -52,6 +52,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/organization/tsconfig.json"
       }
+    },
+    "inventory": {
+      "type": "application",
+      "root": "apps/inventory",
+      "entryFile": "main",
+      "sourceRoot": "apps/inventory/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/inventory/tsconfig.json"
+      }
     }
   }
 }

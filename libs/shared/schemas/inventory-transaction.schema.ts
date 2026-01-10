@@ -335,7 +335,7 @@ InventoryTransactionSchema.set('toObject', {
 // ========== MIDDLEWARE ==========
 
 // Pre-save validation
-InventoryTransactionSchema.pre('save', function (next) {
+InventoryTransactionSchema.pre('save', function (next: any) {
   // Validate source/destination based on type
   if (this.type === InventoryTransactionType.TRANSFER) {
     if (!this.sourceWarehouseId || !this.destinationWarehouseId) {

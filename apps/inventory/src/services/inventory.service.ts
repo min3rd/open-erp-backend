@@ -122,7 +122,7 @@ export class InventoryService {
       const transactionNumber = await this.transactionRepository.generateTransactionNumber();
 
       // Create product snapshot
-      const productSnapshot = {
+      const productSnapshot: any = {
         id: product._id,
         sku: product.sku,
         name: product.name,
@@ -241,7 +241,7 @@ export class InventoryService {
           throw new NotFoundException('Product not found');
         }
 
-        const productSnapshot = {
+        const productSnapshot: any = {
           id: product._id,
           sku: product.sku,
           name: product.name,
@@ -251,14 +251,14 @@ export class InventoryService {
         };
 
         stock = await this.stockRepository.create({
-          productId: new Types.ObjectId(adjustmentDto.productId),
+          productId: new Types.ObjectId(adjustmentDto.productId) as any,
           productSnapshot,
-          warehouseId: new Types.ObjectId(adjustmentDto.warehouseId),
+          warehouseId: new Types.ObjectId(adjustmentDto.warehouseId) as any,
           availableQuantity: adjustmentDto.newQuantity,
           reservedQuantity: 0,
           damagedQuantity: 0,
           inTransitQuantity: 0,
-          createdBy: new Types.ObjectId(adjustmentDto.adjustedBy),
+          createdBy: new Types.ObjectId(adjustmentDto.adjustedBy) as any,
         });
       } else {
         // Update existing stock
@@ -274,19 +274,19 @@ export class InventoryService {
         transactionNumber,
         type: InventoryTransactionType.ADJUSTMENT,
         status: TransactionStatus.COMPLETED,
-        productId: new Types.ObjectId(adjustmentDto.productId),
+        productId: new Types.ObjectId(adjustmentDto.productId) as any,
         productSnapshot: stock.productSnapshot,
-        destinationWarehouseId: new Types.ObjectId(adjustmentDto.warehouseId),
+        destinationWarehouseId: new Types.ObjectId(adjustmentDto.warehouseId) as any,
         quantity: Math.abs(adjustmentDto.newQuantity - stockBefore),
         stockBefore,
         stockAfter: adjustmentDto.newQuantity,
         reason: adjustmentDto.reason,
         transactionDate: new Date(),
         completedDate: new Date(),
-        createdBy: new Types.ObjectId(adjustmentDto.adjustedBy),
-        approvedBy: new Types.ObjectId(adjustmentDto.adjustedBy),
+        createdBy: new Types.ObjectId(adjustmentDto.adjustedBy) as any,
+        approvedBy: new Types.ObjectId(adjustmentDto.adjustedBy) as any,
         approvedAt: new Date(),
-      });
+      } as any);
 
       await session.commitTransaction();
       
@@ -350,7 +350,7 @@ export class InventoryService {
           costPerUnit: transaction.unitCost,
         }] : [],
         createdBy: transaction.createdBy,
-      });
+      } as any);
     } else {
       // Update existing stock
       const newQuantity = stock.availableQuantity + transaction.quantity;
@@ -459,7 +459,7 @@ export class InventoryService {
         damagedQuantity: 0,
         inTransitQuantity: 0,
         createdBy: transaction.createdBy,
-      });
+      } as any);
     } else {
       // Update existing stock at destination
       await this.stockRepository.update(destStock._id.toString(), {

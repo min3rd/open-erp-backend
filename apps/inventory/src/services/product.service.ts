@@ -29,7 +29,7 @@ export class ProductService {
     }
 
     // Create product with initial version
-    const productData = {
+    const productData: any = {
       ...createDto,
       currentVersion: 1,
       versionCreatedAt: new Date(),
@@ -125,7 +125,7 @@ export class ProductService {
     const newVersion = product.currentVersion + 1;
 
     // Update product
-    const updateData = {
+    const updateData: any = {
       ...updateDto,
       currentVersion: newVersion,
       versionCreatedAt: new Date(),
@@ -285,7 +285,7 @@ export class ProductService {
     changeReason?: string,
     changedFields?: string[],
   ) {
-    const versionData = {
+    const versionData: any = {
       productId: new Types.ObjectId(productId),
       version,
       versionDate: new Date(),
