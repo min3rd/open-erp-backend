@@ -48,10 +48,29 @@ import { PermissionService } from '@shared/services';
     }),
     MongooseModule.forRootAsync({
       imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => ({
-        uri: configService.get<string>('MONGODB_URI'),
-        dbName: configService.get<string>('MONGODB_DB_NAME'),
-      }),
+      useFactory: async (configService: ConfigService) => {
+        // Support both MONGODB_URI and separate user/password credentials
+        let uri = configService.get<string>('MONGODB_URI');
+        
+        if (!uri) {
+          // Build URI from separate components
+          const host = configService.get<string>('MONGODB_HOST') || 'localhost';
+          const port = configService.get<string>('MONGODB_PORT') || '27017';
+          const user = configService.get<string>('MONGODB_USER');
+          const password = configService.get<string>('MONGODB_PASSWORD');
+          
+          if (user && password) {
+            uri = `mongodb://${user}:${password}@${host}:${port}`;
+          } else {
+            uri = `mongodb://${host}:${port}`;
+          }
+        }
+        
+        return {
+          uri,
+          dbName: configService.get<string>('MONGODB_DB_NAME') || 'open_erp',
+        };
+      },
       inject: [ConfigService],
     }),
     MongooseModule.forFeature([

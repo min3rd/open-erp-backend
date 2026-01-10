@@ -14,14 +14,60 @@ export enum ProductScope {
  * Product types
  */
 export enum ProductType {
+  // Raw materials and components
   RAW_MATERIAL = 'raw_material',
+  COMPONENT = 'component',
+  INGREDIENT = 'ingredient',
+  
+  // Manufacturing and production
   FINISHED_GOOD = 'finished_good',
   SEMI_FINISHED = 'semi_finished',
+  WORK_IN_PROGRESS = 'work_in_progress',
+  BY_PRODUCT = 'by_product',
+  
+  // Packaging and containers
   PACKAGING = 'packaging',
+  CONTAINER = 'container',
+  
+  // Maintenance and operations
   CONSUMABLE = 'consumable',
   SPARE_PART = 'spare_part',
   TOOL = 'tool',
+  EQUIPMENT = 'equipment',
+  MACHINERY = 'machinery',
+  
+  // Trade goods (Vietnam specific)
+  MERCHANDISE = 'merchandise',        // Hàng hóa thương mại
+  AGRICULTURAL = 'agricultural',      // Nông sản
+  SEAFOOD = 'seafood',               // Thủy sản
+  HANDICRAFT = 'handicraft',         // Thủ công mỹ nghệ
+  TEXTILE = 'textile',               // Hàng dệt may
+  ELECTRONICS = 'electronics',        // Điện tử
+  FURNITURE = 'furniture',           // Nội thất
+  
+  // Food and beverage
+  FOOD = 'food',                     // Thực phẩm
+  BEVERAGE = 'beverage',             // Đồ uống
+  FRESH_PRODUCE = 'fresh_produce',   // Nông sản tươi
+  PROCESSED_FOOD = 'processed_food', // Thực phẩm chế biến
+  
+  // Healthcare and pharma
+  MEDICINE = 'medicine',             // Thuốc
+  MEDICAL_DEVICE = 'medical_device', // Thiết bị y tế
+  COSMETIC = 'cosmetic',             // Mỹ phẩm
+  
+  // Services and intangibles
   SERVICE = 'service',
+  DIGITAL = 'digital',
+  SOFTWARE = 'software',
+  
+  // Other common types
+  BOOK = 'book',                     // Sách
+  STATIONERY = 'stationery',         // Văn phòng phẩm
+  TOY = 'toy',                       // Đồ chơi
+  JEWELRY = 'jewelry',               // Trang sức
+  VEHICLE = 'vehicle',               // Phương tiện
+  SPARE_VEHICLE_PART = 'spare_vehicle_part', // Phụ tùng xe
 }
 
 /**

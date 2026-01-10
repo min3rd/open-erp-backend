@@ -12,6 +12,7 @@ import {
   Max,
   MaxLength,
   MinLength,
+  IsUrl,
 } from 'class-validator';
 import { Type } from 'class-transformer';
 import {
@@ -23,6 +24,48 @@ import {
   StorageRequirement,
   TrackingType,
 } from '@shared/constants';
+
+export class MediaItemDto {
+  @ApiProperty({ enum: ['image', 'video', 'document'], example: 'image' })
+  @IsEnum(['image', 'video', 'document'])
+  type: string;
+
+  @ApiProperty({ example: 'https://example.com/image.jpg' })
+  @IsUrl()
+  url: string;
+
+  @ApiPropertyOptional({ example: 'Product front view' })
+  @IsOptional()
+  @IsString()
+  title?: string;
+
+  @ApiPropertyOptional({ example: 'High quality product image' })
+  @IsOptional()
+  @IsString()
+  description?: string;
+
+  @ApiPropertyOptional({ example: 'image/jpeg' })
+  @IsOptional()
+  @IsString()
+  mimeType?: string;
+
+  @ApiPropertyOptional({ example: 1024000, minimum: 0 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  size?: number;
+
+  @ApiPropertyOptional({ example: 0, minimum: 0 })
+  @IsOptional()
+  @IsNumber()
+  @Min(0)
+  order?: number;
+
+  @ApiPropertyOptional({ example: true })
+  @IsOptional()
+  @IsBoolean()
+  isPrimary?: boolean;
+}
 
 export class CustomAttributeDto {
   @ApiProperty({ example: 'Color' })
@@ -165,6 +208,13 @@ export class CreateProductDto {
   @IsString()
   barcode?: string;
 
+  @ApiPropertyOptional({ type: [MediaItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaItemDto)
+  media?: MediaItemDto[];
+
   @ApiProperty({ enum: ProductScope, example: ProductScope.ORGANIZATION })
   @IsEnum(ProductScope)
   scope: ProductScope;
@@ -285,6 +335,13 @@ export class UpdateProductDto {
   @IsOptional()
   @IsString()
   barcode?: string;
+
+  @ApiPropertyOptional({ type: [MediaItemDto] })
+  @IsOptional()
+  @IsArray()
+  @ValidateNested({ each: true })
+  @Type(() => MediaItemDto)
+  media?: MediaItemDto[];
 
   @ApiPropertyOptional({ enum: ProductType })
   @IsOptional()
