@@ -154,27 +154,27 @@ export interface IFinance {
  */
 export interface IWarehouse {
   _id?: MongooseSchema.Types.ObjectId | string;
-  
+
   // Identification
   warehouseId?: string;
   code: string;
   name: string;
   type: WarehouseType;
   status: WarehouseStatus;
-  
+
   // Legal/Management
   organizationId?: MongooseSchema.Types.ObjectId | string;
   businessLicense?: string;
   warehouseLicense?: string;
   customsCode?: string;
-  
+
   // Address (2 levels: ward and province only, NO district)
   addressDetail: string;
   ward: IWard;
   province: IProvince;
   region?: Region;
   location?: ILocation;
-  
+
   // Capacity/Technical
   totalAreaM2?: number;
   usableAreaM2?: number;
@@ -183,14 +183,14 @@ export interface IWarehouse {
   zonesCount?: number;
   racksCount?: number;
   floorsCount?: number;
-  
+
   // Storage conditions
   temperatureMin?: number;
   temperatureMax?: number;
   humidityMin?: number;
   humidityMax?: number;
   specialConditions?: SpecialCondition[];
-  
+
   // Operations/Staff
   manager?: IManager;
   contactPhone?: string;
@@ -198,20 +198,20 @@ export interface IWarehouse {
   workersCount?: number;
   workingShift?: WorkingShift;
   operatingHours?: string;
-  
+
   // Safety/Security
   fireProtectionCert?: string;
   securityLevel?: SecurityLevel;
   cameraSystem?: ICameraSystem;
   accessControl?: IAccessControl;
   insurancePolicy?: string;
-  
+
   // Finance/Service
   storageFee?: number;
   handlingFee?: number;
   currency?: Currency;
   paymentTerm?: PaymentTerm;
-  
+
   // Audit/Meta
   createdBy?: MongooseSchema.Types.ObjectId | string;
   updatedBy?: MongooseSchema.Types.ObjectId | string;
@@ -219,7 +219,7 @@ export interface IWarehouse {
   updatedAt?: Date;
   deletedAt?: Date | null;
   tenantId?: string;
-  
+
   // Metadata
   metadata?: Map<string, any>;
 }

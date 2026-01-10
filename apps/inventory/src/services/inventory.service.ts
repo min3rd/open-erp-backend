@@ -1,10 +1,18 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
 import { InventoryStockRepository } from '../repositories/inventory-stock.repository';
 import { InventoryTransactionRepository } from '../repositories/inventory-transaction.repository';
 import { ProductRepository } from '../repositories/product.repository';
-import { CreateTransactionDto, StockAdjustmentDto, TransferStockDto } from '../dto/inventory.dto';
+import {
+  CreateTransactionDto,
+  StockAdjustmentDto,
+  TransferStockDto,
+} from '../dto/inventory.dto';
 import { InventoryTransactionType, TransactionStatus } from '@shared/constants';
 
 @Injectable()
@@ -17,9 +25,14 @@ export class InventoryService {
   ) {}
 
   async getStockByProductAndWarehouse(productId: string, warehouseId: string) {
-    const stock = await this.stockRepository.findByProductAndWarehouse(productId, warehouseId);
+    const stock = await this.stockRepository.findByProductAndWarehouse(
+      productId,
+      warehouseId,
+    );
     if (!stock) {
-      throw new NotFoundException('Stock not found for this product and warehouse');
+      throw new NotFoundException(
+        'Stock not found for this product and warehouse',
+      );
     }
     return stock;
   }
@@ -68,7 +81,10 @@ export class InventoryService {
     };
   }
 
-  async getLowStockAlert(organizationId?: string, options: { page?: number; limit?: number } = {}) {
+  async getLowStockAlert(
+    organizationId?: string,
+    options: { page?: number; limit?: number } = {},
+  ) {
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
@@ -93,10 +109,13 @@ export class InventoryService {
     const { page = 1, limit = 10 } = options;
     const skip = (page - 1) * limit;
 
-    const result = await this.stockRepository.findExpiringStock(daysUntilExpiry, {
-      skip,
-      limit,
-    });
+    const result = await this.stockRepository.findExpiringStock(
+      daysUntilExpiry,
+      {
+        skip,
+        limit,
+      },
+    );
 
     return {
       items: result.items,
@@ -113,13 +132,16 @@ export class InventoryService {
 
     try {
       // Validate product exists
-      const product = await this.productRepository.findById(createDto.productId);
+      const product = await this.productRepository.findById(
+        createDto.productId,
+      );
       if (!product) {
         throw new NotFoundException('Product not found');
       }
 
       // Generate transaction number
-      const transactionNumber = await this.transactionRepository.generateTransactionNumber();
+      const transactionNumber =
+        await this.transactionRepository.generateTransactionNumber();
 
       // Create product snapshot
       const productSnapshot: any = {
@@ -143,13 +165,17 @@ export class InventoryService {
           : undefined,
         quantity: createDto.quantity,
         unitCost: createDto.unitCost,
-        totalCost: createDto.unitCost ? createDto.unitCost * createDto.quantity : undefined,
+        totalCost: createDto.unitCost
+          ? createDto.unitCost * createDto.quantity
+          : undefined,
         currency: createDto.currency,
         lotInfo: createDto.lotInfo,
         sourceLocation: createDto.sourceLocation,
         destinationLocation: createDto.destinationLocation,
         referenceType: createDto.referenceType,
-        referenceId: createDto.referenceId ? new Types.ObjectId(createDto.referenceId) : undefined,
+        referenceId: createDto.referenceId
+          ? new Types.ObjectId(createDto.referenceId)
+          : undefined,
         referenceNumber: createDto.referenceNumber,
         notes: createDto.notes,
         reason: createDto.reason,
@@ -159,24 +185,35 @@ export class InventoryService {
 
       // Add warehouse IDs and snapshots based on transaction type
       if (createDto.sourceWarehouseId) {
-        transactionData.sourceWarehouseId = new Types.ObjectId(createDto.sourceWarehouseId);
+        transactionData.sourceWarehouseId = new Types.ObjectId(
+          createDto.sourceWarehouseId,
+        );
         // TODO: Add warehouse snapshot
       }
 
       if (createDto.destinationWarehouseId) {
-        transactionData.destinationWarehouseId = new Types.ObjectId(createDto.destinationWarehouseId);
+        transactionData.destinationWarehouseId = new Types.ObjectId(
+          createDto.destinationWarehouseId,
+        );
         // TODO: Add warehouse snapshot
       }
 
       // Create transaction
-      const transaction = await this.transactionRepository.create(transactionData);
+      const transaction =
+        await this.transactionRepository.create(transactionData);
 
       // Process transaction immediately (auto-complete)
-      await this.processTransaction(transaction._id.toString(), createDto.createdBy, session);
+      await this.processTransaction(
+        transaction._id.toString(),
+        createDto.createdBy,
+        session,
+      );
 
       await session.commitTransaction();
-      
-      return await this.transactionRepository.findById(transaction._id.toString());
+
+      return await this.transactionRepository.findById(
+        transaction._id.toString(),
+      );
     } catch (error) {
       await session.abortTransaction();
       throw error;
@@ -185,8 +222,13 @@ export class InventoryService {
     }
   }
 
-  async processTransaction(transactionId: string, userId: string, session?: any) {
-    const transaction = await this.transactionRepository.findById(transactionId);
+  async processTransaction(
+    transactionId: string,
+    userId: string,
+    session?: any,
+  ) {
+    const transaction =
+      await this.transactionRepository.findById(transactionId);
     if (!transaction) {
       throw new NotFoundException('Transaction not found');
     }
@@ -210,7 +252,9 @@ export class InventoryService {
         await this.processAdjustmentTransaction(transaction, session);
         break;
       default:
-        throw new BadRequestException(`Unsupported transaction type: ${transaction.type}`);
+        throw new BadRequestException(
+          `Unsupported transaction type: ${transaction.type}`,
+        );
     }
 
     // Update transaction status
@@ -236,7 +280,9 @@ export class InventoryService {
 
       if (!stock) {
         // Create new stock record
-        const product = await this.productRepository.findById(adjustmentDto.productId);
+        const product = await this.productRepository.findById(
+          adjustmentDto.productId,
+        );
         if (!product) {
           throw new NotFoundException('Product not found');
         }
@@ -269,14 +315,17 @@ export class InventoryService {
       }
 
       // Create adjustment transaction
-      const transactionNumber = await this.transactionRepository.generateTransactionNumber('ADJ');
+      const transactionNumber =
+        await this.transactionRepository.generateTransactionNumber('ADJ');
       await this.transactionRepository.create({
         transactionNumber,
         type: InventoryTransactionType.ADJUSTMENT,
         status: TransactionStatus.COMPLETED,
         productId: new Types.ObjectId(adjustmentDto.productId) as any,
         productSnapshot: stock.productSnapshot,
-        destinationWarehouseId: new Types.ObjectId(adjustmentDto.warehouseId) as any,
+        destinationWarehouseId: new Types.ObjectId(
+          adjustmentDto.warehouseId,
+        ) as any,
         quantity: Math.abs(adjustmentDto.newQuantity - stockBefore),
         stockBefore,
         stockAfter: adjustmentDto.newQuantity,
@@ -289,7 +338,7 @@ export class InventoryService {
       } as any);
 
       await session.commitTransaction();
-      
+
       return await this.stockRepository.findById(stock._id.toString());
     } catch (error) {
       await session.abortTransaction();
@@ -320,7 +369,9 @@ export class InventoryService {
 
   private async processInTransaction(transaction: any, session?: any) {
     if (!transaction.destinationWarehouseId) {
-      throw new BadRequestException('Destination warehouse is required for IN transactions');
+      throw new BadRequestException(
+        'Destination warehouse is required for IN transactions',
+      );
     }
 
     // Get or create stock record
@@ -342,13 +393,17 @@ export class InventoryService {
         reservedQuantity: 0,
         damagedQuantity: 0,
         inTransitQuantity: 0,
-        lots: transaction.lotInfo ? [{
-          lotNumber: transaction.lotInfo.lotNumber || '',
-          manufactureDate: transaction.lotInfo.manufactureDate,
-          expiryDate: transaction.lotInfo.expiryDate,
-          quantity: transaction.quantity,
-          costPerUnit: transaction.unitCost,
-        }] : [],
+        lots: transaction.lotInfo
+          ? [
+              {
+                lotNumber: transaction.lotInfo.lotNumber || '',
+                manufactureDate: transaction.lotInfo.manufactureDate,
+                expiryDate: transaction.lotInfo.expiryDate,
+                quantity: transaction.quantity,
+                costPerUnit: transaction.unitCost,
+              },
+            ]
+          : [],
         createdBy: transaction.createdBy,
       } as any);
     } else {
@@ -382,7 +437,9 @@ export class InventoryService {
 
   private async processOutTransaction(transaction: any, session?: any) {
     if (!transaction.sourceWarehouseId) {
-      throw new BadRequestException('Source warehouse is required for OUT transactions');
+      throw new BadRequestException(
+        'Source warehouse is required for OUT transactions',
+      );
     }
 
     // Get stock record
@@ -417,7 +474,9 @@ export class InventoryService {
 
   private async processTransferTransaction(transaction: any, session?: any) {
     if (!transaction.sourceWarehouseId || !transaction.destinationWarehouseId) {
-      throw new BadRequestException('Both source and destination warehouses are required for TRANSFER');
+      throw new BadRequestException(
+        'Both source and destination warehouses are required for TRANSFER',
+      );
     }
 
     // Process OUT from source
@@ -493,21 +552,27 @@ export class InventoryService {
     let result;
 
     if (filter.productId) {
-      result = await this.transactionRepository.findByProduct(filter.productId, {
-        skip,
-        limit,
-        status: filter.status,
-        type: filter.type,
-      });
+      result = await this.transactionRepository.findByProduct(
+        filter.productId,
+        {
+          skip,
+          limit,
+          status: filter.status,
+          type: filter.type,
+        },
+      );
     } else if (filter.organizationId) {
-      result = await this.transactionRepository.findByOrganization(filter.organizationId, {
-        skip,
-        limit,
-        status: filter.status,
-        type: filter.type,
-        startDate: filter.startDate,
-        endDate: filter.endDate,
-      });
+      result = await this.transactionRepository.findByOrganization(
+        filter.organizationId,
+        {
+          skip,
+          limit,
+          status: filter.status,
+          type: filter.type,
+          startDate: filter.startDate,
+          endDate: filter.endDate,
+        },
+      );
     } else {
       // Default: return empty or implement a general query
       result = { items: [], total: 0 };

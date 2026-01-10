@@ -5,7 +5,11 @@ import {
   ConflictException,
 } from '@nestjs/common';
 import { WarehouseRepository } from '../repositories/warehouse.repository';
-import { CreateWarehouseDto, UpdateWarehouseDto, QueryWarehouseDto } from '../dto/warehouse.dto';
+import {
+  CreateWarehouseDto,
+  UpdateWarehouseDto,
+  QueryWarehouseDto,
+} from '../dto/warehouse.dto';
 import { WarehouseDocument } from '@shared/schemas';
 
 @Injectable()
@@ -15,7 +19,10 @@ export class WarehouseService {
   /**
    * Create a new warehouse
    */
-  async create(createDto: CreateWarehouseDto, userId: string): Promise<WarehouseDocument> {
+  async create(
+    createDto: CreateWarehouseDto,
+    userId: string,
+  ): Promise<WarehouseDocument> {
     // Validate province exists
     const provinceExists = await this.warehouseRepository.provinceExists(
       createDto.province.code,
@@ -131,7 +138,10 @@ export class WarehouseService {
   /**
    * Find warehouse by code
    */
-  async findByCode(code: string, tenantId?: string): Promise<WarehouseDocument> {
+  async findByCode(
+    code: string,
+    tenantId?: string,
+  ): Promise<WarehouseDocument> {
     const warehouse = await this.warehouseRepository.findByCode(code, tenantId);
     if (!warehouse) {
       throw new NotFoundException(`Warehouse with code ${code} not found`);
@@ -192,8 +202,10 @@ export class WarehouseService {
     }
 
     // Validate ranges
-    const finalTempMin = updateDto.temperatureMin ?? existingWarehouse.temperatureMin;
-    const finalTempMax = updateDto.temperatureMax ?? existingWarehouse.temperatureMax;
+    const finalTempMin =
+      updateDto.temperatureMin ?? existingWarehouse.temperatureMin;
+    const finalTempMax =
+      updateDto.temperatureMax ?? existingWarehouse.temperatureMax;
     if (
       finalTempMin !== undefined &&
       finalTempMax !== undefined &&
@@ -204,8 +216,10 @@ export class WarehouseService {
       );
     }
 
-    const finalHumidityMin = updateDto.humidityMin ?? existingWarehouse.humidityMin;
-    const finalHumidityMax = updateDto.humidityMax ?? existingWarehouse.humidityMax;
+    const finalHumidityMin =
+      updateDto.humidityMin ?? existingWarehouse.humidityMin;
+    const finalHumidityMax =
+      updateDto.humidityMax ?? existingWarehouse.humidityMax;
     if (
       finalHumidityMin !== undefined &&
       finalHumidityMax !== undefined &&
@@ -216,8 +230,10 @@ export class WarehouseService {
       );
     }
 
-    const finalUsableArea = updateDto.usableAreaM2 ?? existingWarehouse.usableAreaM2;
-    const finalTotalArea = updateDto.totalAreaM2 ?? existingWarehouse.totalAreaM2;
+    const finalUsableArea =
+      updateDto.usableAreaM2 ?? existingWarehouse.usableAreaM2;
+    const finalTotalArea =
+      updateDto.totalAreaM2 ?? existingWarehouse.totalAreaM2;
     if (
       finalUsableArea !== undefined &&
       finalTotalArea !== undefined &&
@@ -240,7 +256,11 @@ export class WarehouseService {
     }
 
     try {
-      const updated = await this.warehouseRepository.update(id, updateDto, userId);
+      const updated = await this.warehouseRepository.update(
+        id,
+        updateDto,
+        userId,
+      );
       if (!updated) {
         throw new NotFoundException(`Warehouse with ID ${id} not found`);
       }
@@ -294,7 +314,12 @@ export class WarehouseService {
   /**
    * Find warehouses nearby
    */
-  async findNearby(longitude: number, latitude: number, radiusKm: number, limit: number = 10) {
+  async findNearby(
+    longitude: number,
+    latitude: number,
+    radiusKm: number,
+    limit: number = 10,
+  ) {
     // Validate coordinates
     if (longitude < -180 || longitude > 180) {
       throw new BadRequestException('Longitude must be between -180 and 180');
@@ -306,6 +331,11 @@ export class WarehouseService {
       throw new BadRequestException('Radius must be greater than 0');
     }
 
-    return this.warehouseRepository.findNearby(longitude, latitude, radiusKm, limit);
+    return this.warehouseRepository.findNearby(
+      longitude,
+      latitude,
+      radiusKm,
+      limit,
+    );
   }
 }

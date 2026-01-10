@@ -63,7 +63,10 @@ export class ConfigController {
   ): Promise<any> {
     const userId = req.user?.userId || 'system';
     const config = await this.configService.upsertGlobalConfig(dto, userId);
-    return created(this.mapToResponseDto(config), 'Config created or updated successfully');
+    return created(
+      this.mapToResponseDto(config),
+      'Config created or updated successfully',
+    );
   }
 
   @Get()
@@ -83,11 +86,12 @@ export class ConfigController {
     description: 'List of global configs',
     type: [ConfigResponseDto],
   })
-  async listGlobalConfigs(
-    @Query('limit') limit?: number,
-  ): Promise<any> {
+  async listGlobalConfigs(@Query('limit') limit?: number): Promise<any> {
     const configs = await this.configService.listGlobalConfigs(limit);
-    return ok(configs.map((config) => this.mapToResponseDto(config)), 'Global configs retrieved successfully');
+    return ok(
+      configs.map((config) => this.mapToResponseDto(config)),
+      'Global configs retrieved successfully',
+    );
   }
 
   @Get(':name')
@@ -103,11 +107,12 @@ export class ConfigController {
     type: ConfigResponseDto,
   })
   @ApiResponse({ status: 404, description: 'Config not found' })
-  async getGlobalConfig(
-    @Param('name') name: string,
-  ): Promise<any> {
+  async getGlobalConfig(@Param('name') name: string): Promise<any> {
     const config = await this.configService.getGlobalConfig(name);
-    return ok(this.mapToResponseDto(config), 'Global config retrieved successfully');
+    return ok(
+      this.mapToResponseDto(config),
+      'Global config retrieved successfully',
+    );
   }
 
   @Put(':name')
@@ -136,7 +141,10 @@ export class ConfigController {
       dto,
       userId,
     );
-    return updated(this.mapToResponseDto(config), 'Global config updated successfully');
+    return updated(
+      this.mapToResponseDto(config),
+      'Global config updated successfully',
+    );
   }
 
   @Patch(':name')
@@ -165,7 +173,10 @@ export class ConfigController {
       dto,
       userId,
     );
-    return updated(this.mapToResponseDto(config), 'Global config patched successfully');
+    return updated(
+      this.mapToResponseDto(config),
+      'Global config patched successfully',
+    );
   }
 
   @Delete(':name')

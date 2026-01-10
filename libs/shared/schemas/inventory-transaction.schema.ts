@@ -1,6 +1,9 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, HydratedDocument, Schema as MongooseSchema } from 'mongoose';
-import { InventoryTransactionType, TransactionStatus } from '../constants/product.constants';
+import {
+  InventoryTransactionType,
+  TransactionStatus,
+} from '../constants/product.constants';
 
 /**
  * Product snapshot for transaction (minimal fields needed)
@@ -59,7 +62,8 @@ export class TransactionLotInfo {
   expiryDate?: Date;
 }
 
-export type InventoryTransactionDocument = HydratedDocument<InventoryTransaction>;
+export type InventoryTransactionDocument =
+  HydratedDocument<InventoryTransaction>;
 
 @Schema({
   timestamps: true,
@@ -281,14 +285,18 @@ export class InventoryTransaction extends Document {
   metadata?: Map<string, any>;
 }
 
-export const InventoryTransactionSchema = SchemaFactory.createForClass(InventoryTransaction);
+export const InventoryTransactionSchema =
+  SchemaFactory.createForClass(InventoryTransaction);
 
 // ========== INDEXES ==========
 
 // Compound indexes for queries
 InventoryTransactionSchema.index({ productId: 1, transactionDate: -1 });
 InventoryTransactionSchema.index({ sourceWarehouseId: 1, transactionDate: -1 });
-InventoryTransactionSchema.index({ destinationWarehouseId: 1, transactionDate: -1 });
+InventoryTransactionSchema.index({
+  destinationWarehouseId: 1,
+  transactionDate: -1,
+});
 InventoryTransactionSchema.index({ organizationId: 1, transactionDate: -1 });
 InventoryTransactionSchema.index({ type: 1, status: 1, transactionDate: -1 });
 InventoryTransactionSchema.index({ referenceType: 1, referenceId: 1 });
@@ -339,7 +347,9 @@ InventoryTransactionSchema.pre('save', function (next: any) {
   // Validate source/destination based on type
   if (this.type === InventoryTransactionType.TRANSFER) {
     if (!this.sourceWarehouseId || !this.destinationWarehouseId) {
-      throw new Error('Transfer transactions require both source and destination warehouses');
+      throw new Error(
+        'Transfer transactions require both source and destination warehouses',
+      );
     }
   } else if (this.type === InventoryTransactionType.IN) {
     if (!this.destinationWarehouseId) {
@@ -352,12 +362,20 @@ InventoryTransactionSchema.pre('save', function (next: any) {
   }
 
   // Set completed date when status changes to completed
-  if (this.isModified('status') && this.status === TransactionStatus.COMPLETED && !this.completedDate) {
+  if (
+    this.isModified('status') &&
+    this.status === TransactionStatus.COMPLETED &&
+    !this.completedDate
+  ) {
     this.completedDate = new Date();
   }
 
   // Set cancelled date when status changes to cancelled
-  if (this.isModified('status') && this.status === TransactionStatus.CANCELLED && !this.cancelledDate) {
+  if (
+    this.isModified('status') &&
+    this.status === TransactionStatus.CANCELLED &&
+    !this.cancelledDate
+  ) {
     this.cancelledDate = new Date();
   }
 

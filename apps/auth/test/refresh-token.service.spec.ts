@@ -15,7 +15,10 @@ import {
   USER_NOT_FOUND,
   AUTH_INVALID_CREDENTIALS,
 } from '@shared/errors/error-codes';
-import { hashRefreshToken, generateRefreshToken } from '../src/utils/token.util';
+import {
+  hashRefreshToken,
+  generateRefreshToken,
+} from '../src/utils/token.util';
 
 // Mock RabbitMQ client
 const mockUserClient = {

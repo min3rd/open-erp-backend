@@ -30,6 +30,9 @@ export class NotificationController {
   @ApiOperation({ summary: 'Health check endpoint' })
   @ApiResponse({ status: 200, description: 'Service is healthy' })
   health() {
-    return ok({ status: 'ok', service: 'notification' }, 'Notification service is healthy');
+    return ok(
+      { status: 'ok', service: 'notification' },
+      'Notification service is healthy',
+    );
   }
 }

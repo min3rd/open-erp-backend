@@ -219,7 +219,9 @@ export class CreateProductDto {
   @IsEnum(ProductScope)
   scope: ProductScope;
 
-  @ApiPropertyOptional({ description: 'Organization ID (required for organization scope)' })
+  @ApiPropertyOptional({
+    description: 'Organization ID (required for organization scope)',
+  })
   @IsOptional()
   @IsMongoId()
   organizationId?: string;

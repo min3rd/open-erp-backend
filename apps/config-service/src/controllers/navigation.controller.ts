@@ -35,8 +35,16 @@ import {
   NavigationItemDto,
   NavigationResponseDto,
 } from '../dto/navigation-response.dto';
-import { NavigationScope, NavigationFormat } from '../schemas/navigation.schema';
-import { JwtAuthGuard, PermissionsGuard, CurrentUser, UserContext } from '@shared/authz';
+import {
+  NavigationScope,
+  NavigationFormat,
+} from '../schemas/navigation.schema';
+import {
+  JwtAuthGuard,
+  PermissionsGuard,
+  CurrentUser,
+  UserContext,
+} from '@shared/authz';
 import { Permissions, Roles } from '@shared/authz/decorators';
 import { ThrottlerGuard } from '@nestjs/throttler';
 import { Permission, Role, RoleGroups } from '@shared/types';
@@ -303,9 +311,7 @@ export class NavigationController {
       },
     },
   })
-  async getGlobalNavigation(
-    @Query('permissions') permissionsParam?: string,
-  ) {
+  async getGlobalNavigation(@Query('permissions') permissionsParam?: string) {
     const permissions = permissionsParam
       ? permissionsParam.split(',').map((p) => p.trim())
       : undefined;
@@ -487,7 +493,10 @@ export class NavigationController {
       ? permissionsParam.split(',').map((p) => p.trim())
       : undefined;
 
-    const item = await this.navigationService.getNavigationById(id, permissions);
+    const item = await this.navigationService.getNavigationById(
+      id,
+      permissions,
+    );
     return fetched(item, 'Navigation item retrieved successfully');
   }
 
@@ -505,7 +514,10 @@ export class NavigationController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Navigation item created successfully' },
+        message: {
+          type: 'string',
+          example: 'Navigation item created successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
@@ -552,7 +564,10 @@ export class NavigationController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Navigation item updated successfully' },
+        message: {
+          type: 'string',
+          example: 'Navigation item updated successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
@@ -606,7 +621,10 @@ export class NavigationController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Navigation item deleted successfully' },
+        message: {
+          type: 'string',
+          example: 'Navigation item deleted successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
@@ -654,7 +672,10 @@ export class NavigationController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Navigation item moved successfully' },
+        message: {
+          type: 'string',
+          example: 'Navigation item moved successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
@@ -717,7 +738,10 @@ export class NavigationController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Navigation cache reloaded successfully' },
+        message: {
+          type: 'string',
+          example: 'Navigation cache reloaded successfully',
+        },
         error: { type: 'null' },
         data: { type: 'null' },
       },

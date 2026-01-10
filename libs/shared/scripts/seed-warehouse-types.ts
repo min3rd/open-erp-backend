@@ -107,14 +107,18 @@ const warehouseTypesData = [
 ];
 
 async function seedWarehouseTypes() {
-  const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/open-erp';
-  
+  const mongoUri =
+    process.env.MONGODB_URI || 'mongodb://localhost:27017/open-erp';
+
   try {
     console.log('Connecting to MongoDB...');
     await connect(mongoUri);
     console.log('Connected to MongoDB');
 
-    const WarehouseTypeMaster = connection.model('WarehouseTypeMaster', WarehouseTypeSchema);
+    const WarehouseTypeMaster = connection.model(
+      'WarehouseTypeMaster',
+      WarehouseTypeSchema,
+    );
 
     // Clear existing data (optional)
     console.log('Clearing existing warehouse types...');

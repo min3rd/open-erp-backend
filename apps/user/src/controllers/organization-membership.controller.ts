@@ -28,7 +28,14 @@ import {
   ListOrganizationMembersQueryDto,
   MembershipResponseDto,
 } from '../dto/membership.dto';
-import { created, fetched, updated, deleted, paginated, DEFAULT_PAGE_SIZE } from '@shared/response';
+import {
+  created,
+  fetched,
+  updated,
+  deleted,
+  paginated,
+  DEFAULT_PAGE_SIZE,
+} from '@shared/response';
 
 @ApiTags('organizations')
 @Controller('organizations')
@@ -95,7 +102,7 @@ export class OrganizationMembershipController {
       query.size || DEFAULT_PAGE_SIZE,
       result.total,
       undefined,
-      'Organization members retrieved successfully'
+      'Organization members retrieved successfully',
     );
   }
 

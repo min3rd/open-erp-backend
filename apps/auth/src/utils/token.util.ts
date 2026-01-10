@@ -1,5 +1,4 @@
 import * as jwt from 'jsonwebtoken';
-import { v4 as uuidv4 } from 'uuid';
 import * as crypto from 'crypto';
 
 /**
@@ -140,6 +139,7 @@ export function hashToken(token: string): string {
  * @returns Hashed token (hex encoded)
  */
 export function hashRefreshToken(token: string, secret?: string): string {
-  const hmacSecret = secret || process.env.JWT_SECRET || 'default-secret-change-me';
+  const hmacSecret =
+    secret || process.env.JWT_SECRET || 'default-secret-change-me';
   return crypto.createHmac('sha256', hmacSecret).update(token).digest('hex');
 }

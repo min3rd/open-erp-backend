@@ -50,7 +50,10 @@ export class OrganizationController {
     @Body() createDto: CreateOrganizationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    const organization = await this.organizationService.create(createDto as any, req.user.userId);
+    const organization = await this.organizationService.create(
+      createDto as any,
+      req.user.userId,
+    );
     return created(organization, 'Organization created successfully');
   }
 
@@ -66,7 +69,11 @@ export class OrganizationController {
     @Query('status') status?: string,
     @Query('country') country?: string,
   ) {
-    const organizations = await this.organizationService.findAll({ type, status, country });
+    const organizations = await this.organizationService.findAll({
+      type,
+      status,
+      country,
+    });
     return ok(organizations, 'Organizations retrieved successfully');
   }
 

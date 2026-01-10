@@ -45,7 +45,11 @@ export class StorageConditions {
   @Prop({ type: Number, min: 0, max: 100 })
   humidityMax?: number;
 
-  @Prop({ type: [String], enum: Object.values(StorageRequirement), default: [] })
+  @Prop({
+    type: [String],
+    enum: Object.values(StorageRequirement),
+    default: [],
+  })
   requirements: StorageRequirement[];
 
   @Prop({ type: String })
@@ -357,7 +361,7 @@ ProductSchema.index(
   {
     unique: true,
     partialFilterExpression: { scope: ProductScope.ORGANIZATION },
-  }
+  },
 );
 
 // Unique index for global scope SKU
@@ -366,7 +370,7 @@ ProductSchema.index(
   {
     unique: true,
     partialFilterExpression: { scope: ProductScope.GLOBAL },
-  }
+  },
 );
 
 // Text index for search
@@ -384,7 +388,10 @@ ProductSchema.index({ organizationId: 1, type: 1, status: 1 });
 ProductSchema.index({ barcode: 1 }, { sparse: true });
 
 // TTL index for soft-deleted products (auto-delete after 2 years)
-ProductSchema.index({ deletedAt: 1 }, { expireAfterSeconds: TTL_SOFT_DELETE_SECONDS });
+ProductSchema.index(
+  { deletedAt: 1 },
+  { expireAfterSeconds: TTL_SOFT_DELETE_SECONDS },
+);
 
 // ========== VIRTUALS ==========
 

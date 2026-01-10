@@ -67,7 +67,10 @@ export class InvitationController {
     @Body() acceptDto: AcceptInvitationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    const result = await this.invitationService.accept(acceptDto.token, req.user.userId);
+    const result = await this.invitationService.accept(
+      acceptDto.token,
+      req.user.userId,
+    );
     return ok(result, 'Invitation accepted successfully');
   }
 

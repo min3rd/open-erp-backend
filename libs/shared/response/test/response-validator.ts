@@ -31,10 +31,7 @@ export class ResponseValidator {
 
     // Check message field (optional but must be string or null)
     if ('message' in response) {
-      if (
-        response.message !== null &&
-        typeof response.message !== 'string'
-      ) {
+      if (response.message !== null && typeof response.message !== 'string') {
         errors.push('Message must be string or null');
       }
     }
@@ -196,8 +193,9 @@ export class ResponseValidator {
     }
 
     if (options?.expectSingleResource && response.data) {
-      const singleResourceResult =
-        this.validateSingleResourceData(response.data);
+      const singleResourceResult = this.validateSingleResourceData(
+        response.data,
+      );
       if (!singleResourceResult.valid) {
         return singleResourceResult;
       }

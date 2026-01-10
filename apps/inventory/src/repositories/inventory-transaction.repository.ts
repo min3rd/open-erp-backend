@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { InventoryTransaction, InventoryTransactionDocument } from '@shared/schemas';
+import {
+  InventoryTransaction,
+  InventoryTransactionDocument,
+} from '@shared/schemas';
 import { InventoryTransactionType, TransactionStatus } from '@shared/constants';
 
 @Injectable()
@@ -188,7 +191,9 @@ export class InventoryTransactionRepository {
 
     let sequence = 1;
     if (lastTransaction && lastTransaction.transactionNumber) {
-      const lastSequence = parseInt(lastTransaction.transactionNumber.slice(-4));
+      const lastSequence = parseInt(
+        lastTransaction.transactionNumber.slice(-4),
+      );
       if (!isNaN(lastSequence)) {
         sequence = lastSequence + 1;
       }

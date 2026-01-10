@@ -422,10 +422,9 @@ describe('NavigationService', () => {
 
       expect(result).toHaveLength(1);
       expect(result[0].id).toBe('nav-dashboard');
-      expect(mockAuthorizationService.getEffectivePermissions).toHaveBeenCalledWith(
-        'user-123',
-        'organization',
-      );
+      expect(
+        mockAuthorizationService.getEffectivePermissions,
+      ).toHaveBeenCalledWith('user-123', 'organization');
     });
 
     it('should return user navigation in flat format', async () => {

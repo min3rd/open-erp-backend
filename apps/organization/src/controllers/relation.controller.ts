@@ -63,7 +63,8 @@ export class RelationController {
   @ApiResponse({ status: 200, description: 'Relations retrieved successfully' })
   @Permissions('relation.read')
   async findByOrganization(@Param('organizationId') organizationId: string) {
-    const relations = await this.relationService.findByOrganization(organizationId);
+    const relations =
+      await this.relationService.findByOrganization(organizationId);
     return ok(relations, 'Relations retrieved successfully');
   }
 
@@ -76,7 +77,11 @@ export class RelationController {
     @Body() updateDto: UpdateRelationDto,
     @Request() req: AuthenticatedRequest,
   ) {
-    const relation = await this.relationService.update(id, updateDto as any, req.user.userId);
+    const relation = await this.relationService.update(
+      id,
+      updateDto as any,
+      req.user.userId,
+    );
     return updated(relation, 'Relation updated successfully');
   }
 

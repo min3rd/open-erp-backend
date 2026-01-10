@@ -169,48 +169,48 @@ describe('API Response Contract Tests (Sample)', () => {
 
 /**
  * Example usage in actual integration tests:
- * 
+ *
  * describe('User API', () => {
  *   let app: INestApplication;
- * 
+ *
  *   beforeAll(async () => {
  *     // Setup test app
  *   });
- * 
+ *
  *   it('GET /users should return valid paginated response', async () => {
  *     const response = await request(app.getHttpServer())
  *       .get('/users')
  *       .expect(200);
- * 
+ *
  *     const validation = ResponseValidator.validate(response.body, {
  *       expectPaginated: true,
  *     });
- * 
+ *
  *     expect(validation.valid).toBe(true);
  *     expect(response.body.success).toBe(true);
  *     expect(Array.isArray(response.body.data.items)).toBe(true);
  *   });
- * 
+ *
  *   it('GET /users/:id should return valid single resource response', async () => {
  *     const response = await request(app.getHttpServer())
  *       .get('/users/123')
  *       .expect(200);
- * 
+ *
  *     const validation = ResponseValidator.validate(response.body, {
  *       expectSingleResource: true,
  *     });
- * 
+ *
  *     expect(validation.valid).toBe(true);
  *     expect(response.body.data.mode).toBe('get');
  *   });
- * 
+ *
  *   it('should return valid error response for not found', async () => {
  *     const response = await request(app.getHttpServer())
  *       .get('/users/nonexistent')
  *       .expect(404);
- * 
+ *
  *     const validation = ResponseValidator.validateEnvelope(response.body);
- * 
+ *
  *     expect(validation.valid).toBe(true);
  *     expect(response.body.success).toBe(false);
  *     expect(response.body.error).toBeDefined();

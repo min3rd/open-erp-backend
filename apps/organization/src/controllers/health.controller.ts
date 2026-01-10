@@ -15,7 +15,7 @@ export class HealthController {
         service: 'tenant-service',
         timestamp: new Date().toISOString(),
       },
-      'Organization service is healthy'
+      'Organization service is healthy',
     );
   }
 }

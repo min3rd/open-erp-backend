@@ -32,13 +32,17 @@ export class RefreshTokenRepository {
     return refreshToken.save();
   }
 
-  async findByTokenHash(tokenHash: string): Promise<RefreshTokenDocument | null> {
+  async findByTokenHash(
+    tokenHash: string,
+  ): Promise<RefreshTokenDocument | null> {
     return this.refreshTokenModel.findOne({
       tokenHash,
     });
   }
 
-  async findValidByTokenHash(tokenHash: string): Promise<RefreshTokenDocument | null> {
+  async findValidByTokenHash(
+    tokenHash: string,
+  ): Promise<RefreshTokenDocument | null> {
     return this.refreshTokenModel.findOne({
       tokenHash,
       revoked: false,
@@ -63,7 +67,10 @@ export class RefreshTokenRepository {
     });
   }
 
-  async revokeToken(tokenHash: string, reason: string): Promise<RefreshTokenDocument | null> {
+  async revokeToken(
+    tokenHash: string,
+    reason: string,
+  ): Promise<RefreshTokenDocument | null> {
     return this.refreshTokenModel.findOneAndUpdate(
       { tokenHash },
       {
@@ -92,7 +99,10 @@ export class RefreshTokenRepository {
     );
   }
 
-  async revokeAllUserTokens(userId: Types.ObjectId, reason: string): Promise<number> {
+  async revokeAllUserTokens(
+    userId: Types.ObjectId,
+    reason: string,
+  ): Promise<number> {
     const result = await this.refreshTokenModel.updateMany(
       { userId, revoked: false },
       {

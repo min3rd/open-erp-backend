@@ -10,7 +10,9 @@ export class InventoryStockRepository {
     private readonly stockModel: Model<InventoryStockDocument>,
   ) {}
 
-  async create(stockData: Partial<InventoryStock>): Promise<InventoryStockDocument> {
+  async create(
+    stockData: Partial<InventoryStock>,
+  ): Promise<InventoryStockDocument> {
     const stock = new this.stockModel(stockData);
     return stock.save();
   }
@@ -104,7 +106,7 @@ export class InventoryStockRepository {
     },
   ): Promise<InventoryStockDocument | null> {
     const updateFields: any = {};
-    
+
     if (quantities.availableQuantity !== undefined) {
       updateFields.availableQuantity = quantities.availableQuantity;
     }
@@ -138,7 +140,10 @@ export class InventoryStockRepository {
 
     const query: any = {
       $expr: {
-        $lt: ['$availableQuantity', { $ifNull: ['$productSnapshot.minStockLevel', 0] }],
+        $lt: [
+          '$availableQuantity',
+          { $ifNull: ['$productSnapshot.minStockLevel', 0] },
+        ],
       },
     };
 

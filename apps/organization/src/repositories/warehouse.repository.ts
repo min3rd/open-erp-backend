@@ -9,7 +9,11 @@ import {
   Ward,
   WardDocument,
 } from '@shared/schemas';
-import { CreateWarehouseDto, UpdateWarehouseDto, QueryWarehouseDto } from '../dto/warehouse.dto';
+import {
+  CreateWarehouseDto,
+  UpdateWarehouseDto,
+  QueryWarehouseDto,
+} from '../dto/warehouse.dto';
 
 @Injectable()
 export class WarehouseRepository {
@@ -25,7 +29,10 @@ export class WarehouseRepository {
   /**
    * Create a new warehouse
    */
-  async create(createDto: CreateWarehouseDto, createdBy: string): Promise<WarehouseDocument> {
+  async create(
+    createDto: CreateWarehouseDto,
+    createdBy: string,
+  ): Promise<WarehouseDocument> {
     const warehouse = new this.warehouseModel({
       ...createDto,
       createdBy,
@@ -42,8 +49,19 @@ export class WarehouseRepository {
     page: number;
     limit: number;
   }> {
-    const { page = 1, limit = 10, type, status, provinceCode, wardCode, region, tenantId, search, bbox } = query;
-    
+    const {
+      page = 1,
+      limit = 10,
+      type,
+      status,
+      provinceCode,
+      wardCode,
+      region,
+      tenantId,
+      search,
+      bbox,
+    } = query;
+
     const filter: any = {};
 
     if (type) {
@@ -120,7 +138,10 @@ export class WarehouseRepository {
   /**
    * Find warehouse by code
    */
-  async findByCode(code: string, tenantId?: string): Promise<WarehouseDocument | null> {
+  async findByCode(
+    code: string,
+    tenantId?: string,
+  ): Promise<WarehouseDocument | null> {
     const filter: any = { code };
     if (tenantId) {
       filter.tenantId = tenantId;
@@ -204,7 +225,10 @@ export class WarehouseRepository {
   /**
    * Get ward by code
    */
-  async getWard(code: string, provinceCode: string): Promise<WardDocument | null> {
+  async getWard(
+    code: string,
+    provinceCode: string,
+  ): Promise<WardDocument | null> {
     return this.wardModel.findOne({ code, provinceCode }).exec();
   }
 

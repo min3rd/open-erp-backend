@@ -81,7 +81,8 @@ export class ProductVersion extends Document {
   metadata?: Map<string, any>;
 }
 
-export const ProductVersionSchema = SchemaFactory.createForClass(ProductVersion);
+export const ProductVersionSchema =
+  SchemaFactory.createForClass(ProductVersion);
 
 // ========== INDEXES ==========
 

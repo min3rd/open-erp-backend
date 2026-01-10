@@ -444,7 +444,10 @@ WarehouseSchema.index({ type: 1, status: 1 });
 WarehouseSchema.index({ region: 1, status: 1 });
 
 // TTL index for soft-deleted warehouses (auto-delete after 2 years)
-WarehouseSchema.index({ deletedAt: 1 }, { expireAfterSeconds: TTL_SOFT_DELETE_SECONDS });
+WarehouseSchema.index(
+  { deletedAt: 1 },
+  { expireAfterSeconds: TTL_SOFT_DELETE_SECONDS },
+);
 
 // ========== VIRTUALS ==========
 
