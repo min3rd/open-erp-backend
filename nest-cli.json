@@ -61,6 +61,15 @@
       "compilerOptions": {
         "tsConfigPath": "apps/inventory/tsconfig.json"
       }
+    },
+    "common-service": {
+      "type": "application",
+      "root": "apps/common-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/common-service/src",
+      "compilerOptions": {
+        "tsConfigPath": "apps/common-service/tsconfig.json"
+      }
     }
   }
 }

@@ -15,3 +15,4 @@ export * from './product.schema';
 export * from './product-version.schema';
 export * from './inventory-stock.schema';
 export * from './inventory-transaction.schema';
+export * from './address.schema';
