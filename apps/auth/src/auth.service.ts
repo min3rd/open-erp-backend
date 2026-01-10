@@ -17,6 +17,10 @@ import {
   AUTH_RESET_TOKEN_INVALID,
   AUTH_RESET_TOKEN_EXPIRED,
   AUTH_RESET_RATE_LIMIT,
+  AUTH_REFRESH_TOKEN_INVALID,
+  AUTH_REFRESH_TOKEN_EXPIRED,
+  AUTH_REFRESH_TOKEN_REVOKED,
+  AUTH_REFRESH_TOKEN_REUSED,
   DB_DUPLICATE_KEY,
   USER_NOT_FOUND,
 } from '@shared/errors';
@@ -29,6 +33,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { hashPassword, comparePassword } from './utils/password.util';
 import {
   generateVerificationCode,
@@ -38,6 +43,7 @@ import {
   calculateExpirationDate,
   generateResetToken,
   hashToken,
+  hashRefreshToken,
 } from './utils/token.util';
 import { Types } from 'mongoose';
 
@@ -349,14 +355,15 @@ export class AuthService {
     );
 
     const refreshTokenValue = generateRefreshToken();
+    const refreshTokenHash = hashRefreshToken(refreshTokenValue, this.jwtSecret);
     const refreshTokenExpiresAt = calculateExpirationDate(
       this.jwtRefreshExpiresIn,
     );
 
-    // Save refresh token to database
+    // Save hashed refresh token to database
     await this.refreshTokenRepository.create(
       new Types.ObjectId(user.id),
-      refreshTokenValue,
+      refreshTokenHash,
       refreshTokenExpiresAt,
     );
 
@@ -811,6 +818,191 @@ export class AuthService {
       success: true,
       message:
         'Password has been reset successfully. You can now log in with your new password.',
+    };
+  }
+
+  async refreshToken(data: RefreshTokenDto) {
+    const { refreshToken } = data;
+
+    // Hash the provided refresh token to look up in database
+    const tokenHash = hashRefreshToken(refreshToken, this.jwtSecret);
+
+    // Find the refresh token in database
+    const storedToken = await this.refreshTokenRepository.findByTokenHash(tokenHash);
+
+    if (!storedToken) {
+      this.logger.warn('Refresh token not found in database');
+      throw ErrorFactory.createError({
+        code: AUTH_REFRESH_TOKEN_INVALID,
+      });
+    }
+
+    // Check for token reuse - if token is already rotated, it means it was used before
+    if (storedToken.isRotated) {
+      this.logger.error({
+        event: 'refresh.token.reuse.detected',
+        userId: storedToken.userId.toString(),
+        tokenId: storedToken._id.toString(),
+        timestamp: new Date().toISOString(),
+      });
+
+      // Security measure: Revoke all refresh tokens for this user
+      await this.refreshTokenRepository.revokeAllUserTokens(
+        storedToken.userId,
+        'token_reuse_detected',
+      );
+
+      // Publish security event
+      this.userClient.emit(EVENT_NAMES.AUTH.USER_LOGOUT, {
+        userId: storedToken.userId.toString(),
+        reason: 'token_reuse_detected',
+        timestamp: new Date(),
+      });
+
+      throw ErrorFactory.createError({
+        code: AUTH_REFRESH_TOKEN_REUSED,
+        details: {
+          message: 'All sessions have been terminated for security reasons.',
+        },
+      });
+    }
+
+    // Check if token is expired
+    if (storedToken.expiresAt < new Date()) {
+      this.logger.warn({
+        event: 'refresh.token.expired',
+        userId: storedToken.userId.toString(),
+        tokenId: storedToken._id.toString(),
+        expiresAt: storedToken.expiresAt.toISOString(),
+        timestamp: new Date().toISOString(),
+      });
+
+      throw ErrorFactory.createError({
+        code: AUTH_REFRESH_TOKEN_EXPIRED,
+      });
+    }
+
+    // Check if token is revoked
+    if (storedToken.revoked) {
+      this.logger.warn({
+        event: 'refresh.token.revoked',
+        userId: storedToken.userId.toString(),
+        tokenId: storedToken._id.toString(),
+        revokedReason: storedToken.revokedReason,
+        timestamp: new Date().toISOString(),
+      });
+
+      throw ErrorFactory.createError({
+        code: AUTH_REFRESH_TOKEN_REVOKED,
+        details: {
+          reason: storedToken.revokedReason,
+        },
+      });
+    }
+
+    // Get user with roles for JWT payload
+    const userWithRoles = await firstValueFrom(
+      this.userClient.send(RPC_METHODS.USER.GET_USER_WITH_ROLES, {
+        userId: storedToken.userId.toString(),
+      }),
+    );
+
+    if (!userWithRoles) {
+      this.logger.error({
+        event: 'refresh.token.user.not.found',
+        userId: storedToken.userId.toString(),
+        timestamp: new Date().toISOString(),
+      });
+
+      throw ErrorFactory.createError({
+        code: USER_NOT_FOUND,
+      });
+    }
+
+    // Check if user account is still active
+    if (userWithRoles.status !== 'active') {
+      this.logger.warn({
+        event: 'refresh.token.user.inactive',
+        userId: storedToken.userId.toString(),
+        status: userWithRoles.status,
+        timestamp: new Date().toISOString(),
+      });
+
+      throw ErrorFactory.createError({
+        code: AUTH_INVALID_CREDENTIALS,
+        details: {
+          reason: 'Account is not active',
+        },
+      });
+    }
+
+    // Extract role codes for JWT
+    const roleCodes: string[] = [];
+    if (
+      userWithRoles?.roleAssignments &&
+      Array.isArray(userWithRoles.roleAssignments)
+    ) {
+      for (const assignment of userWithRoles.roleAssignments) {
+        if (
+          assignment.roleId &&
+          typeof assignment.roleId === 'object' &&
+          assignment.roleId.code
+        ) {
+          roleCodes.push(assignment.roleId.code);
+        }
+      }
+    }
+
+    // Generate new access token
+    const accessToken = generateAccessToken(
+      storedToken.userId.toString(),
+      userWithRoles.email,
+      this.jwtSecret,
+      this.jwtAccessExpiresIn,
+      roleCodes.length > 0 ? roleCodes : undefined,
+      userWithRoles.organizationId?.toString(),
+    );
+
+    // Token rotation: Generate new refresh token
+    const newRefreshTokenValue = generateRefreshToken();
+    const newRefreshTokenHash = hashRefreshToken(newRefreshTokenValue, this.jwtSecret);
+    const newRefreshTokenExpiresAt = calculateExpirationDate(
+      this.jwtRefreshExpiresIn,
+    );
+
+    // Create new refresh token
+    const newRefreshToken = await this.refreshTokenRepository.create(
+      storedToken.userId,
+      newRefreshTokenHash,
+      newRefreshTokenExpiresAt,
+      storedToken.deviceInfo,
+      storedToken.ipAddress,
+    );
+
+    // Mark old token as rotated
+    await this.refreshTokenRepository.markAsRotated(
+      tokenHash,
+      newRefreshToken._id as Types.ObjectId,
+    );
+
+    // Log successful refresh
+    this.logger.log({
+      event: 'refresh.token.success',
+      userId: storedToken.userId.toString(),
+      oldTokenId: storedToken._id.toString(),
+      newTokenId: newRefreshToken._id.toString(),
+      timestamp: new Date().toISOString(),
+    });
+
+    // Return new tokens
+    return {
+      accessToken,
+      refreshToken: newRefreshTokenValue,
+      user: {
+        email: userWithRoles.email,
+        fullName: userWithRoles.fullName || userWithRoles.username,
+        avatarUrl: userWithRoles.avatarUrl || null,
+      },
     };
   }
 

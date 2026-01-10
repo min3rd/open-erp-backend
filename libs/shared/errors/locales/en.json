@@ -8,7 +8,11 @@
     "verification_rate_limit": "Too many verification attempts. Please wait before requesting another code.",
     "verification_code_expired": "Your verification code has expired. Please request a new one.",
     "verification_code_invalid": "The verification code you entered is invalid. Please check and try again.",
-    "user_already_verified": "Your email is already verified."
+    "user_already_verified": "Your email is already verified.",
+    "refresh_token_invalid": "Invalid refresh token. Please log in again.",
+    "refresh_token_expired": "Your refresh token has expired. Please log in again.",
+    "refresh_token_revoked": "Your refresh token has been revoked. Please log in again.",
+    "refresh_token_reused": "Token reuse detected. For security, all your sessions have been terminated. Please log in again."
   },
   "user": {
     "not_found": "User not found.",

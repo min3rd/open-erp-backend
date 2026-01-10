@@ -57,11 +57,12 @@ export function generateAccessToken(
 }
 
 /**
- * Generate refresh token (UUID-based)
- * @returns Refresh token string
+ * Generate refresh token (cryptographically secure random token)
+ * @returns Refresh token string (64 characters hex)
  */
 export function generateRefreshToken(): string {
-  return uuidv4();
+  // Generate 32 bytes (256 bits) of random data
+  return crypto.randomBytes(32).toString('hex');
 }
 
 /**
@@ -129,4 +130,16 @@ export function generateResetToken(): string {
  */
 export function hashToken(token: string): string {
   return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+/**
+ * Hash a refresh token using HMAC-SHA256 with server secret for secure storage
+ * This provides additional security over plain SHA256 by using a secret key
+ * @param token - Refresh token to hash
+ * @param secret - Server secret for HMAC (defaults to JWT_SECRET from env)
+ * @returns Hashed token (hex encoded)
+ */
+export function hashRefreshToken(token: string, secret?: string): string {
+  const hmacSecret = secret || process.env.JWT_SECRET || 'default-secret-change-me';
+  return crypto.createHmac('sha256', hmacSecret).update(token).digest('hex');
 }
