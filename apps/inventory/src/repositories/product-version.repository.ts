@@ -21,7 +21,7 @@ export class ProductVersionRepository {
   ): Promise<{ items: ProductVersionDocument[]; total: number }> {
     const { skip = 0, limit = 10 } = options;
 
-    const query = { productId: new Types.ObjectId(productId) };
+    const query: any = { productId: new Types.ObjectId(productId) };
 
     const [items, total] = await Promise.all([
       this.versionModel
@@ -41,20 +41,20 @@ export class ProductVersionRepository {
       .findOne({
         productId: new Types.ObjectId(productId),
         version,
-      })
+      } as any)
       .exec();
   }
 
   async getLatestVersion(productId: string): Promise<ProductVersionDocument | null> {
     return this.versionModel
-      .findOne({ productId: new Types.ObjectId(productId) })
+      .findOne({ productId: new Types.ObjectId(productId) } as any)
       .sort({ version: -1 })
       .exec();
   }
 
   async deleteByProductId(productId: string): Promise<boolean> {
     const result = await this.versionModel
-      .deleteMany({ productId: new Types.ObjectId(productId) })
+      .deleteMany({ productId: new Types.ObjectId(productId) } as any)
       .exec();
     return result.deletedCount > 0;
   }
