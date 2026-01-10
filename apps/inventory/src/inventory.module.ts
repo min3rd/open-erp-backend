@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
-import { ConfigModule, ConfigService } from '@nestjs/config';
+import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
+import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
 
 // Import schemas
 import {
@@ -47,31 +48,10 @@ import { PermissionService } from '@shared/services';
       envFilePath: '.env',
     }),
     MongooseModule.forRootAsync({
-      imports: [ConfigModule],
-      useFactory: async (configService: ConfigService) => {
-        // Support both MONGODB_URI and separate user/password credentials
-        let uri = configService.get<string>('MONGODB_URI');
-        
-        if (!uri) {
-          // Build URI from separate components
-          const host = configService.get<string>('MONGODB_HOST') || 'localhost';
-          const port = configService.get<string>('MONGODB_PORT') || '27017';
-          const user = configService.get<string>('MONGODB_USER');
-          const password = configService.get<string>('MONGODB_PASSWORD');
-          
-          if (user && password) {
-            uri = `mongodb://${user}:${password}@${host}:${port}`;
-          } else {
-            uri = `mongodb://${host}:${port}`;
-          }
-        }
-        
-        return {
-          uri,
-          dbName: configService.get<string>('MONGODB_DB_NAME') || 'open_erp',
-        };
+      useFactory: () => {
+        const config = getDatabaseConfig();
+        return getMongooseOptions(config);
       },
-      inject: [ConfigService],
     }),
     MongooseModule.forFeature([
       { name: Product.name, schema: ProductSchema },
