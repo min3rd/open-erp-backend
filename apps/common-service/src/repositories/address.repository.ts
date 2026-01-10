@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery } from 'mongoose';
+import { Model } from 'mongoose';
 import { Address, AddressDocument } from '@shared/schemas';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class AddressRepository {
   ) {}
 
   async findAll(
-    filter: FilterQuery<Address> = {},
+    filter: Record<string, any> = {},
     options?: {
       skip?: number;
       limit?: number;
@@ -67,13 +67,13 @@ export class AddressRepository {
 
   async search(
     searchTerm: string,
-    filter: FilterQuery<Address> = {},
+    filter: Record<string, any> = {},
     options?: {
       skip?: number;
       limit?: number;
     },
   ): Promise<{ items: Address[]; total: number }> {
-    const searchFilter: FilterQuery<Address> = {
+    const searchFilter: Record<string, any> = {
       ...filter,
       $text: { $search: searchTerm },
     };

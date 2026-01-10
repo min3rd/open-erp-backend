@@ -178,7 +178,7 @@ export class ProvinceController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Create a new province (Admin only)',
@@ -222,7 +222,7 @@ export class ProvinceController {
 
   @Patch(':code')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Update province by code (Admin only)',
@@ -253,7 +253,7 @@ export class ProvinceController {
 
   @Delete(':code')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Delete province by code (Admin only)',
