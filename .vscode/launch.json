@@ -45,6 +45,24 @@
       "runtimeArgs": ["run", "start:organization:dev"],
       "sourceMaps": true,
       "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Inventory Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:inventory:dev"],
+      "sourceMaps": true,
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Common Service (Dev)",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "start:common:dev"],
+      "sourceMaps": true,
+      "console": "integratedTerminal"
     }
   ]
 }
