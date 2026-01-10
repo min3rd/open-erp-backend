@@ -4,9 +4,9 @@ import { Polygon, MultiPolygon, Point } from 'geojson';
  * Geometry source enumeration
  */
 export enum GeometrySource {
-  GOV = 'gov',           // Official government data
+  GOV = 'gov', // Official government data
   UPLOADED = 'uploaded', // User uploaded
-  MANUAL = 'manual',     // Manually created
+  MANUAL = 'manual', // Manually created
 }
 
 /**
@@ -26,11 +26,11 @@ export type BBox = [number, number, number, number];
  * Geometry metadata
  */
 export interface GeometryMeta {
-  crs?: string;               // Coordinate Reference System (e.g., 'EPSG:4326')
+  crs?: string; // Coordinate Reference System (e.g., 'EPSG:4326')
   simplificationLevel?: number; // 0-10, higher means more simplified
-  accuracy?: number;          // Accuracy in meters
-  source?: string;            // Data source details
-  [key: string]: any;         // Additional metadata
+  accuracy?: number; // Accuracy in meters
+  source?: string; // Data source details
+  [key: string]: any; // Additional metadata
 }
 
 /**

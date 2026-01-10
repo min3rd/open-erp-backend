@@ -61,7 +61,10 @@ export class DistrictRepository {
     return district.save();
   }
 
-  async update(code: string, data: Partial<District>): Promise<District | null> {
+  async update(
+    code: string,
+    data: Partial<District>,
+  ): Promise<District | null> {
     return this.districtModel
       .findOneAndUpdate({ code }, data, { new: true })
       .exec();
@@ -88,7 +91,9 @@ export class DistrictRepository {
       ],
     };
 
-    const query = this.districtModel.find(searchFilter).sort({ sortOrder: 1, name: 1 });
+    const query = this.districtModel
+      .find(searchFilter)
+      .sort({ sortOrder: 1, name: 1 });
 
     if (options?.skip !== undefined) {
       query.skip(options.skip);
@@ -111,7 +116,7 @@ export class DistrictRepository {
    */
   async findWithinBBox(bbox: BBox): Promise<District[]> {
     const [minLon, minLat, maxLon, maxLat] = bbox;
-    
+
     return this.districtModel
       .find({
         geometry: {

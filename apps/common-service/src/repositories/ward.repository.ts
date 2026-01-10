@@ -95,7 +95,9 @@ export class WardRepository {
       ],
     };
 
-    const query = this.wardModel.find(searchFilter).sort({ sortOrder: 1, name: 1 });
+    const query = this.wardModel
+      .find(searchFilter)
+      .sort({ sortOrder: 1, name: 1 });
 
     if (options?.skip !== undefined) {
       query.skip(options.skip);
@@ -118,7 +120,7 @@ export class WardRepository {
    */
   async findWithinBBox(bbox: BBox): Promise<Ward[]> {
     const [minLon, minLat, maxLon, maxLat] = bbox;
-    
+
     return this.wardModel
       .find({
         geometry: {

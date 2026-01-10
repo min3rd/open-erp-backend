@@ -1,4 +1,15 @@
-import { IsEnum, IsOptional, IsNumber, IsString, IsObject, ValidateNested, IsArray, IsIn, Min, Max } from 'class-validator';
+import {
+  IsEnum,
+  IsOptional,
+  IsNumber,
+  IsString,
+  IsObject,
+  ValidateNested,
+  IsArray,
+  IsIn,
+  Min,
+  Max,
+} from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { GeometrySource, GeometryDetail } from '@shared/types/geometry.types';
@@ -20,7 +31,10 @@ export class CentroidDto {
  * DTO for bounding box [minLon, minLat, maxLon, maxLat]
  */
 export class BBoxDto {
-  @ApiProperty({ example: [105.0, 20.0, 106.0, 21.0], description: 'Bounding box [minLon, minLat, maxLon, maxLat]' })
+  @ApiProperty({
+    example: [105.0, 20.0, 106.0, 21.0],
+    description: 'Bounding box [minLon, minLat, maxLon, maxLat]',
+  })
   @IsArray()
   @IsNumber({}, { each: true })
   bbox: [number, number, number, number];
@@ -30,12 +44,18 @@ export class BBoxDto {
  * DTO for geometry metadata
  */
 export class GeometryMetaDto {
-  @ApiPropertyOptional({ example: 'EPSG:4326', description: 'Coordinate Reference System' })
+  @ApiPropertyOptional({
+    example: 'EPSG:4326',
+    description: 'Coordinate Reference System',
+  })
   @IsOptional()
   @IsString()
   crs?: string;
 
-  @ApiPropertyOptional({ example: 5, description: 'Simplification level (0-10)' })
+  @ApiPropertyOptional({
+    example: 5,
+    description: 'Simplification level (0-10)',
+  })
   @IsOptional()
   @IsNumber()
   @Min(0)
@@ -86,7 +106,10 @@ export class ImportGeoJsonDto {
   @IsObject()
   featureCollection: any;
 
-  @ApiPropertyOptional({ enum: GeometrySource, default: GeometrySource.UPLOADED })
+  @ApiPropertyOptional({
+    enum: GeometrySource,
+    default: GeometrySource.UPLOADED,
+  })
   @IsOptional()
   @IsEnum(GeometrySource)
   geometrySource?: GeometrySource;
@@ -109,17 +132,26 @@ export class ImportGeoJsonDto {
  * DTO for spatial query parameters
  */
 export class SpatialQueryDto {
-  @ApiPropertyOptional({ example: '105.0,20.0,106.0,21.0', description: 'Bounding box: minLon,minLat,maxLon,maxLat' })
+  @ApiPropertyOptional({
+    example: '105.0,20.0,106.0,21.0',
+    description: 'Bounding box: minLon,minLat,maxLon,maxLat',
+  })
   @IsOptional()
   @IsString()
   bbox?: string;
 
-  @ApiPropertyOptional({ example: '105.8542,21.0285', description: 'Point coordinates: lon,lat' })
+  @ApiPropertyOptional({
+    example: '105.8542,21.0285',
+    description: 'Point coordinates: lon,lat',
+  })
   @IsOptional()
   @IsString()
   point?: string;
 
-  @ApiPropertyOptional({ example: 10000, description: 'Radius in meters for point queries' })
+  @ApiPropertyOptional({
+    example: 10000,
+    description: 'Radius in meters for point queries',
+  })
   @IsOptional()
   @IsNumber()
   radius?: number;
@@ -134,7 +166,11 @@ export class SpatialQueryDto {
  * DTO for export format
  */
 export class ExportGeometryDto {
-  @ApiPropertyOptional({ example: 'geojson', enum: ['geojson', 'wkt'], default: 'geojson' })
+  @ApiPropertyOptional({
+    example: 'geojson',
+    enum: ['geojson', 'wkt'],
+    default: 'geojson',
+  })
   @IsOptional()
   @IsIn(['geojson', 'wkt'])
   format?: string;

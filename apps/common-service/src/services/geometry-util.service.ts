@@ -1,12 +1,11 @@
 import { Injectable, BadRequestException } from '@nestjs/common';
 import * as turf from '@turf/turf';
 import { validate as validateGeoJSON } from 'geojson-validation';
-import { Polygon, MultiPolygon, FeatureCollection, Feature } from 'geojson';
+import { FeatureCollection, Feature } from 'geojson';
 import {
   AdminGeometry,
   Centroid,
   BBox,
-  GeometryMeta,
 } from '@shared/types/geometry.types';
 
 /**
@@ -40,11 +39,14 @@ export class GeometryUtilService {
       if (kinks.features.length > 0) {
         throw new BadRequestException('Geometry has self-intersections');
       }
-    } catch (error) {
-      if (error instanceof BadRequestException) {
-        throw error;
+    } catch (err) {
+      if (err instanceof BadRequestException) {
+        throw err;
       }
-      throw new BadRequestException(`Invalid geometry topology: ${error.message}`);
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+      throw new BadRequestException(
+        `Invalid geometry topology: ${errorMessage}`,
+      );
     }
 
     // Check coordinate bounds (must be valid lat/lon)
@@ -54,17 +56,18 @@ export class GeometryUtilService {
   /**
    * Validate coordinate bounds (lat: -90 to 90, lon: -180 to 180)
    */
-  private validateCoordinateBounds(geometry: any): void {
+  private validateCoordinateBounds(geometry: AdminGeometry): void {
     const coordinates = geometry.coordinates;
-    
-    const checkCoord = (coord: any) => {
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const checkCoord = (coord: any): void => {
       if (Array.isArray(coord[0])) {
         coord.forEach(checkCoord);
       } else {
         const [lon, lat] = coord;
         if (lon < -180 || lon > 180 || lat < -90 || lat > 90) {
           throw new BadRequestException(
-            `Invalid coordinates: lon=${lon}, lat=${lat}. Must be within valid bounds.`
+            `Invalid coordinates: lon=${lon}, lat=${lat}. Must be within valid bounds.`,
           );
         }
       }
@@ -166,7 +169,9 @@ export class GeometryUtilService {
   /**
    * Parse FeatureCollection and extract features by code
    */
-  parseFeatureCollection(featureCollection: FeatureCollection): Map<string, Feature> {
+  parseFeatureCollection(
+    featureCollection: FeatureCollection,
+  ): Map<string, Feature> {
     if (featureCollection.type !== 'FeatureCollection') {
       throw new BadRequestException('Input must be a FeatureCollection');
     }
@@ -175,8 +180,11 @@ export class GeometryUtilService {
 
     for (const feature of featureCollection.features) {
       // Try to extract code from properties
-      const code = feature.properties?.code || feature.properties?.Code || feature.properties?.CODE;
-      
+      const code =
+        feature.properties?.code ||
+        feature.properties?.Code ||
+        feature.properties?.CODE;
+
       if (!code) {
         // Skip features without code
         continue;
@@ -207,31 +215,36 @@ export class GeometryUtilService {
   intersects(geometry1: AdminGeometry, geometry2: AdminGeometry): boolean {
     const feature1 = turf.feature(geometry1);
     const feature2 = turf.feature(geometry2);
-    
+
     try {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const intersection = turf.intersect(feature1 as any, feature2 as any);
       return intersection !== null;
-    } catch (error) {
+    } catch {
       return false;
     }
   }
 
   /**
-   * Convert WKT to GeoJSON (basic implementation)
+   * Convert WKT to GeoJSON (not yet implemented)
    */
-  wktToGeoJSON(wkt: string): AdminGeometry {
+  wktToGeoJSON(): AdminGeometry {
     // This is a simplified implementation
     // In production, use a library like wellknown or wkt-parser
-    throw new BadRequestException('WKT conversion not yet implemented. Please provide GeoJSON.');
+    throw new BadRequestException(
+      'WKT conversion not yet implemented. Please provide GeoJSON.',
+    );
   }
 
   /**
-   * Convert GeoJSON to WKT (basic implementation)
+   * Convert GeoJSON to WKT (not yet implemented)
    */
-  geoJSONToWKT(geometry: AdminGeometry): string {
+  geoJSONToWKT(): string {
     // This is a simplified implementation
     // In production, use a library like wellknown
-    throw new BadRequestException('WKT export not yet implemented. Please use GeoJSON format.');
+    throw new BadRequestException(
+      'WKT export not yet implemented. Please use GeoJSON format.',
+    );
   }
 
   /**
@@ -240,10 +253,10 @@ export class GeometryUtilService {
   validateFileSize(data: any, maxSizeInMB: number = 10): void {
     const jsonString = JSON.stringify(data);
     const sizeInMB = Buffer.byteLength(jsonString, 'utf8') / (1024 * 1024);
-    
+
     if (sizeInMB > maxSizeInMB) {
       throw new BadRequestException(
-        `File size exceeds maximum allowed size of ${maxSizeInMB}MB. Current size: ${sizeInMB.toFixed(2)}MB`
+        `File size exceeds maximum allowed size of ${maxSizeInMB}MB. Current size: ${sizeInMB.toFixed(2)}MB`,
       );
     }
   }

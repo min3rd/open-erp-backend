@@ -6,17 +6,21 @@ import {
   HttpException,
   BadRequestException,
 } from '@nestjs/common';
-import {
-  ApiTags,
-  ApiOperation,
-  ApiResponse,
-  ApiQuery,
-} from '@nestjs/swagger';
+import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { ProvinceService } from '../services/province.service';
 import { DistrictService } from '../services/district.service';
 import { WardService } from '../services/ward.service';
 import { error, ok } from '@shared/response';
 import { GeometryDetail } from '@shared/types/geometry.types';
+
+/**
+ * Interface for spatial query results
+ */
+export interface SpatialResult {
+  provinces?: unknown[];
+  districts?: unknown[];
+  wards?: unknown[];
+}
 
 /**
  * Controller for spatial queries across administrative regions
@@ -33,7 +37,8 @@ export class RegionController {
   @Get('within')
   @ApiOperation({
     summary: 'Find administrative regions within a bounding box',
-    description: 'Spatial query to find provinces, districts, and wards within a bounding box',
+    description:
+      'Spatial query to find provinces, districts, and wards within a bounding box',
   })
   @ApiQuery({
     name: 'bbox',
@@ -72,9 +77,14 @@ export class RegionController {
         );
       }
 
-      const bbox: [number, number, number, number] = bboxParts as [number, number, number, number];
+      const bbox: [number, number, number, number] = bboxParts as [
+        number,
+        number,
+        number,
+        number,
+      ];
 
-      const result: any = {};
+      const result: SpatialResult = {};
 
       // Query based on type
       if (type === 'province' || type === 'all') {
@@ -99,8 +109,9 @@ export class RegionController {
       if (err instanceof HttpException) {
         throw err;
       }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to query regions';
       throw new HttpException(
-        error('SPATIAL_QUERY_ERROR', err.message || 'Failed to query regions'),
+        error('SPATIAL_QUERY_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -109,7 +120,8 @@ export class RegionController {
   @Get('near')
   @ApiOperation({
     summary: 'Find administrative regions near a point',
-    description: 'Spatial query to find provinces, districts, and wards near a coordinate',
+    description:
+      'Spatial query to find provinces, districts, and wards near a coordinate',
   })
   @ApiQuery({
     name: 'lon',
@@ -158,18 +170,23 @@ export class RegionController {
   ) {
     try {
       // Validate coordinates
-      const longitude = parseFloat(lon as any);
-      const latitude = parseFloat(lat as any);
+      const longitude = parseFloat(String(lon));
+      const latitude = parseFloat(String(lat));
 
       if (isNaN(longitude) || isNaN(latitude)) {
         throw new BadRequestException('Invalid coordinates');
       }
 
-      if (longitude < -180 || longitude > 180 || latitude < -90 || latitude > 90) {
+      if (
+        longitude < -180 ||
+        longitude > 180 ||
+        latitude < -90 ||
+        latitude > 90
+      ) {
         throw new BadRequestException('Coordinates out of valid range');
       }
 
-      const result: any = {};
+      const result: SpatialResult = {};
 
       // Query based on type
       if (type === 'province' || type === 'all') {
@@ -206,8 +223,9 @@ export class RegionController {
       if (err instanceof HttpException) {
         throw err;
       }
+      const errorMessage = err instanceof Error ? err.message : 'Failed to query regions';
       throw new HttpException(
-        error('SPATIAL_QUERY_ERROR', err.message || 'Failed to query regions'),
+        error('SPATIAL_QUERY_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -216,9 +234,9 @@ export class RegionController {
   /**
    * Helper to simplify geometry in results
    */
-  private simplifyResultGeometry(result: any): void {
-    const simplifyItems = (items: any[]) => {
-      items?.forEach((item: any) => {
+  private simplifyResultGeometry(result: SpatialResult): void {
+    const simplifyItems = (items?: unknown[]) => {
+      items?.forEach((item: Record<string, unknown>) => {
         if (item.geometrySimplified) {
           item.geometry = item.geometrySimplified;
           delete item.geometrySimplified;

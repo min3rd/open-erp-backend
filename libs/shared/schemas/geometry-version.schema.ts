@@ -62,7 +62,8 @@ export class GeometryVersion extends Document {
   snapshotDate: Date;
 }
 
-export const GeometryVersionSchema = SchemaFactory.createForClass(GeometryVersion);
+export const GeometryVersionSchema =
+  SchemaFactory.createForClass(GeometryVersion);
 
 // Compound index for efficient version queries
 GeometryVersionSchema.index({ entityType: 1, entityCode: 1, version: -1 });

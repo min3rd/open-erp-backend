@@ -54,7 +54,10 @@ export class ProvinceRepository {
     return province.save();
   }
 
-  async update(code: string, data: Partial<Province>): Promise<Province | null> {
+  async update(
+    code: string,
+    data: Partial<Province>,
+  ): Promise<Province | null> {
     return this.provinceModel
       .findOneAndUpdate({ code }, data, { new: true })
       .exec();
@@ -81,7 +84,9 @@ export class ProvinceRepository {
       ],
     };
 
-    const query = this.provinceModel.find(searchFilter).sort({ sortOrder: 1, name: 1 });
+    const query = this.provinceModel
+      .find(searchFilter)
+      .sort({ sortOrder: 1, name: 1 });
 
     if (options?.skip !== undefined) {
       query.skip(options.skip);
@@ -104,7 +109,7 @@ export class ProvinceRepository {
    */
   async findWithinBBox(bbox: BBox): Promise<Province[]> {
     const [minLon, minLat, maxLon, maxLat] = bbox;
-    
+
     return this.provinceModel
       .find({
         geometry: {

@@ -15,7 +15,14 @@ export class DistrictService {
     version?: string;
     isLegacy?: boolean;
   }): Promise<{ items: District[]; total: number }> {
-    const { page = 1, limit = 100, provinceCode, q, version, isLegacy } = options;
+    const {
+      page = 1,
+      limit = 100,
+      provinceCode,
+      q,
+      version,
+      isLegacy,
+    } = options;
     const skip = (page - 1) * limit;
 
     const filter: any = {};
@@ -86,6 +93,10 @@ export class DistrictService {
     latitude: number,
     maxDistanceMeters?: number,
   ): Promise<District[]> {
-    return this.districtRepository.findNearPoint(longitude, latitude, maxDistanceMeters);
+    return this.districtRepository.findNearPoint(
+      longitude,
+      latitude,
+      maxDistanceMeters,
+    );
   }
 }
