@@ -15,19 +15,36 @@ export class RefreshTokenRepository {
 
   async create(
     userId: Types.ObjectId,
-    token: string,
+    tokenHash: string,
     expiresAt: Date,
     deviceInfo?: string,
     ipAddress?: string,
   ): Promise<RefreshTokenDocument> {
     const refreshToken = new this.refreshTokenModel({
       userId,
-      token,
+      tokenHash,
       expiresAt,
       deviceInfo,
       ipAddress,
+      revoked: false,
+      isRotated: false,
     });
     return refreshToken.save();
+  }
+
+  async findByTokenHash(tokenHash: string): Promise<RefreshTokenDocument | null> {
+    return this.refreshTokenModel.findOne({
+      tokenHash,
+    });
+  }
+
+  async findValidByTokenHash(tokenHash: string): Promise<RefreshTokenDocument | null> {
+    return this.refreshTokenModel.findOne({
+      tokenHash,
+      revoked: false,
+      isRotated: false,
+      expiresAt: { $gt: new Date() },
+    });
   }
 
   async findByToken(token: string): Promise<RefreshTokenDocument | null> {
@@ -46,23 +63,42 @@ export class RefreshTokenRepository {
     });
   }
 
-  async revokeToken(token: string): Promise<RefreshTokenDocument | null> {
+  async revokeToken(tokenHash: string, reason: string): Promise<RefreshTokenDocument | null> {
     return this.refreshTokenModel.findOneAndUpdate(
-      { token },
+      { tokenHash },
       {
         revoked: true,
         revokedAt: new Date(),
+        revokedReason: reason,
       },
       { new: true },
     );
   }
 
-  async revokeAllUserTokens(userId: Types.ObjectId): Promise<number> {
+  async markAsRotated(
+    tokenHash: string,
+    replacedByTokenId: Types.ObjectId,
+  ): Promise<RefreshTokenDocument | null> {
+    return this.refreshTokenModel.findOneAndUpdate(
+      { tokenHash },
+      {
+        isRotated: true,
+        revoked: true,
+        revokedAt: new Date(),
+        revokedReason: 'rotated',
+        replacedByTokenId,
+      },
+      { new: true },
+    );
+  }
+
+  async revokeAllUserTokens(userId: Types.ObjectId, reason: string): Promise<number> {
     const result = await this.refreshTokenModel.updateMany(
       { userId, revoked: false },
       {
         revoked: true,
         revokedAt: new Date(),
+        revokedReason: reason,
       },
     );
     return result.modifiedCount;

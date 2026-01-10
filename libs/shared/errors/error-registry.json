@@ -99,6 +99,34 @@
       "supportUrl": "/docs/errors/AUTH_0014"
     },
     {
+      "code": "AUTH_0015",
+      "defaultMessageKey": "auth.refresh_token_invalid",
+      "httpStatus": 401,
+      "description": "Refresh token is invalid or not found",
+      "supportUrl": "/docs/errors/AUTH_0015"
+    },
+    {
+      "code": "AUTH_0016",
+      "defaultMessageKey": "auth.refresh_token_expired",
+      "httpStatus": 401,
+      "description": "Refresh token has expired",
+      "supportUrl": "/docs/errors/AUTH_0016"
+    },
+    {
+      "code": "AUTH_0017",
+      "defaultMessageKey": "auth.refresh_token_revoked",
+      "httpStatus": 401,
+      "description": "Refresh token has been revoked",
+      "supportUrl": "/docs/errors/AUTH_0017"
+    },
+    {
+      "code": "AUTH_0018",
+      "defaultMessageKey": "auth.refresh_token_reused",
+      "httpStatus": 401,
+      "description": "Refresh token reuse detected. All tokens have been revoked for security",
+      "supportUrl": "/docs/errors/AUTH_0018"
+    },
+    {
       "code": "USER_0001",
       "defaultMessageKey": "user.not_found",
       "httpStatus": 404,

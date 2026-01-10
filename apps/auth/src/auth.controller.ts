@@ -16,6 +16,7 @@ import { VerifyEmailDto } from './dto/verify-email.dto';
 import { ResendVerificationDto } from './dto/resend-verification.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 import { ApiTags, ApiOperation, ApiResponse, ApiQuery } from '@nestjs/swagger';
 import { Public } from '@shared/authz/decorators';
 import { ok, created } from '@shared/response';
@@ -129,6 +130,70 @@ export class AuthController {
   async resetPassword(@Body() resetPasswordDto: ResetPasswordDto) {
     const result = await this.authService.resetPassword(resetPasswordDto);
     return ok(result, result.message || 'Password reset successfully');
+  }
+
+  @Post('refresh')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @UsePipes(new ValidationPipe({ whitelist: true, forbidNonWhitelisted: true }))
+  @ApiOperation({ 
+    summary: 'Refresh access token using refresh token',
+    description: 'Issues a new access token and rotates the refresh token. Old refresh token becomes invalid after use. Detects token reuse and revokes all tokens if an already-rotated token is used.'
+  })
+  @ApiResponse({ 
+    status: 200, 
+    description: 'Token refreshed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'Token refreshed successfully' },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            accessToken: { type: 'string', example: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...' },
+            refreshToken: { type: 'string', example: 'a1b2c3d4e5f6g7h8i9j0k1l2m3n4o5p6q7r8s9t0u1v2w3x4y5z6a7b8c9d0e1f2' },
+            user: {
+              type: 'object',
+              properties: {
+                email: { type: 'string', example: 'user@example.com' },
+                fullName: { type: 'string', example: 'John Doe' },
+                avatarUrl: { type: 'string', nullable: true, example: null }
+              }
+            }
+          }
+        }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 401, 
+    description: 'Invalid, expired, revoked, or reused refresh token',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: false },
+        message: { type: 'string', example: 'Invalid refresh token. Please log in again.' },
+        error: {
+          type: 'object',
+          properties: {
+            code: { type: 'string', example: 'AUTH_0015' },
+            message: { type: 'string', example: 'Invalid refresh token. Please log in again.' },
+            timestamp: { type: 'string', example: '2026-01-10T07:45:21.745Z' }
+          }
+        },
+        data: { type: 'null' }
+      }
+    }
+  })
+  @ApiResponse({ 
+    status: 429, 
+    description: 'Too many refresh requests' 
+  })
+  async refresh(@Body() refreshTokenDto: RefreshTokenDto) {
+    const result = await this.authService.refreshToken(refreshTokenDto);
+    return ok(result, 'Token refreshed successfully');
   }
 
   @Get('health')
