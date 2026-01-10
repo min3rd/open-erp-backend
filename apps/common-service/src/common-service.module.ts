@@ -20,6 +20,8 @@ import {
   OrganizationSchema,
   Role,
   RoleSchema,
+  GeometryVersion,
+  GeometryVersionSchema,
 } from '@shared/schemas';
 
 // Import services
@@ -27,6 +29,8 @@ import { ProvinceService } from './services/province.service';
 import { DistrictService } from './services/district.service';
 import { WardService } from './services/ward.service';
 import { AddressService } from './services/address.service';
+import { GeometryUtilService } from './services/geometry-util.service';
+import { GeometryVersionService } from './services/geometry-version.service';
 
 // Import repositories
 import { ProvinceRepository } from './repositories/province.repository';
@@ -40,6 +44,7 @@ import { DistrictController } from './controllers/district.controller';
 import { WardController } from './controllers/ward.controller';
 import { AddressController } from './controllers/address.controller';
 import { HealthController } from './controllers/health.controller';
+import { RegionController } from './controllers/region.controller';
 
 // Import shared modules
 import { AuthorizationService } from '@shared/authz/authorization.service';
@@ -65,6 +70,7 @@ import { PermissionService } from '@shared/services';
       { name: User.name, schema: UserSchema },
       { name: Organization.name, schema: OrganizationSchema },
       { name: Role.name, schema: RoleSchema },
+      { name: GeometryVersion.name, schema: GeometryVersionSchema },
     ]),
     ThrottlerModule.forRoot([
       {
@@ -79,6 +85,7 @@ import { PermissionService } from '@shared/services';
     WardController,
     AddressController,
     HealthController,
+    RegionController,
   ],
   providers: [
     ProvinceService,
@@ -91,6 +98,8 @@ import { PermissionService } from '@shared/services';
     AddressRepository,
     AuthorizationService,
     PermissionService,
+    GeometryUtilService,
+    GeometryVersionService,
   ],
 })
 export class CommonServiceModule {}

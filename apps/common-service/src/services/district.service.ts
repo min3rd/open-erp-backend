@@ -1,6 +1,7 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { DistrictRepository } from '../repositories/district.repository';
 import { District } from '@shared/schemas';
+import { BBox } from '@shared/types/geometry.types';
 
 @Injectable()
 export class DistrictService {
@@ -68,5 +69,23 @@ export class DistrictService {
     if (!district) {
       throw new NotFoundException(`District with code ${code} not found`);
     }
+  }
+
+  /**
+   * Find districts within bounding box
+   */
+  async findWithinBBox(bbox: BBox): Promise<District[]> {
+    return this.districtRepository.findWithinBBox(bbox);
+  }
+
+  /**
+   * Find districts near a point
+   */
+  async findNearPoint(
+    longitude: number,
+    latitude: number,
+    maxDistanceMeters?: number,
+  ): Promise<District[]> {
+    return this.districtRepository.findNearPoint(longitude, latitude, maxDistanceMeters);
   }
 }
