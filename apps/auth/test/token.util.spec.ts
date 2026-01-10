@@ -5,6 +5,8 @@ import {
   generateRefreshToken,
   calculateExpirationDate,
   verifyToken,
+  hashToken,
+  hashRefreshToken,
 } from '../src/utils/token.util';
 import * as jwt from 'jsonwebtoken';
 
@@ -145,15 +147,14 @@ describe('Token Utility', () => {
   });
 
   describe('generateRefreshToken', () => {
-    it('should generate a UUID v4 token', () => {
+    it('should generate a 64-character hex token', () => {
       const token = generateRefreshToken();
 
       expect(token).toBeDefined();
       expect(typeof token).toBe('string');
-      // UUID v4 format: xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx
-      expect(token).toMatch(
-        /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i,
-      );
+      expect(token.length).toBe(64);
+      // Should be hex (0-9, a-f)
+      expect(token).toMatch(/^[0-9a-f]{64}$/i);
     });
 
     it('should generate unique tokens', () => {
@@ -262,6 +263,97 @@ describe('Token Utility', () => {
           resolve(undefined);
         }, 100);
       });
+    });
+  });
+
+  describe('hashToken', () => {
+    it('should hash a token using SHA256', () => {
+      const token = 'test-token-string';
+      const hash = hashToken(token);
+
+      expect(hash).toBeDefined();
+      expect(typeof hash).toBe('string');
+      expect(hash.length).toBe(64); // SHA256 produces 64 hex characters
+      expect(hash).toMatch(/^[0-9a-f]{64}$/i);
+    });
+
+    it('should produce the same hash for the same input', () => {
+      const token = 'test-token-string';
+      const hash1 = hashToken(token);
+      const hash2 = hashToken(token);
+
+      expect(hash1).toBe(hash2);
+    });
+
+    it('should produce different hashes for different inputs', () => {
+      const token1 = 'test-token-1';
+      const token2 = 'test-token-2';
+      const hash1 = hashToken(token1);
+      const hash2 = hashToken(token2);
+
+      expect(hash1).not.toBe(hash2);
+    });
+  });
+
+  describe('hashRefreshToken', () => {
+    const testSecret = 'test-secret-key';
+
+    it('should hash a refresh token using HMAC-SHA256', () => {
+      const token = 'test-refresh-token';
+      const hash = hashRefreshToken(token, testSecret);
+
+      expect(hash).toBeDefined();
+      expect(typeof hash).toBe('string');
+      expect(hash.length).toBe(64); // HMAC-SHA256 produces 64 hex characters
+      expect(hash).toMatch(/^[0-9a-f]{64}$/i);
+    });
+
+    it('should produce the same hash for the same input and secret', () => {
+      const token = 'test-refresh-token';
+      const hash1 = hashRefreshToken(token, testSecret);
+      const hash2 = hashRefreshToken(token, testSecret);
+
+      expect(hash1).toBe(hash2);
+    });
+
+    it('should produce different hashes for different tokens', () => {
+      const token1 = 'test-refresh-token-1';
+      const token2 = 'test-refresh-token-2';
+      const hash1 = hashRefreshToken(token1, testSecret);
+      const hash2 = hashRefreshToken(token2, testSecret);
+
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should produce different hashes for different secrets', () => {
+      const token = 'test-refresh-token';
+      const hash1 = hashRefreshToken(token, 'secret1');
+      const hash2 = hashRefreshToken(token, 'secret2');
+
+      expect(hash1).not.toBe(hash2);
+    });
+
+    it('should use JWT_SECRET from env if no secret provided', () => {
+      const originalSecret = process.env.JWT_SECRET;
+      process.env.JWT_SECRET = 'env-secret';
+
+      const token = 'test-refresh-token';
+      const hash1 = hashRefreshToken(token);
+      const hash2 = hashRefreshToken(token, 'env-secret');
+
+      expect(hash1).toBe(hash2);
+
+      // Restore original secret
+      process.env.JWT_SECRET = originalSecret;
+    });
+
+    it('should be more secure than plain SHA256 (different output)', () => {
+      const token = 'test-refresh-token';
+      const plainHash = hashToken(token);
+      const hmacHash = hashRefreshToken(token, testSecret);
+
+      // HMAC and plain hash should be different
+      expect(plainHash).not.toBe(hmacHash);
     });
   });
 });
