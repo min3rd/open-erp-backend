@@ -114,7 +114,7 @@ export class WardController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Create a new ward (Admin only)',
@@ -143,7 +143,7 @@ export class WardController {
 
   @Patch(':code')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Update ward by code (Admin only)',
@@ -174,7 +174,7 @@ export class WardController {
 
   @Delete(':code')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Delete ward by code (Admin only)',

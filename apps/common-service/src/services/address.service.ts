@@ -4,6 +4,7 @@ import {
   BadRequestException,
   ForbiddenException,
 } from '@nestjs/common';
+import { Types } from 'mongoose';
 import { AddressRepository } from '../repositories/address.repository';
 import { ProvinceRepository } from '../repositories/province.repository';
 import { DistrictRepository } from '../repositories/district.repository';
@@ -106,7 +107,19 @@ export class AddressService {
       }
     }
 
-    return this.addressRepository.create(dto);
+    // Convert string IDs to ObjectIds and create the address data
+    const addressData: any = {
+      ...dto,
+    };
+
+    if (dto.userId) {
+      addressData.userId = new Types.ObjectId(dto.userId);
+    }
+    if (dto.organizationId) {
+      addressData.organizationId = new Types.ObjectId(dto.organizationId);
+    }
+
+    return this.addressRepository.create(addressData);
   }
 
   async update(id: string, dto: UpdateAddressDto): Promise<Address> {

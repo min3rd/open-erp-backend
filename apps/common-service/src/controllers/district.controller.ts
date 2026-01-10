@@ -111,7 +111,7 @@ export class DistrictController {
 
   @Post()
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Create a new district (Admin only)',
@@ -140,7 +140,7 @@ export class DistrictController {
 
   @Patch(':code')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Update district by code (Admin only)',
@@ -171,7 +171,7 @@ export class DistrictController {
 
   @Delete(':code')
   @UseGuards(JwtAuthGuard, RolesGuard)
-  @Roles('ADMIN', 'SYSTEM_ADMIN')
+  @Roles(['ADMIN', 'SYSTEM_ADMIN'])
   @ApiBearerAuth()
   @ApiOperation({ 
     summary: 'Delete district by code (Admin only)',

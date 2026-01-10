@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery } from 'mongoose';
+import { Model } from 'mongoose';
 import { Ward, WardDocument } from '@shared/schemas';
 
 @Injectable()
@@ -11,7 +11,7 @@ export class WardRepository {
   ) {}
 
   async findAll(
-    filter: FilterQuery<Ward> = {},
+    filter: Record<string, any> = {},
     options?: {
       skip?: number;
       limit?: number;
@@ -79,13 +79,13 @@ export class WardRepository {
 
   async search(
     searchTerm: string,
-    filter: FilterQuery<Ward> = {},
+    filter: Record<string, any> = {},
     options?: {
       skip?: number;
       limit?: number;
     },
   ): Promise<{ items: Ward[]; total: number }> {
-    const searchFilter: FilterQuery<Ward> = {
+    const searchFilter: Record<string, any> = {
       ...filter,
       $or: [
         { name: { $regex: searchTerm, $options: 'i' } },
