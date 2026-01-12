@@ -2,10 +2,18 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { CommonServiceModule } from './common-service.module';
+import {
+  FastifyAdapter,
+  NestFastifyApplication,
+} from '@nestjs/platform-fastify';
 
 async function bootstrap() {
-  const app = await NestFactory.create(CommonServiceModule);
-
+  const app = await NestFactory.create<NestFastifyApplication>(
+    CommonServiceModule,
+    new FastifyAdapter({
+      bodyLimit: 50 * 1024 * 1024, // 50 MB
+    }),
+  );
   // Enable CORS
   app.enableCors({
     origin: '*',
