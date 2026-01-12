@@ -38,7 +38,6 @@ import { Roles } from '@shared/authz/decorators';
 import {
   UpdateGeometryDto,
   ImportGeoJsonDto,
-  ExportGeometryDto,
 } from '../dto/geometry.dto';
 import { GeometryDetail } from '@shared/types/geometry.types';
 
