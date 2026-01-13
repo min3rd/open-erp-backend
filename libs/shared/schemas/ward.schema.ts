@@ -132,6 +132,11 @@ export class Ward extends Document {
   geometryMeta?: GeometryMeta;
 }
 
+// Snapshot embedded in other documents (stored as a snapshot, not a reference)
+// Extend Ward to inherit fields and keep snapshot shape close to the source
+@Schema({ _id: false })
+export class WardSnapshot extends Ward {}
+
 export const WardSchema = SchemaFactory.createForClass(Ward);
 
 // Compound index for efficient queries

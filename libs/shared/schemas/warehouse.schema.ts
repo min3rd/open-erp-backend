@@ -15,29 +15,11 @@ import {
 // TTL expiration time for soft-deleted warehouses (2 years)
 const TTL_SOFT_DELETE_SECONDS = 2 * 365 * 24 * 60 * 60; // 63072000 seconds
 
-/**
- * Province sub-schema (embedded in warehouse)
- */
-@Schema({ _id: false })
-export class WarehouseProvince {
-  @Prop({ required: true, type: String })
-  code: string;
+// Use shared Province/Ward snapshots (embedded snapshot of authoritative data, NOT a reference)
+import { ProvinceSnapshot } from './province.schema';
+import { WardSnapshot } from './ward.schema';
 
-  @Prop({ required: true, type: String })
-  name: string;
-}
-
-/**
- * Ward sub-schema (embedded in warehouse)
- */
-@Schema({ _id: false })
-export class WarehouseWard {
-  @Prop({ required: true, type: String })
-  code: string;
-
-  @Prop({ required: true, type: String })
-  name: string;
-}
+// NOTE: We intentionally store a snapshot (code + name + provinceCode for ward) so warehouses keep historical address data even if provinces/wards update.
 
 /**
  * Location sub-schema using GeoJSON Point format
@@ -193,16 +175,16 @@ export class Warehouse extends Document {
   addressDetail: string;
 
   @Prop({
-    type: WarehouseWard,
+    type: WardSnapshot,
     required: true,
   })
-  ward: WarehouseWard;
+  ward: WardSnapshot;
 
   @Prop({
-    type: WarehouseProvince,
+    type: ProvinceSnapshot,
     required: true,
   })
-  province: WarehouseProvince;
+  province: ProvinceSnapshot;
 
   @Prop({
     type: String,

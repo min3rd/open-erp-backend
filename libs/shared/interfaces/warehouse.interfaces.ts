@@ -29,6 +29,20 @@ export interface ILocation {
 export interface IProvince {
   code: string;
   name: string;
+  nameEn?: string;
+  region?: string;
+  sortOrder?: number;
+  version?: string;
+  isLegacy?: boolean;
+  geometry?: AdminGeometry;
+  centroid?: Centroid;
+  bbox?: BBox;
+  areaSqKm?: number;
+  geometrySource?: GeometrySource;
+  geometryVersion?: number;
+  geometryUpdatedAt?: Date;
+  geometryUpdatedBy?: string;
+  geometryMeta?: GeometryMeta;
 }
 
 /**
@@ -37,6 +51,21 @@ export interface IProvince {
 export interface IWard {
   code: string;
   name: string;
+  nameEn?: string;
+  provinceCode?: string;
+  districtCode?: string;
+  sortOrder?: number;
+  version?: string;
+  isLegacy?: boolean;
+  geometry?: AdminGeometry;
+  centroid?: Centroid;
+  bbox?: BBox;
+  areaSqKm?: number;
+  geometrySource?: GeometrySource;
+  geometryVersion?: number;
+  geometryUpdatedAt?: Date;
+  geometryUpdatedBy?: string;
+  geometryMeta?: GeometryMeta;
 }
 
 /**

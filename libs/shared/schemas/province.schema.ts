@@ -125,6 +125,11 @@ export class Province extends Document {
   geometryMeta?: GeometryMeta;
 }
 
+// Snapshot embedded in other documents (stored as a snapshot, not a reference)
+// Extend Province to inherit fields and keep snapshot shape close to the source
+@Schema({ _id: false })
+export class ProvinceSnapshot extends Province {}
+
 export const ProvinceSchema = SchemaFactory.createForClass(Province);
 
 // Text index for search
