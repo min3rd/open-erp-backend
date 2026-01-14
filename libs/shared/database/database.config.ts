@@ -18,7 +18,7 @@ export interface DatabaseConfig {
 export const getDatabaseConfig = (): DatabaseConfig => ({
   uri: process.env.MONGODB_URI || 'mongodb://localhost:27017',
   user: process.env.MONGODB_USER,
-  pass: process.env.MONGODB_PASS,
+  pass: process.env.MONGODB_PASS || process.env.MONGODB_PASSWORD,
   dbName: process.env.MONGODB_DB || 'open_erp',
   authSource: process.env.MONGODB_AUTH_SOURCE || 'admin',
   replicaSet: process.env.MONGODB_REPLICA_SET || undefined,

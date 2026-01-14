@@ -46,6 +46,8 @@
     "db:seed": "node scripts/seed.js",
     "db:seed:system-admin": "node scripts/seed-system-admin.js",
     "db:seed:provinces-wards": "ts-node libs/shared/scripts/seed-provinces-wards.ts",
+    "db:seed:provinces-geojson": "ts-node -r tsconfig-paths/register scripts/seed-provinces-from-geojson.ts",
+    "db:seed:wards-geojson": "ts-node -r tsconfig-paths/register scripts/seed-wards-from-geojson.ts",
     "db:seed:warehouse-types": "ts-node libs/shared/scripts/seed-warehouse-types.ts",
     "db:test": "node scripts/test-mongodb.js",
     "lint": "eslint \"{src,apps,libs,test}/**/*.ts\" --fix",
