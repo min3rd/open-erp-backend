@@ -24,6 +24,8 @@ import {
   OrganizationSchema,
   User,
   UserSchema,
+  Role,
+  RoleSchema,
 } from '@shared/schemas';
 
 // Import services
@@ -70,6 +72,7 @@ import { PermissionService } from '@shared/services';
       { name: Ward.name, schema: WardSchema },
       { name: Organization.name, schema: OrganizationSchema },
       { name: User.name, schema: UserSchema },
+      { name: Role.name, schema: RoleSchema },
     ]),
     ThrottlerModule.forRoot([
       {

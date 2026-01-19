@@ -25,12 +25,12 @@ export class InventoryStockRepository {
     productId: string,
     warehouseId: string,
   ): Promise<InventoryStockDocument | null> {
-    return this.stockModel
-      .findOne({
-        productId: new Types.ObjectId(productId),
-        warehouseId: new Types.ObjectId(warehouseId),
-      })
-      .exec();
+    const query: any = {
+      productId: new Types.ObjectId(productId),
+      warehouseId: new Types.ObjectId(warehouseId),
+    };
+
+    return this.stockModel.findOne(query).exec();
   }
 
   async findByProduct(
@@ -39,7 +39,7 @@ export class InventoryStockRepository {
   ): Promise<{ items: InventoryStockDocument[]; total: number }> {
     const { skip = 0, limit = 10 } = options;
 
-    const query = { productId: new Types.ObjectId(productId) };
+    const query: any = { productId: new Types.ObjectId(productId) };
 
     const [items, total] = await Promise.all([
       this.stockModel.find(query).skip(skip).limit(limit).exec(),
