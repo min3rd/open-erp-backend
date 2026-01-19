@@ -32,7 +32,7 @@ import { Navigation, NavigationSchema } from './schemas/navigation.schema';
     ThrottlerModule.forRoot([
       {
         ttl: 60000, // 1 minute
-        limit: 20, // 20 requests per minute for config operations
+        limit: 100, // 100 requests per minute for config operations
       },
     ]),
   ],
