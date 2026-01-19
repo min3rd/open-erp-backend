@@ -35,7 +35,7 @@
         "tsConfigPath": "apps/notification/tsconfig.json"
       }
     },
-    "config-service": {
+    "config": {
       "type": "application",
       "root": "apps/config-service",
       "entryFile": "main",
@@ -62,7 +62,7 @@
         "tsConfigPath": "apps/inventory/tsconfig.json"
       }
     },
-    "common-service": {
+    "common": {
       "type": "application",
       "root": "apps/common-service",
       "entryFile": "main",
