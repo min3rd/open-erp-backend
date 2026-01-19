@@ -29,7 +29,7 @@ import { InvitationController } from './controllers/invitation.controller';
 import { MembershipController } from './controllers/membership.controller';
 import { RelationController } from './controllers/relation.controller';
 import { HealthController } from './controllers/health.controller';
-import { WarehouseController } from './controllers/warehouse.controller';
+import { WarehouseController } from '../../inventory/src/controllers/warehouse.controller';
 
 // Services
 import { OrganizationService } from './services/organization.service';
@@ -37,7 +37,7 @@ import { InvitationService } from './services/invitation.service';
 import { MembershipService } from './services/membership.service';
 import { RelationService } from './services/relation.service';
 import { AuditService } from './services/audit.service';
-import { WarehouseService } from './services/warehouse.service';
+import { WarehouseService } from '../../inventory/src/services/warehouse.service';
 
 // Repositories
 import { OrganizationRepository } from './repositories/organization.repository';
@@ -45,7 +45,7 @@ import { OrganizationRelationRepository } from './repositories/organization-rela
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 import { InvitationRepository } from './repositories/invitation.repository';
 import { AuditEventRepository } from './repositories/audit-event.repository';
-import { WarehouseRepository } from './repositories/warehouse.repository';
+import { WarehouseRepository } from '../../inventory/src/repositories/warehouse.repository';
 
 @Module({
   imports: [

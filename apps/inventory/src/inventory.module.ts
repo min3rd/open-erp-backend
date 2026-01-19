@@ -16,6 +16,10 @@ import {
   InventoryTransactionSchema,
   Warehouse,
   WarehouseSchema,
+  Province,
+  ProvinceSchema,
+  Ward,
+  WardSchema,
   Organization,
   OrganizationSchema,
   User,
@@ -25,17 +29,20 @@ import {
 // Import services
 import { ProductService } from './services/product.service';
 import { InventoryService } from './services/inventory.service';
+import { WarehouseService } from './services/warehouse.service';
 
 // Import repositories
 import { ProductRepository } from './repositories/product.repository';
 import { ProductVersionRepository } from './repositories/product-version.repository';
 import { InventoryStockRepository } from './repositories/inventory-stock.repository';
 import { InventoryTransactionRepository } from './repositories/inventory-transaction.repository';
+import { WarehouseRepository } from './repositories/warehouse.repository';
 
 // Import controllers
 import { ProductController } from './controllers/product.controller';
 import { InventoryController } from './controllers/inventory.controller';
 import { HealthController } from './controllers/health.controller';
+import { WarehouseController } from './controllers/warehouse.controller';
 
 // Import shared modules
 import { AuthorizationService } from '@shared/authz/authorization.service';
@@ -59,6 +66,8 @@ import { PermissionService } from '@shared/services';
       { name: InventoryStock.name, schema: InventoryStockSchema },
       { name: InventoryTransaction.name, schema: InventoryTransactionSchema },
       { name: Warehouse.name, schema: WarehouseSchema },
+      { name: Province.name, schema: ProvinceSchema },
+      { name: Ward.name, schema: WardSchema },
       { name: Organization.name, schema: OrganizationSchema },
       { name: User.name, schema: UserSchema },
     ]),
@@ -69,14 +78,21 @@ import { PermissionService } from '@shared/services';
       },
     ]),
   ],
-  controllers: [ProductController, InventoryController, HealthController],
+  controllers: [
+    ProductController,
+    InventoryController,
+    HealthController,
+    WarehouseController,
+  ],
   providers: [
     ProductService,
     InventoryService,
+    WarehouseService,
     ProductRepository,
     ProductVersionRepository,
     InventoryStockRepository,
     InventoryTransactionRepository,
+    WarehouseRepository,
     AuthorizationService,
     PermissionService,
   ],
