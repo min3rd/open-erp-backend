@@ -50,11 +50,12 @@ npm run db:seed:warehouse-types
 ### 4. Application Layer ✅
 
 **Files Created:**
-- `apps/organization/src/dto/warehouse.dto.ts` - Request/response DTOs with validation
-- `apps/organization/src/repositories/warehouse.repository.ts` - Data access layer
-- `apps/organization/src/services/warehouse.service.ts` - Business logic and validation
-- `apps/organization/src/controllers/warehouse.controller.ts` - REST API endpoints
-- `apps/organization/src/organization.module.ts` - Updated to include warehouse components
+- `apps/inventory/src/dto/warehouse.dto.ts` - Request/response DTOs with validation
+- `apps/inventory/src/repositories/warehouse.repository.ts` - Data access layer
+- `apps/inventory/src/services/warehouse.service.ts` - Business logic and validation
+- `apps/inventory/src/controllers/warehouse.controller.ts` - REST API endpoints
+- `apps/inventory/src/inventory.module.ts` - Updated to include warehouse components
+- `apps/organization/src/organization.module.ts` - Uses inventory warehouse components for backward compatibility
 
 **API Endpoints:**
 ```
@@ -81,7 +82,7 @@ GET    /warehouses/nearby                    - Geospatial search
 ### 5. Testing ✅
 
 **Files Created:**
-- `apps/organization/test/warehouse.service.spec.ts` - 18 unit tests
+- `apps/inventory/test/warehouse.service.spec.ts` - 18 unit tests
 
 **Test Coverage:**
 - ✅ Create warehouse with validation
@@ -211,18 +212,19 @@ curl "http://localhost:3002/warehouses/nearby?longitude=105.8342&latitude=21.028
 6. `libs/shared/schemas/warehouse-type.schema.ts`
 7. `libs/shared/scripts/seed-provinces-wards.ts`
 8. `libs/shared/scripts/seed-warehouse-types.ts`
-9. `apps/organization/src/dto/warehouse.dto.ts`
-10. `apps/organization/src/repositories/warehouse.repository.ts`
-11. `apps/organization/src/services/warehouse.service.ts`
-12. `apps/organization/src/controllers/warehouse.controller.ts`
-13. `apps/organization/test/warehouse.service.spec.ts`
+9. `apps/inventory/src/dto/warehouse.dto.ts`
+10. `apps/inventory/src/repositories/warehouse.repository.ts`
+11. `apps/inventory/src/services/warehouse.service.ts`
+12. `apps/inventory/src/controllers/warehouse.controller.ts`
+13. `apps/inventory/test/warehouse.service.spec.ts`
 14. `docs/warehouse-schema.md`
 
-### Modified Files (4)
+### Modified Files (5)
 1. `libs/shared/constants/index.ts` - Export warehouse constants
 2. `libs/shared/schemas/index.ts` - Export warehouse schemas
-3. `apps/organization/src/organization.module.ts` - Register warehouse components
-4. `package.json` - Add seed scripts
+3. `apps/inventory/src/inventory.module.ts` - Register warehouse components
+4. `apps/organization/src/organization.module.ts` - Register warehouse compatibility endpoints
+5. `package.json` - Add seed scripts
 
 ## Code Quality
 
@@ -250,7 +252,7 @@ The warehouse schema implementation is complete and production-ready. All accept
 ✅ Shared library contains all required schemas and interfaces
 ✅ Mongoose schemas with proper validation and indexes
 ✅ Master data schemas and seed scripts
-✅ Full CRUD implementation in organization app
+✅ Full CRUD implementation in inventory app with organization compatibility
 ✅ Comprehensive validation and business rules
 ✅ Geospatial query support
 ✅ Multi-tenant support
