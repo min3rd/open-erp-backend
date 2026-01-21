@@ -15,6 +15,7 @@ import {
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
+import { ReorderNavigationDto } from '../dto/reorder-navigation.dto';
 import { NavigationItemDto } from '../dto/navigation-response.dto';
 import { EVENT_NAMES } from '@shared/constants/message.constants';
 import { RABBITMQ_USER_CLIENT } from '@shared/rabbitmq';
@@ -135,20 +136,26 @@ export class NavigationService {
       }
 
       // Check scope compatibility
-      if (dto.scope !== parent.scope) {
+      // Allow Module -> Global parenting, but not Global -> Module
+      if (
+        dto.scope === NavigationScope.GLOBAL &&
+        parent.scope === NavigationScope.MODULE
+      ) {
         throw new BadRequestException(
-          'Navigation item scope must match parent scope',
+          'Global navigation item cannot have a module navigation item as parent',
         );
       }
-
+      // If scopes match, checking module ID
       if (
         dto.scope === NavigationScope.MODULE &&
+        parent.scope === NavigationScope.MODULE &&
         dto.moduleId !== parent.moduleId
       ) {
         throw new BadRequestException(
           'Navigation item module must match parent module',
         );
       }
+      // Note: We allow current(Module) -> parent(Global)
     }
 
     // Sanitize inputs to prevent XSS
@@ -289,6 +296,39 @@ export class NavigationService {
 
     this.logger.log(`Navigation item '${id}' moved by user ${userId}`);
     return updated;
+  }
+
+  /**
+   * Reorder multiple navigation items
+   */
+  async reorderNavigation(
+    dto: ReorderNavigationDto,
+    userId: string,
+  ): Promise<void> {
+    const { items } = dto;
+    if (!items || items.length === 0) {
+      return;
+    }
+
+    // Process each item update
+    for (const item of items) {
+       const moveDto: MoveNavigationDto = {
+         newParentId: item.newParentId,
+         order: item.newOrder
+       };
+       // Reuse moveNavigation to ensure consistent validation and events
+       // Note: This might emit multiple events, which is acceptable for now.
+       // In a more optimized version, we might want to batch updates.
+       try {
+         await this.moveNavigation(item.id, moveDto, userId);
+       } catch (error) {
+         this.logger.warn(`Failed to reorder item ${item.id}: ${error.message}`);
+         // Continue with other items or throw? 
+         // For bulk reorder, partial success might be better than full fail if not transactional.
+         // But let's fail fast if validation fails.
+         throw error;
+       }
+    }
   }
 
   /**
@@ -569,20 +609,26 @@ export class NavigationService {
     }
 
     // Check scope compatibility
-    if (current.scope !== newParent.scope) {
+    // Allow Module -> Global parenting, but not Global -> Module
+    if (
+      current.scope === NavigationScope.GLOBAL &&
+      newParent.scope === NavigationScope.MODULE
+    ) {
       throw new BadRequestException(
-        'Navigation item scope must match parent scope',
+        'Global navigation item cannot have a module navigation item as parent',
       );
     }
-
+    // If scopes match, checking module ID
     if (
       current.scope === NavigationScope.MODULE &&
+      newParent.scope === NavigationScope.MODULE &&
       current.moduleId !== newParent.moduleId
     ) {
       throw new BadRequestException(
         'Navigation item module must match parent module',
       );
     }
+    // Note: We allow current(Module) -> parent(Global)
 
     // Check for cycles
     const ancestors = await this.navigationRepository.getAncestors(newParentId);

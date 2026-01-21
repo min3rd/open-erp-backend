@@ -31,6 +31,7 @@ import { NavigationService } from '../services/navigation.service';
 import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
+import { ReorderNavigationDto } from '../dto/reorder-navigation.dto';
 import {
   NavigationScope,
   NavigationFormat,
@@ -648,6 +649,45 @@ export class NavigationController {
   // ========================================
   // Special Operations
   // ========================================
+
+  @Post('reorder')
+  @Roles(RoleGroups.NAVIGATION_ADMINS)
+  @ApiOperation({
+    summary: 'Reorder navigation items',
+    description:
+      'Updates the order and/or parent of multiple navigation items. Only admins can manage navigation.',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Navigation items reordered successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: {
+          type: 'string',
+          example: 'Navigation items reordered successfully',
+        },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'update' },
+            item: { type: 'null' },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 403, description: 'Insufficient permissions' })
+  async reorderNavigation(
+    @Body() dto: ReorderNavigationDto,
+    @Request() req: { user?: { userId?: string } },
+  ) {
+    const userId = req.user?.userId || 'system';
+    await this.navigationService.reorderNavigation(dto, userId);
+    return updated(null, 'Navigation items reordered successfully');
+  }
 
   @Post(':id/move')
   @Roles(RoleGroups.NAVIGATION_ADMINS)
