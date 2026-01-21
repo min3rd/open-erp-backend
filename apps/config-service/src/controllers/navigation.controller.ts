@@ -32,10 +32,6 @@ import { CreateNavigationDto } from '../dto/create-navigation.dto';
 import { UpdateNavigationDto } from '../dto/update-navigation.dto';
 import { MoveNavigationDto } from '../dto/move-navigation.dto';
 import {
-  NavigationItemDto,
-  NavigationResponseDto,
-} from '../dto/navigation-response.dto';
-import {
   NavigationScope,
   NavigationFormat,
 } from '../schemas/navigation.schema';
