@@ -45,9 +45,7 @@
       "route": "/modules/management",
       "icon": "pi pi-cog",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-modules",
+      "scope": "global",
       "order": 2
     },
     {
