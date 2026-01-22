@@ -1,0 +1,203 @@
+{
+  "navigation": [
+    {
+      "id": "nav-demo",
+      "label": "Demo",
+      "labelKey": "navigation.demo",
+      "route": "/demo",
+      "icon": "pi pi-palette",
+      "module": "demo",
+      "scope": "global",
+      "order": 1,
+      "permissions": {
+        "include": ["demo.view"]
+      }
+    },
+    {
+      "id": "nav-modules",
+      "label": "Modules",
+      "labelKey": "navigation.modules",
+      "route": "/modules",
+      "icon": "pi pi-th-large",
+      "module": "modules",
+      "scope": "global",
+      "order": 2
+    },
+    {
+      "id": "nav-organization",
+      "label": "Organization",
+      "labelKey": "navigation.modules.organization",
+      "route": "/modules/organization",
+      "icon": "pi pi-building",
+      "module": "organization",
+      "scope": "module",
+      "moduleId": "organization",
+      "parentId": "nav-modules",
+      "order": 1,
+      "permissions": {
+        "include": ["organizations.read"]
+      },
+      "meta": {
+        "description": "Manage organizations and company structures"
+      }
+    },
+    {
+      "id": "nav-management",
+      "label": "Management",
+      "labelKey": "navigation.modules.management",
+      "route": "/modules/management",
+      "icon": "pi pi-cog",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-modules",
+      "order": 2,
+      "meta": {
+        "description": "System management and administration"
+      }
+    },
+    {
+      "id": "nav-management-user",
+      "label": "User Management",
+      "labelKey": "navigation.modules.management.user",
+      "route": "/modules/management/user",
+      "icon": "pi pi-users",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 1,
+      "permissions": {
+        "include": ["users.read", "users.manage"]
+      },
+      "meta": {
+        "description": "Manage system users and accounts"
+      }
+    },
+    {
+      "id": "nav-management-navigation",
+      "label": "Navigation Management",
+      "labelKey": "navigation.modules.management.navigation",
+      "route": "/modules/management/navigation",
+      "icon": "pi pi-sitemap",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 2,
+      "permissions": {
+        "include": ["navigation.manage", "system.manage"]
+      },
+      "meta": {
+        "description": "Configure navigation menus and structures"
+      }
+    },
+    {
+      "id": "nav-management-province",
+      "label": "Province Management",
+      "labelKey": "navigation.modules.management.province",
+      "route": "/modules/management/province",
+      "icon": "pi pi-map",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 3,
+      "permissions": {
+        "include": ["provinces.read", "geography.manage"]
+      },
+      "meta": {
+        "description": "Manage provinces and regions"
+      }
+    },
+    {
+      "id": "nav-management-district",
+      "label": "District Management",
+      "labelKey": "navigation.modules.management.district",
+      "route": "/modules/management/district",
+      "icon": "pi pi-map-marker",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 4,
+      "permissions": {
+        "include": ["districts.read", "geography.manage"]
+      },
+      "meta": {
+        "description": "Manage districts"
+      }
+    },
+    {
+      "id": "nav-management-ward",
+      "label": "Ward Management",
+      "labelKey": "navigation.modules.management.ward",
+      "route": "/modules/management/ward",
+      "icon": "pi pi-compass",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 5,
+      "permissions": {
+        "include": ["wards.read", "geography.manage"]
+      },
+      "meta": {
+        "description": "Manage wards and communes"
+      }
+    },
+    {
+      "id": "nav-management-administrative-unit",
+      "label": "Administrative Unit",
+      "labelKey": "navigation.modules.management.administrative_unit",
+      "route": "/modules/management/administrative-unit",
+      "icon": "pi pi-flag",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 6,
+      "permissions": {
+        "include": ["administrative_units.read", "geography.manage"]
+      },
+      "meta": {
+        "description": "Manage administrative units and divisions"
+      }
+    },
+    {
+      "id": "nav-management-warehouse",
+      "label": "Warehouse Management",
+      "labelKey": "navigation.modules.management.warehouse",
+      "route": "/modules/management/warehouse",
+      "icon": "pi pi-box",
+      "module": "management",
+      "scope": "module",
+      "moduleId": "management",
+      "parentId": "nav-management",
+      "order": 7,
+      "permissions": {
+        "include": ["warehouses.read", "warehouses.manage"]
+      },
+      "meta": {
+        "description": "Manage warehouses and storage locations"
+      }
+    },
+    {
+      "id": "nav-demo-form-editor",
+      "label": "Form Editor Demo",
+      "labelKey": "navigation.demo.form_editor",
+      "route": "/demo/form-editor",
+      "icon": "pi pi-file-edit",
+      "module": "demo",
+      "scope": "global",
+      "parentId": "nav-demo",
+      "order": 1,
+      "permissions": {
+        "include": ["demo.view"]
+      },
+      "meta": {
+        "description": "Interactive form builder and editor demo"
+      }
+    }
+  ]
+}
