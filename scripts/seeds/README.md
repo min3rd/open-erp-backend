@@ -1,6 +1,6 @@
 # Database Seed Scripts
 
-This directory contains seed scripts for populating the database with Vietnamese administrative divisions (provinces, wards) and sample warehouse data.
+This directory contains seed scripts for populating the database with Vietnamese administrative divisions (provinces, wards), warehouse data, system roles, and organization data.
 
 ## Overview
 
@@ -10,6 +10,7 @@ The seed scripts are designed to:
 - Handle **MongoDB authentication** properly
 - Provide detailed **logging and statistics**
 - Work with **GeoJSON data** for geographic information
+- Generate realistic fake data using **@faker-js/faker**
 
 ## Prerequisites
 
@@ -60,9 +61,12 @@ ts-node scripts/seeds/seed-all.ts --skip-warehouses
 - `--dry-run` - Validate without writing to database
 - `--skip-provinces` - Skip provinces seeding
 - `--skip-wards` - Skip wards seeding
+- `--skip-roles` - Skip roles seeding
+- `--skip-organizations` - Skip organizations seeding
 - `--skip-warehouse-types` - Skip warehouse types seeding
 - `--skip-warehouses` - Skip warehouses seeding
 - `--warehouse-count <n>` - Number of sample warehouses (default: 20)
+- `--organization-count <n>` - Number of organizations (default: 500)
 
 **Output:**
 ```
@@ -232,6 +236,108 @@ ts-node scripts/seeds/seed-warehouses.ts --dry-run
 - `capacityUnit` - Unit (TON, PALLET, M3, CONTAINER)
 - `contact` - Contact information {phone, email}
 
+### 6. seed-roles.ts - System Roles
+
+Seeds predefined system roles for RBAC.
+
+**Usage:**
+```bash
+npm run db:seed:roles
+
+# Or with ts-node
+ts-node -r tsconfig-paths/register scripts/seeds/seed-roles.ts
+
+# With options
+ts-node -r tsconfig-paths/register scripts/seeds/seed-roles.ts --drop --confirm
+ts-node -r tsconfig-paths/register scripts/seeds/seed-roles.ts --dry-run
+```
+
+**Options:**
+- `--drop` - Drop existing roles before seeding (requires --confirm)
+- `--confirm` - Confirm destructive operations
+- `--dry-run` - Validate without writing to database
+
+**System Roles:**
+1. SUPER_ADMIN - System administrator with all permissions
+2. ORG_ADMIN - Organization administrator
+3. ORG_USER - Regular organization user
+4. WAREHOUSE_MANAGER - Warehouse management role
+5. INVENTORY_VIEWER - View-only inventory access
+6. REPORT_VIEWER - View-only report access
+7. GUEST - Limited guest access
+
+### 7. seed-organizations.ts - Sample Organizations
+
+Generates sample organization records with realistic data using @faker-js/faker.
+
+**Usage:**
+```bash
+npm run db:seed:organizations
+
+# Or with ts-node
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts
+
+# With options
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --count 500
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --count 100 --batch-size 50
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --hierarchy
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --drop --confirm
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --dry-run
+```
+
+**Options:**
+- `--count <n>` - Number of organizations to create (default: 500)
+- `--batch-size <n>` - Number of orgs to process per batch (default: 100)
+- `--drop` - Drop existing organizations before seeding (requires --confirm)
+- `--confirm` - Confirm destructive operations
+- `--dry-run` - Validate without writing to database
+- `--hierarchy` - Create distribution with HOLDING (20%), BRANCH (30%), others (50%)
+
+**Features:**
+- Generates realistic company data using @faker-js/faker
+- Unique tax IDs (ORG0000000001, ORG0000000002, etc.)
+- Realistic company names, addresses, contact information
+- Founded dates within the past 20 years
+- Status distribution: 85% active, 10% inactive, 5% other statuses
+- Optional hierarchy distribution of organization types
+- Batch processing for large datasets
+- Progress logging during execution
+- Creates JSON reports in reports/ directory
+
+**Generated Fields:**
+- `taxId` - Unique tax ID (e.g., ORG0000000001)
+- `name` - Company name from faker
+- `internationalName` - Optional international name
+- `type` - Organization type (HOLDING, COMPANY, JOINT_VENTURE, PARTNER, BRANCH)
+- `headquartersAddress` - Street address
+- `legalRepresentative` - Person full name
+- `contactPhone` - Phone number
+- `contactEmail` - Company email
+- `foundedDate` - Random date in past 20 years
+- `status` - Active, inactive, suspended, or pending
+- `country` - 'VN' (Vietnam)
+- `description` - Company catchphrase
+- `website` - Company URL
+- `createdBy` - System user ObjectId (placeholder if no user exists)
+
+**Example Output:**
+```json
+{
+  "taxId": "ORG0000000001",
+  "name": "Schoen, Luettgen and Schaden",
+  "type": "company",
+  "headquartersAddress": "456 Oak Avenue, Suite 789",
+  "legalRepresentative": "John Doe",
+  "contactPhone": "+1-555-0123",
+  "contactEmail": "contact@schoenluettgen.com",
+  "foundedDate": "2015-06-15T00:00:00.000Z",
+  "status": "active",
+  "country": "VN",
+  "description": "Innovative solutions for modern businesses",
+  "website": "https://schoenluettgen.com"
+}
+```
+
 ## Common Workflows
 
 ### Initial Database Setup
@@ -244,6 +350,8 @@ npm run db:seed:all
 # Or run individually
 npm run db:seed:provinces
 npm run db:seed:wards
+npm run db:seed:roles
+npm run db:seed:organizations
 npm run db:seed:warehouse-types
 npm run db:seed:warehouses
 ```
@@ -257,6 +365,8 @@ ts-node scripts/seeds/seed-all.ts --drop --confirm
 # Or drop and re-seed individually
 ts-node scripts/seeds/seed-provinces.ts --drop
 ts-node scripts/seeds/seed-wards.ts --drop
+ts-node -r tsconfig-paths/register scripts/seeds/seed-roles.ts --drop --confirm
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --drop --confirm
 ts-node scripts/seeds/seed-warehouse-types.ts --drop
 ts-node scripts/seeds/seed-warehouses.ts --drop
 ```
@@ -269,6 +379,7 @@ ts-node scripts/seeds/seed-all.ts --dry-run
 
 # Test with limited data
 ts-node scripts/seeds/seed-provinces.ts --limit 5 --dry-run
+ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --count 10 --dry-run
 ts-node scripts/seeds/seed-warehouses.ts --count 5 --dry-run
 ```
 
@@ -286,6 +397,15 @@ The seed scripts ensure the following indexes exist:
 - Composite index on `{code, provinceCode}`
 - 2dsphere index on `geometry`
 - Regular index on `provinceCode`
+
+**Roles:**
+- Unique index on `{code, scope}`
+- Regular indexes on `scope`, `status`
+
+**Organizations:**
+- Unique index on `{taxId, country}`
+- Regular indexes on `type`, `status`, `name`, `createdBy`
+- Text index on `{name, internationalName, description}`
 
 **Warehouses:**
 - Unique index on `code`
