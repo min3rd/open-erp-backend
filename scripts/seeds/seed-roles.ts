@@ -243,6 +243,8 @@ export async function seedRoles(options: SeedOptions = {}): Promise<SeedStats> {
   console.log(`Dry run: ${options.dryRun ? 'YES' : 'NO'}`);
   console.log('');
 
+  await connectToDatabase();
+
   const RoleModel: Model<Role> = connection.model('Role', RoleSchema);
 
   // Drop existing roles if requested
@@ -309,7 +311,7 @@ export async function seedRoles(options: SeedOptions = {}): Promise<SeedStats> {
 /**
  * Main execution
  */
-async function main() {
+export async function main() {
   const options = parseArgs(process.argv.slice(2));
   validateDestructiveOps(options);
 
