@@ -147,7 +147,7 @@ async function seedAll() {
   console.log(`  Drop existing data: ${opts.drop ? 'YES' : 'NO'}`);
   console.log(`  Dry run: ${opts.dryRun ? 'YES' : 'NO'}`);
   console.log(`  Organization count: ${opts.orgCount || 500}`);
-  console.log(`  User count: ${opts.userCount || 10000}`);
+  console.log(`  User count: ${opts.userCount || 1000}`);
   console.log(`  Warehouse count: ${opts.warehouseCount || 20}`);
   console.log('');
 
