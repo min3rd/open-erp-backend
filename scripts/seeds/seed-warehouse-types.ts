@@ -247,10 +247,23 @@ export async function seedWarehouseTypes(options: SeedOptions = {}): Promise<See
       console.log('✓ Collection dropped');
     }
 
-    // Insert warehouse types
-    console.log('Inserting warehouse types...');
-    const inserted = await WarehouseTypeMaster.insertMany(warehouseTypesData);
-    stats.inserted = inserted.length;
+    // Insert or update warehouse types (idempotent)
+    console.log('Upserting warehouse types...');
+    let insertedCount = 0;
+    for (const typeData of warehouseTypesData) {
+      try {
+        await WarehouseTypeMaster.updateOne(
+          { code: typeData.code },
+          { $set: typeData },
+          { upsert: true }
+        );
+        insertedCount++;
+      } catch (err) {
+        console.error(`Error upserting warehouse type ${typeData.code}:`, err);
+        throw err;
+      }
+    }
+    stats.inserted = insertedCount;
 
     console.log('\n' + '='.repeat(60));
     console.log('WAREHOUSE TYPES SEEDING COMPLETE');

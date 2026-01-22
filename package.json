@@ -48,7 +48,7 @@
     "db:seed:provinces-wards": "ts-node libs/shared/scripts/seed-provinces-wards.ts",
     "db:seed:provinces-geojson": "ts-node -r tsconfig-paths/register scripts/seed-provinces-from-geojson.ts",
     "db:seed:wards-geojson": "ts-node -r tsconfig-paths/register scripts/seed-wards-from-geojson.ts",
-    "db:seed:warehouse-types": "ts-node libs/shared/scripts/seed-warehouse-types.ts",
+    "db:seed:warehouse-types": "ts-node -r tsconfig-paths/register scripts/seeds/seed-warehouse-types.ts",
     "db:seed:all": "ts-node -r tsconfig-paths/register scripts/seeds/seed-all.ts",
     "db:seed:provinces": "ts-node -r tsconfig-paths/register scripts/seeds/seed-provinces.ts",
     "db:seed:wards": "ts-node -r tsconfig-paths/register scripts/seeds/seed-wards.ts",

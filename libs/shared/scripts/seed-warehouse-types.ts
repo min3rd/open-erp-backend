@@ -180,10 +180,24 @@ async function seedWarehouseTypes() {
     console.log('Clearing existing warehouse types...');
     await WarehouseTypeMaster.deleteMany({});
 
-    // Insert warehouse types
-    console.log('Inserting warehouse types...');
-    const inserted = await WarehouseTypeMaster.insertMany(warehouseTypesData);
-    console.log(`Inserted ${inserted.length} warehouse types`);
+    // Insert or update warehouse types (idempotent)
+    console.log('Upserting warehouse types...');
+    let insertedCount = 0;
+    for (const typeData of warehouseTypesData) {
+      try {
+        await WarehouseTypeMaster.updateOne(
+          { code: typeData.code },
+          { $set: typeData },
+          { upsert: true }
+        );
+        insertedCount++;
+      } catch (err) {
+        console.error(`Error upserting warehouse type ${typeData.code}:`, err);
+        throw err;
+      }
+    }
+
+    console.log(`Upserted ${insertedCount} warehouse types`);
 
     console.log('Warehouse types seed completed successfully!');
   } catch (error) {
