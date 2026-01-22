@@ -43,7 +43,7 @@
       "labelKey": "navigation.modules.management.user",
       "route": "/modules/management/user",
       "icon": "pi pi-users",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 1,
       "permissions": {
@@ -56,7 +56,7 @@
       "labelKey": "navigation.modules.management.navigation",
       "route": "/modules/management/navigation",
       "icon": "pi pi-sitemap",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 2,
       "permissions": {
@@ -69,7 +69,7 @@
       "labelKey": "navigation.modules.management.province",
       "route": "/modules/management/province",
       "icon": "pi pi-map",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 3,
       "permissions": {
@@ -82,7 +82,7 @@
       "labelKey": "navigation.modules.management.district",
       "route": "/modules/management/district",
       "icon": "pi pi-map-marker",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 4,
       "permissions": {
@@ -95,7 +95,7 @@
       "labelKey": "navigation.modules.management.ward",
       "route": "/modules/management/ward",
       "icon": "pi pi-compass",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 5,
       "permissions": {
@@ -108,7 +108,7 @@
       "labelKey": "navigation.modules.management.administrative_unit",
       "route": "/modules/management/administrative-unit",
       "icon": "pi pi-flag",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 6,
       "permissions": {
@@ -121,7 +121,7 @@
       "labelKey": "navigation.modules.management.warehouse",
       "route": "/modules/management/warehouse",
       "icon": "pi pi-box",
-      "module": "nav-management",
+      "moduleId": "nav-management",
       "scope": "module",
       "order": 7,
       "permissions": {
