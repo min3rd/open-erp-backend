@@ -96,6 +96,7 @@ function generateOrganization(
   }
 
   const companyName = faker.company.name();
+  const emailDomain = companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company';
   
   return {
     type,
@@ -105,7 +106,7 @@ function generateOrganization(
     headquartersAddress: faker.location.streetAddress(true),
     legalRepresentative: faker.person.fullName(),
     contactPhone: faker.phone.number(),
-    contactEmail: faker.internet.email({ provider: companyName.toLowerCase().replace(/[^a-z0-9]/g, '') + '.com' }),
+    contactEmail: faker.internet.email({ provider: emailDomain + '.com' }),
     foundedDate: faker.date.past({ years: 20 }),
     status,
     country: 'VN',
@@ -136,21 +137,23 @@ function generateOrganizations(
     console.log(`  BRANCHes: ${branchCount}`);
     console.log(`  Others: ${otherCount}`);
 
+    let orgIndex = 0;
+
     // Generate HOLDINGs
     for (let i = 0; i < holdingCount; i++) {
-      const org = generateOrganization(i, systemUserId, OrganizationType.HOLDING);
+      const org = generateOrganization(orgIndex++, systemUserId, OrganizationType.HOLDING);
       organizations.push(org);
     }
 
     // Generate BRANCHes
-    for (let i = holdingCount; i < holdingCount + branchCount; i++) {
-      const org = generateOrganization(i, systemUserId, OrganizationType.BRANCH);
+    for (let i = 0; i < branchCount; i++) {
+      const org = generateOrganization(orgIndex++, systemUserId, OrganizationType.BRANCH);
       organizations.push(org);
     }
 
     // Generate other organizations
-    for (let i = holdingCount + branchCount; i < count; i++) {
-      const org = generateOrganization(i, systemUserId);
+    for (let i = 0; i < otherCount; i++) {
+      const org = generateOrganization(orgIndex++, systemUserId);
       organizations.push(org);
     }
   } else {
