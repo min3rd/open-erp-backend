@@ -14,26 +14,14 @@
       }
     },
     {
-      "id": "nav-modules",
-      "label": "Modules",
-      "labelKey": "navigation.modules",
-      "route": "/modules",
-      "icon": "pi pi-th-large",
-      "module": "modules",
-      "scope": "global",
-      "order": 2
-    },
-    {
       "id": "nav-organization",
       "label": "Organization",
-      "labelKey": "navigation.modules.organization",
+      "labelKey": "navigation.organization",
       "route": "/modules/organization",
       "icon": "pi pi-building",
       "module": "organization",
-      "scope": "module",
-      "moduleId": "organization",
-      "parentId": "nav-modules",
-      "order": 1,
+      "scope": "global",
+      "order": 2,
       "permissions": {
         "include": ["organizations.read"]
       },
@@ -44,27 +32,24 @@
     {
       "id": "nav-management",
       "label": "Management",
-      "labelKey": "navigation.modules.management",
+      "labelKey": "navigation.management",
       "route": "/modules/management",
       "icon": "pi pi-cog",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-modules",
-      "order": 2,
+      "scope": "global",
+      "order": 3,
       "meta": {
         "description": "System management and administration"
       }
     },
     {
-      "id": "nav-management-user",
+      "id": "nav-user",
       "label": "User Management",
-      "labelKey": "navigation.modules.management.user",
+      "labelKey": "navigation.management.user",
       "route": "/modules/management/user",
       "icon": "pi pi-users",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
+      "scope": "global",
       "parentId": "nav-management",
       "order": 1,
       "permissions": {
@@ -75,34 +60,15 @@
       }
     },
     {
-      "id": "nav-management-navigation",
-      "label": "Navigation Management",
-      "labelKey": "navigation.modules.management.navigation",
-      "route": "/modules/management/navigation",
-      "icon": "pi pi-sitemap",
-      "module": "management",
-      "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
-      "order": 2,
-      "permissions": {
-        "include": ["navigation.manage", "system.manage"]
-      },
-      "meta": {
-        "description": "Configure navigation menus and structures"
-      }
-    },
-    {
-      "id": "nav-management-province",
+      "id": "nav-province",
       "label": "Province Management",
-      "labelKey": "navigation.modules.management.province",
+      "labelKey": "navigation.management.province",
       "route": "/modules/management/province",
       "icon": "pi pi-map",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
+      "scope": "global",
       "parentId": "nav-management",
-      "order": 3,
+      "order": 2,
       "permissions": {
         "include": ["provinces.read", "geography.manage"]
       },
@@ -111,16 +77,15 @@
       }
     },
     {
-      "id": "nav-management-district",
+      "id": "nav-district",
       "label": "District Management",
-      "labelKey": "navigation.modules.management.district",
+      "labelKey": "navigation.management.district",
       "route": "/modules/management/district",
       "icon": "pi pi-map-marker",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
+      "scope": "global",
       "parentId": "nav-management",
-      "order": 4,
+      "order": 3,
       "permissions": {
         "include": ["districts.read", "geography.manage"]
       },
@@ -129,16 +94,15 @@
       }
     },
     {
-      "id": "nav-management-ward",
+      "id": "nav-ward",
       "label": "Ward Management",
-      "labelKey": "navigation.modules.management.ward",
+      "labelKey": "navigation.management.ward",
       "route": "/modules/management/ward",
       "icon": "pi pi-compass",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
+      "scope": "global",
       "parentId": "nav-management",
-      "order": 5,
+      "order": 4,
       "permissions": {
         "include": ["wards.read", "geography.manage"]
       },
@@ -147,16 +111,15 @@
       }
     },
     {
-      "id": "nav-management-administrative-unit",
+      "id": "nav-administrative-unit",
       "label": "Administrative Unit",
-      "labelKey": "navigation.modules.management.administrative_unit",
+      "labelKey": "navigation.management.administrative_unit",
       "route": "/modules/management/administrative-unit",
       "icon": "pi pi-flag",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
+      "scope": "global",
       "parentId": "nav-management",
-      "order": 6,
+      "order": 5,
       "permissions": {
         "include": ["administrative_units.read", "geography.manage"]
       },
@@ -165,38 +128,20 @@
       }
     },
     {
-      "id": "nav-management-warehouse",
+      "id": "nav-warehouse",
       "label": "Warehouse Management",
-      "labelKey": "navigation.modules.management.warehouse",
+      "labelKey": "navigation.management.warehouse",
       "route": "/modules/management/warehouse",
       "icon": "pi pi-box",
       "module": "management",
-      "scope": "module",
-      "moduleId": "management",
+      "scope": "global",
       "parentId": "nav-management",
-      "order": 7,
+      "order": 6,
       "permissions": {
         "include": ["warehouses.read", "warehouses.manage"]
       },
       "meta": {
         "description": "Manage warehouses and storage locations"
-      }
-    },
-    {
-      "id": "nav-demo-form-editor",
-      "label": "Form Editor Demo",
-      "labelKey": "navigation.demo.form_editor",
-      "route": "/demo/form-editor",
-      "icon": "pi pi-file-edit",
-      "module": "demo",
-      "scope": "global",
-      "parentId": "nav-demo",
-      "order": 1,
-      "permissions": {
-        "include": ["demo.view"]
-      },
-      "meta": {
-        "description": "Interactive form builder and editor demo"
       }
     }
   ]
