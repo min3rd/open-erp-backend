@@ -34,7 +34,6 @@
       "labelKey": "navigation.modules.management",
       "route": "/modules/management",
       "icon": "pi pi-cog",
-      "module": "management",
       "scope": "global",
       "order": 2
     },
@@ -44,9 +43,8 @@
       "labelKey": "navigation.modules.management.user",
       "route": "/modules/management/user",
       "icon": "pi pi-users",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 1,
       "permissions": {
         "include": ["users.read"]
@@ -58,9 +56,8 @@
       "labelKey": "navigation.modules.management.navigation",
       "route": "/modules/management/navigation",
       "icon": "pi pi-sitemap",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 2,
       "permissions": {
         "include": ["navigation.manage"]
@@ -72,9 +69,8 @@
       "labelKey": "navigation.modules.management.province",
       "route": "/modules/management/province",
       "icon": "pi pi-map",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 3,
       "permissions": {
         "include": ["provinces.read"]
@@ -86,9 +82,8 @@
       "labelKey": "navigation.modules.management.district",
       "route": "/modules/management/district",
       "icon": "pi pi-map-marker",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 4,
       "permissions": {
         "include": ["districts.read"]
@@ -100,9 +95,8 @@
       "labelKey": "navigation.modules.management.ward",
       "route": "/modules/management/ward",
       "icon": "pi pi-compass",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 5,
       "permissions": {
         "include": ["wards.read"]
@@ -114,9 +108,8 @@
       "labelKey": "navigation.modules.management.administrative_unit",
       "route": "/modules/management/administrative-unit",
       "icon": "pi pi-flag",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 6,
       "permissions": {
         "include": ["administrative_units.read"]
@@ -128,9 +121,8 @@
       "labelKey": "navigation.modules.management.warehouse",
       "route": "/modules/management/warehouse",
       "icon": "pi pi-box",
-      "module": "management",
+      "module": "nav-management",
       "scope": "module",
-      "moduleId": "nav-management",
       "order": 7,
       "permissions": {
         "include": ["warehouses.read"]
