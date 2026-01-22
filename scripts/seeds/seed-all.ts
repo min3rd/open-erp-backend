@@ -12,14 +12,23 @@
  *   --dry-run           Validate without writing to database
  *   --skip-provinces    Skip provinces seeding
  *   --skip-wards        Skip wards seeding
+ *   --skip-roles        Skip roles seeding
+ *   --skip-organizations Skip organizations seeding
+ *   --skip-users        Skip users seeding
  *   --skip-warehouse-types  Skip warehouse types seeding
  *   --skip-warehouses   Skip warehouses seeding
  *   --warehouse-count   Number of sample warehouses to create (default: 20)
+ *   --org-count         Number of organizations to create (default: 500)
+ *   --user-count        Number of regular users to create (default: 10000)
+ *   --seed-superadmin-password  Password for SuperAdmin user (generates random if not provided)
  */
 
 import 'tsconfig-paths/register';
 import { seedProvincesFromGeoJSON } from './seed-provinces';
 import { seedWardsFromGeoJSON } from './seed-wards';
+import { seedRoles } from './seed-roles';
+import { seedOrganizations } from './seed-organizations';
+import { seedUsers } from './seed-users';
 import { seedWarehouseTypes } from './seed-warehouse-types';
 import { seedWarehouses } from './seed-warehouses';
 
@@ -31,9 +40,15 @@ interface Options {
   dryRun?: boolean;
   skipProvinces?: boolean;
   skipWards?: boolean;
+  skipRoles?: boolean;
+  skipOrganizations?: boolean;
+  skipUsers?: boolean;
   skipWarehouseTypes?: boolean;
   skipWarehouses?: boolean;
   warehouseCount?: number;
+  orgCount?: number;
+  userCount?: number;
+  seedSuperadminPassword?: string;
 }
 
 function parseArgs(): Options {
@@ -58,6 +73,15 @@ function parseArgs(): Options {
       case '--skip-wards':
         opts.skipWards = true;
         break;
+      case '--skip-roles':
+        opts.skipRoles = true;
+        break;
+      case '--skip-organizations':
+        opts.skipOrganizations = true;
+        break;
+      case '--skip-users':
+        opts.skipUsers = true;
+        break;
       case '--skip-warehouse-types':
         opts.skipWarehouseTypes = true;
         break;
@@ -67,6 +91,24 @@ function parseArgs(): Options {
       case '--warehouse-count':
         if (args[i + 1]) {
           opts.warehouseCount = parseInt(args[i + 1], 10);
+          i++;
+        }
+        break;
+      case '--org-count':
+        if (args[i + 1]) {
+          opts.orgCount = parseInt(args[i + 1], 10);
+          i++;
+        }
+        break;
+      case '--user-count':
+        if (args[i + 1]) {
+          opts.userCount = parseInt(args[i + 1], 10);
+          i++;
+        }
+        break;
+      case '--seed-superadmin-password':
+        if (args[i + 1]) {
+          opts.seedSuperadminPassword = args[i + 1];
           i++;
         }
         break;
@@ -92,6 +134,8 @@ async function seedAll() {
   console.log('Options:');
   console.log(`  Drop existing data: ${opts.drop ? 'YES' : 'NO'}`);
   console.log(`  Dry run: ${opts.dryRun ? 'YES' : 'NO'}`);
+  console.log(`  Organization count: ${opts.orgCount || 500}`);
+  console.log(`  User count: ${opts.userCount || 10000}`);
   console.log(`  Warehouse count: ${opts.warehouseCount || 20}`);
   console.log('');
   
@@ -145,10 +189,88 @@ async function seedAll() {
     console.log('\nSkipping wards seeding');
   }
   
-  // 3. Seed Warehouse Types
+  // 3. Seed Roles
+  if (!opts.skipRoles) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 3: Seeding System Roles');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedRoles({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+      });
+      results.push({ name: 'Roles', success: true, stats });
+      console.log('✓ Roles seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({ name: 'Roles', success: false, error: errorMsg });
+      console.error('✗ Roles seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping roles seeding');
+  }
+  
+  // 4. Seed Organizations
+  if (!opts.skipOrganizations) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 4: Seeding Organizations');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedOrganizations({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+        count: opts.orgCount || 500,
+        batchSize: 100,
+      });
+      results.push({ name: 'Organizations', success: true, stats });
+      console.log('✓ Organizations seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({ name: 'Organizations', success: false, error: errorMsg });
+      console.error('✗ Organizations seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping organizations seeding');
+  }
+  
+  // 5. Seed Users
+  if (!opts.skipUsers) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 5: Seeding Users (1 SuperAdmin + Regular Users)');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedUsers({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+        count: opts.userCount || 10000,
+        batchSize: 500,
+        seedSuperadminPassword: opts.seedSuperadminPassword,
+        domain: 'example.com',
+      });
+      results.push({ name: 'Users', success: true, stats });
+      console.log('✓ Users seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({ name: 'Users', success: false, error: errorMsg });
+      console.error('✗ Users seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping users seeding');
+  }
+  
+  // 6. Seed Warehouse Types
   if (!opts.skipWarehouseTypes) {
     console.log('\n' + '='.repeat(60));
-    console.log('STEP 3: Seeding Warehouse Types');
+    console.log('STEP 6: Seeding Warehouse Types');
     console.log('='.repeat(60));
     try {
       const stats = await seedWarehouseTypes({
@@ -169,10 +291,10 @@ async function seedAll() {
     console.log('\nSkipping warehouse types seeding');
   }
   
-  // 4. Seed Sample Warehouses
+  // 7. Seed Sample Warehouses
   if (!opts.skipWarehouses) {
     console.log('\n' + '='.repeat(60));
-    console.log('STEP 4: Seeding Sample Warehouses');
+    console.log('STEP 7: Seeding Sample Warehouses');
     console.log('='.repeat(60));
     try {
       const stats = await seedWarehouses({
