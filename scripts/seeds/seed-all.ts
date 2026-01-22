@@ -17,6 +17,7 @@
  *   --skip-users        Skip users seeding
  *   --skip-warehouse-types  Skip warehouse types seeding
  *   --skip-warehouses   Skip warehouses seeding
+ *   --skip-relations    Skip relationships seeding
  *   --warehouse-count   Number of sample warehouses to create (default: 20)
  *   --org-count         Number of organizations to create (default: 500)
  *   --user-count        Number of regular users to create (default: 10000)
@@ -31,6 +32,7 @@ import { seedOrganizations } from './seed-organizations';
 import { seedUsers } from './seed-users';
 import { seedWarehouseTypes } from './seed-warehouse-types';
 import { seedWarehouses } from './seed-warehouses';
+import { seedRelations } from './seed-relations';
 
 require('dotenv').config();
 
@@ -45,6 +47,7 @@ interface Options {
   skipUsers?: boolean;
   skipWarehouseTypes?: boolean;
   skipWarehouses?: boolean;
+  skipRelations?: boolean;
   warehouseCount?: number;
   orgCount?: number;
   userCount?: number;
@@ -87,6 +90,9 @@ function parseArgs(): Options {
         break;
       case '--skip-warehouses':
         opts.skipWarehouses = true;
+        break;
+      case '--skip-relations':
+        opts.skipRelations = true;
         break;
       case '--warehouse-count':
         if (args[i + 1]) {
@@ -314,6 +320,31 @@ async function seedAll() {
     }
   } else {
     console.log('\nSkipping warehouses seeding');
+  }
+  
+  // 8. Seed Relationships (User-Role-Organization)
+  if (!opts.skipRelations) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 8: Seeding Relationships (User-Role-Organization)');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedRelations({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+        batchSize: 100,
+      });
+      results.push({ name: 'Relations', success: true, stats });
+      console.log('✓ Relations seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({ name: 'Relations', success: false, error: errorMsg });
+      console.error('✗ Relations seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping relations seeding');
   }
   
   // Print summary
