@@ -2,10 +2,10 @@
 
 /**
  * Seed sample warehouses with realistic data
- * 
+ *
  * Usage:
  *   ts-node scripts/seeds/seed-warehouses.ts [options]
- * 
+ *
  * Options:
  *   --count <n>         Number of warehouses to create (default: 20)
  *   --drop              Drop existing warehouses before seeding
@@ -42,7 +42,7 @@ interface SeedStats {
 function parseArgs(): SeedOptions {
   const opts: SeedOptions = {};
   const args = process.argv.slice(2);
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
@@ -60,7 +60,7 @@ function parseArgs(): SeedOptions {
         break;
     }
   }
-  
+
   return opts;
 }
 
@@ -104,8 +104,11 @@ async function connectToDatabase(): Promise<void> {
     if (dbConfig.user && dbConfig.pass) {
       const user = encodeURIComponent(dbConfig.user);
       const pass = encodeURIComponent(dbConfig.pass);
-      const credentialedUri = connectUri.replace(/^(mongodb(\+srv)?:\/\/)/, `$1${user}:${pass}@`);
-      
+      const credentialedUri = connectUri.replace(
+        /^(mongodb(\+srv)?:\/\/)/,
+        `$1${user}:${pass}@`,
+      );
+
       console.log('Retrying with credentials embedded in URI...');
       try {
         await doConnect(credentialedUri, {
@@ -121,7 +124,10 @@ async function connectToDatabase(): Promise<void> {
         });
         console.log('✓ Connected to MongoDB with embedded credentials');
       } catch (err2: any) {
-        console.error('Retry with embedded credentials failed:', err2?.message || err2);
+        console.error(
+          'Retry with embedded credentials failed:',
+          err2?.message || err2,
+        );
         throw err2;
       }
     } else {
@@ -168,22 +174,23 @@ function generateWarehouseData(
   ward: any,
   allTypes: string[],
 ): any {
-  const warehouseName = warehouseNames[index % warehouseNames.length] || `Kho Mẫu ${index + 1}`;
+  const warehouseName =
+    warehouseNames[index % warehouseNames.length] || `Kho Mẫu ${index + 1}`;
   const warehouseType = allTypes[index % allTypes.length];
-  
+
   // Generate location near province centroid (with some random offset)
   const lat = province.centroid?.lat || 21.0285; // Default to Hanoi
   const lon = province.centroid?.lon || 105.8542;
-  
+
   // Random offset within ~50km
   const latOffset = (Math.random() - 0.5) * 0.5;
   const lonOffset = (Math.random() - 0.5) * 0.5;
-  
+
   const location = {
     type: 'Point',
     coordinates: [lon + lonOffset, lat + latOffset],
   };
-  
+
   return {
     code: generateWarehouseCode(index),
     name: `${warehouseName} ${index + 1}`,
@@ -204,7 +211,9 @@ function generateWarehouseData(
     totalAreaM2: Math.floor(Math.random() * 9000) + 1000, // 1000-10000 m²
     usableAreaM2: Math.floor(Math.random() * 7000) + 800,
     storageCapacity: Math.floor(Math.random() * 5000) + 500,
-    capacityUnit: [CapacityUnit.TON, CapacityUnit.PALLET, CapacityUnit.M3][index % 3],
+    capacityUnit: [CapacityUnit.TON, CapacityUnit.PALLET, CapacityUnit.M3][
+      index % 3
+    ],
     zonesCount: Math.floor(Math.random() * 10) + 2,
     racksCount: Math.floor(Math.random() * 100) + 20,
     floorsCount: Math.floor(Math.random() * 3) + 1,
@@ -218,10 +227,12 @@ function generateWarehouseData(
 /**
  * Seed sample warehouses
  */
-export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedStats> {
+export async function seedWarehouses(
+  options: SeedOptions = {},
+): Promise<SeedStats> {
   const opts = { ...parseArgs(), ...options };
   const count = opts.count || 20;
-  
+
   const stats: SeedStats = {
     total: count,
     inserted: 0,
@@ -254,16 +265,18 @@ export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedSta
     console.log('Fetching provinces and wards...');
     const provinces = await Province.find({ isLegacy: false }).limit(10).lean();
     const wards = await Ward.find({ isLegacy: false }).limit(50).lean();
-    
+
     if (provinces.length === 0) {
       throw new Error('No provinces found. Please run seed-provinces first.');
     }
-    
+
     if (wards.length === 0) {
       throw new Error('No wards found. Please run seed-wards first.');
     }
-    
-    console.log(`Found ${provinces.length} provinces and ${wards.length} wards`);
+
+    console.log(
+      `Found ${provinces.length} provinces and ${wards.length} wards`,
+    );
 
     // Get all warehouse types
     const allTypes = Object.values(WarehouseType);
@@ -271,11 +284,11 @@ export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedSta
     // Generate and insert warehouses
     console.log(`Generating ${count} sample warehouses...`);
     const warehousesData: any[] = [];
-    
+
     for (let i = 0; i < count; i++) {
       const province = provinces[i % provinces.length];
       const ward = wards[i % wards.length];
-      
+
       const warehouseData = generateWarehouseData(i, province, ward, allTypes);
       warehousesData.push(warehouseData);
     }
@@ -287,7 +300,7 @@ export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedSta
         await Warehouse.updateOne(
           { code: warehouseData.code },
           { $set: warehouseData },
-          { upsert: true }
+          { upsert: true },
         );
         insertedCount++;
       } catch (err) {
@@ -304,7 +317,6 @@ export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedSta
     console.log(`Inserted: ${stats.inserted}`);
     console.log(`Errors: ${stats.errors}`);
     console.log('='.repeat(60));
-
   } catch (err) {
     console.error('Error seeding warehouses:', err);
     stats.errors++;

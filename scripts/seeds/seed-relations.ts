@@ -2,22 +2,22 @@
 
 /**
  * Seed relationships between users, roles, and organizations
- * 
+ *
  * Creates/updates relationships including:
  * - Organization admins (ORG_ADMIN role + OrganizationMember with admin role)
  * - Organization members (OrganizationMember entries for all org users)
  * - Warehouse managers (WAREHOUSE_MANAGER role for orgs with warehouses)
  * - Special roles (INVENTORY_VIEWER, REPORT_VIEWER - 10-20% of users)
- * 
+ *
  * ⚠️ IMPORTANT:
  * - This script is idempotent - safe to run multiple times
  * - Checks existing roleAssignments and OrganizationMember entries
  * - Uses $addToSet and upsert to avoid duplicates
  * - Requires existing users, roles, and organizations
- * 
+ *
  * Usage:
  *   ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts [options]
- * 
+ *
  * Options:
  *   --batch-size <n>    Number of operations per batch (default: 100)
  *   --drop              Drop existing OrganizationMember before seeding (requires --confirm)
@@ -30,7 +30,10 @@ import 'tsconfig-paths/register';
 import { connect, connection, Model, Types } from 'mongoose';
 import { UserSchema, User, RoleAssignment } from '@shared/schemas/user.schema';
 import { Role, RoleSchema } from '@shared/schemas/role.schema';
-import { OrganizationSchema, Organization } from '@shared/schemas/organization.schema';
+import {
+  OrganizationSchema,
+  Organization,
+} from '@shared/schemas/organization.schema';
 import {
   OrganizationMemberSchema,
   OrganizationMember,
@@ -99,13 +102,16 @@ async function connectToDatabase(): Promise<void> {
     });
     console.log('✓ Connected to MongoDB');
   } catch (err: any) {
-    console.warn('Initial connection failed, retrying with embedded credentials...');
-    const authPart = dbConfig.user && dbConfig.pass
-      ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
-      : '';
+    console.warn(
+      'Initial connection failed, retrying with embedded credentials...',
+    );
+    const authPart =
+      dbConfig.user && dbConfig.pass
+        ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
+        : '';
     const hostPart = connectUri.replace('mongodb://', '');
     const retryUri = `mongodb://${authPart}${hostPart}`;
-    
+
     await connect(retryUri, {
       dbName: mongooseOpts.dbName,
       authSource: mongooseOpts.authSource,
@@ -126,9 +132,11 @@ async function connectToDatabase(): Promise<void> {
  * Check if user already has a specific role
  */
 function hasRole(user: User, roleId: Types.ObjectId): boolean {
-  return user.roleAssignments?.some(
-    (ra) => ra.roleId.toString() === roleId.toString()
-  ) || false;
+  return (
+    user.roleAssignments?.some(
+      (ra) => ra.roleId.toString() === roleId.toString(),
+    ) || false
+  );
 }
 
 /**
@@ -136,13 +144,16 @@ function hasRole(user: User, roleId: Types.ObjectId): boolean {
  */
 function selectAdmins(users: User[], orgId: Types.ObjectId): User[] {
   if (users.length === 0) return [];
-  
+
   // Calculate number of admins (15% but at least 1, max 2)
   const numAdmins = Math.max(
     MIN_ADMINS_PER_ORG,
-    Math.min(MAX_ADMINS_PER_ORG, Math.ceil(users.length * ADMIN_SELECTION_RATIO))
+    Math.min(
+      MAX_ADMINS_PER_ORG,
+      Math.ceil(users.length * ADMIN_SELECTION_RATIO),
+    ),
   );
-  
+
   // Shuffle and select
   const shuffled = [...users].sort(() => Math.random() - 0.5);
   return shuffled.slice(0, numAdmins);
@@ -152,7 +163,7 @@ function selectAdmins(users: User[], orgId: Types.ObjectId): User[] {
  * Check if organization has warehouses
  */
 async function organizationHasWarehouses(
-  orgId: Types.ObjectId
+  orgId: Types.ObjectId,
 ): Promise<boolean> {
   try {
     const db = connection.db;
@@ -171,7 +182,9 @@ async function organizationHasWarehouses(
 /**
  * Seed relationships between users, roles, and organizations
  */
-export async function seedRelations(options: SeedOptions = {}): Promise<RelationshipStats> {
+export async function seedRelations(
+  options: SeedOptions = {},
+): Promise<RelationshipStats> {
   const startTime = Date.now();
   const batchSize = options.batchSize || 100;
 
@@ -197,10 +210,13 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
 
   const UserModel: Model<User> = connection.model('User', UserSchema);
   const RoleModel: Model<Role> = connection.model('Role', RoleSchema);
-  const OrganizationModel: Model<Organization> = connection.model('Organization', OrganizationSchema);
+  const OrganizationModel: Model<Organization> = connection.model(
+    'Organization',
+    OrganizationSchema,
+  );
   const OrganizationMemberModel: Model<OrganizationMember> = connection.model(
     'OrganizationMember',
-    OrganizationMemberSchema
+    OrganizationMemberSchema,
   );
 
   // Load all roles
@@ -208,15 +224,21 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
   const roles = await RoleModel.find({}).select('_id code').exec();
   const roleMap: RoleMap = {};
   roles.forEach((role) => {
-    roleMap[role.code] = role._id as Types.ObjectId;
+    roleMap[role.code] = role._id;
   });
 
-  const requiredRoles = ['ORG_ADMIN', 'ORG_USER', 'WAREHOUSE_MANAGER', 'INVENTORY_VIEWER', 'REPORT_VIEWER'];
+  const requiredRoles = [
+    'ORG_ADMIN',
+    'ORG_USER',
+    'WAREHOUSE_MANAGER',
+    'INVENTORY_VIEWER',
+    'REPORT_VIEWER',
+  ];
   const missingRoles = requiredRoles.filter((code) => !roleMap[code]);
-  
+
   if (missingRoles.length > 0) {
     throw new Error(
-      `Required roles not found: ${missingRoles.join(', ')}. Please run seed-roles.ts first.`
+      `Required roles not found: ${missingRoles.join(', ')}. Please run seed-roles.ts first.`,
     );
   }
 
@@ -235,7 +257,9 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
   console.log(`✓ Loaded ${organizations.length} active organizations`);
 
   if (organizations.length === 0) {
-    console.log('No organizations found. Please run seed-organizations.ts first.');
+    console.log(
+      'No organizations found. Please run seed-organizations.ts first.',
+    );
     return stats;
   }
 
@@ -247,10 +271,14 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
   })
     .select('_id username email organizationId roleAssignments')
     .exec();
-  console.log(`✓ Loaded ${allUsers.length} users with organization assignments`);
+  console.log(
+    `✓ Loaded ${allUsers.length} users with organization assignments`,
+  );
 
   if (allUsers.length === 0) {
-    console.log('No users found with organization assignments. Please run seed-users.ts first.');
+    console.log(
+      'No users found with organization assignments. Please run seed-users.ts first.',
+    );
     return stats;
   }
 
@@ -264,14 +292,16 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
   // Get system user for createdBy (use first admin or create placeholder)
   let systemUserId: Types.ObjectId;
   const firstAdmin = allUsers.find((u) =>
-    u.roleAssignments?.some((ra) => ra.roleId.toString() === roleMap['ORG_ADMIN'].toString())
+    u.roleAssignments?.some(
+      (ra) => ra.roleId.toString() === roleMap['ORG_ADMIN'].toString(),
+    ),
   );
-  
+
   if (firstAdmin) {
-    systemUserId = firstAdmin._id as Types.ObjectId;
+    systemUserId = firstAdmin._id;
   } else {
     // Use first user as system user
-    systemUserId = allUsers[0]._id as Types.ObjectId;
+    systemUserId = allUsers[0]._id;
   }
 
   console.log(`\n✓ Using system user ID: ${systemUserId}`);
@@ -288,7 +318,7 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
     try {
       // Get users for this organization
       const orgUsers = allUsers.filter(
-        (u) => u.organizationId?.toString() === org._id.toString()
+        (u) => u.organizationId?.toString() === org._id.toString(),
       );
 
       if (orgUsers.length === 0) {
@@ -299,8 +329,8 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
       stats.total += orgUsers.length;
 
       // 1. Select and assign ORG_ADMIN role
-      const adminUsers = selectAdmins(orgUsers, org._id as Types.ObjectId);
-      
+      const adminUsers = selectAdmins(orgUsers, org._id);
+
       for (const admin of adminUsers) {
         // Check if user already has ORG_ADMIN role
         if (hasRole(admin, roleMap['ORG_ADMIN'])) {
@@ -355,8 +385,12 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
 
       // 2. Create OrganizationMember entries for all org users
       for (const user of orgUsers) {
-        const isAdmin = adminUsers.some((a) => a._id.toString() === user._id.toString());
-        const memberRoles = isAdmin ? [MemberRole.ADMIN, MemberRole.MEMBER] : [MemberRole.MEMBER];
+        const isAdmin = adminUsers.some(
+          (a) => a._id.toString() === user._id.toString(),
+        );
+        const memberRoles = isAdmin
+          ? [MemberRole.ADMIN, MemberRole.MEMBER]
+          : [MemberRole.MEMBER];
 
         memberUpsertOps.push({
           updateOne: {
@@ -385,15 +419,18 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
       }
 
       // 3. Assign WAREHOUSE_MANAGER role if organization has warehouses
-      const hasWarehouses = await organizationHasWarehouses(org._id as Types.ObjectId);
-      
+      const hasWarehouses = await organizationHasWarehouses(org._id);
+
       if (hasWarehouses && orgUsers.length > 0) {
         // Select 1-2 users as warehouse managers (prefer non-admins)
         const nonAdmins = orgUsers.filter(
-          (u) => !adminUsers.some((a) => a._id.toString() === u._id.toString())
+          (u) => !adminUsers.some((a) => a._id.toString() === u._id.toString()),
         );
         const managersPool = nonAdmins.length > 0 ? nonAdmins : orgUsers;
-        const numManagers = Math.min(2, Math.max(1, Math.ceil(managersPool.length * 0.1)));
+        const numManagers = Math.min(
+          2,
+          Math.max(1, Math.ceil(managersPool.length * 0.1)),
+        );
         const managerUsers = managersPool
           .sort(() => Math.random() - 0.5)
           .slice(0, numManagers);
@@ -476,7 +513,10 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
 
       orgProgress.increment();
     } catch (err: any) {
-      console.error(`✗ Error processing organization ${org.name}:`, err.message);
+      console.error(
+        `✗ Error processing organization ${org.name}:`,
+        err.message,
+      );
       stats.errors++;
       stats.errorDetails?.push({
         record: { organizationId: org._id, organizationName: org.name },
@@ -506,16 +546,22 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
         if (err.writeErrors) {
           stats.errors += err.writeErrors.length;
           stats.updated += batch.length - err.writeErrors.length;
-          
+
           err.writeErrors.slice(0, 3).forEach((writeErr: any) => {
-            console.error(`  ✗ Error in user batch ${batchIndex + 1}:`, writeErr.errmsg);
+            console.error(
+              `  ✗ Error in user batch ${batchIndex + 1}:`,
+              writeErr.errmsg,
+            );
             stats.errorDetails?.push({
               record: { batch: `user-${batchIndex + 1}` },
               error: writeErr.errmsg,
             });
           });
         } else {
-          console.error(`✗ Error processing user batch ${batchIndex + 1}:`, err.message);
+          console.error(
+            `✗ Error processing user batch ${batchIndex + 1}:`,
+            err.message,
+          );
           stats.errors += batch.length;
           stats.errorDetails?.push({
             record: { batch: `user-${batchIndex + 1}` },
@@ -528,13 +574,17 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
 
     batchProgress.finish();
   } else if (options.dryRun && userUpdateOps.length > 0) {
-    console.log(`\n[DRY RUN] Would update ${userUpdateOps.length} user role assignments`);
+    console.log(
+      `\n[DRY RUN] Would update ${userUpdateOps.length} user role assignments`,
+    );
   }
 
   // Execute OrganizationMember upserts in batches
   if (!options.dryRun && memberUpsertOps.length > 0) {
     console.log('\n' + '-'.repeat(60));
-    console.log(`Upserting OrganizationMember entries in batches of ${batchSize}...`);
+    console.log(
+      `Upserting OrganizationMember entries in batches of ${batchSize}...`,
+    );
     const batches = createBatches(memberUpsertOps, batchSize);
     const batchProgress = new ProgressLogger(batches.length);
 
@@ -542,7 +592,9 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
       const batch = batches[batchIndex];
 
       try {
-        const result = await OrganizationMemberModel.bulkWrite(batch, { ordered: false });
+        const result = await OrganizationMemberModel.bulkWrite(batch, {
+          ordered: false,
+        });
         stats.inserted += result.upsertedCount || 0;
         stats.updated += result.modifiedCount || 0;
         batchProgress.increment();
@@ -550,16 +602,22 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
         if (err.writeErrors) {
           stats.errors += err.writeErrors.length;
           stats.inserted += batch.length - err.writeErrors.length;
-          
+
           err.writeErrors.slice(0, 3).forEach((writeErr: any) => {
-            console.error(`  ✗ Error in member batch ${batchIndex + 1}:`, writeErr.errmsg);
+            console.error(
+              `  ✗ Error in member batch ${batchIndex + 1}:`,
+              writeErr.errmsg,
+            );
             stats.errorDetails?.push({
               record: { batch: `member-${batchIndex + 1}` },
               error: writeErr.errmsg,
             });
           });
         } else {
-          console.error(`✗ Error processing member batch ${batchIndex + 1}:`, err.message);
+          console.error(
+            `✗ Error processing member batch ${batchIndex + 1}:`,
+            err.message,
+          );
           stats.errors += batch.length;
           stats.errorDetails?.push({
             record: { batch: `member-${batchIndex + 1}` },
@@ -572,7 +630,9 @@ export async function seedRelations(options: SeedOptions = {}): Promise<Relation
 
     batchProgress.finish();
   } else if (options.dryRun && memberUpsertOps.length > 0) {
-    console.log(`\n[DRY RUN] Would upsert ${memberUpsertOps.length} OrganizationMember entries`);
+    console.log(
+      `\n[DRY RUN] Would upsert ${memberUpsertOps.length} OrganizationMember entries`,
+    );
   }
 
   const duration = Date.now() - startTime;

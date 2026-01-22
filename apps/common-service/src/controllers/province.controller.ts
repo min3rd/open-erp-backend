@@ -35,10 +35,7 @@ import {
 } from '@shared/response';
 import { JwtAuthGuard, RolesGuard } from '@shared/authz';
 import { Roles } from '@shared/authz/decorators';
-import {
-  UpdateGeometryDto,
-  ImportGeoJsonDto,
-} from '../dto/geometry.dto';
+import { UpdateGeometryDto, ImportGeoJsonDto } from '../dto/geometry.dto';
 import { GeometryDetail } from '@shared/types/geometry.types';
 
 @ApiTags('provinces')

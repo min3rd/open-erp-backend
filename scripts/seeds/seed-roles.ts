@@ -2,7 +2,7 @@
 
 /**
  * Seed system roles
- * 
+ *
  * Creates/upserts a set of predefined system roles including:
  * - SUPER_ADMIN: System administrator with all permissions
  * - ORG_ADMIN: Organization administrator
@@ -11,10 +11,10 @@
  * - INVENTORY_VIEWER: View-only inventory access
  * - REPORT_VIEWER: View-only report access
  * - GUEST: Limited guest access
- * 
+ *
  * Usage:
  *   ts-node -r tsconfig-paths/register scripts/seeds/seed-roles.ts [options]
- * 
+ *
  * Options:
  *   --drop              Drop existing roles before seeding (requires --confirm)
  *   --confirm           Confirm destructive operations
@@ -50,7 +50,8 @@ const SYSTEM_ROLES: RoleDef[] = [
   {
     code: 'SUPER_ADMIN',
     name: 'Super Administrator',
-    description: 'System super administrator with unrestricted access to all features and data',
+    description:
+      'System super administrator with unrestricted access to all features and data',
     scope: 'global',
     permissions: [
       'system.manage',
@@ -82,7 +83,8 @@ const SYSTEM_ROLES: RoleDef[] = [
   {
     code: 'ORG_ADMIN',
     name: 'Organization Administrator',
-    description: 'Administrator of an organization with full control over organization resources',
+    description:
+      'Administrator of an organization with full control over organization resources',
     scope: 'organization',
     permissions: [
       'org.manage',
@@ -119,7 +121,8 @@ const SYSTEM_ROLES: RoleDef[] = [
   {
     code: 'WAREHOUSE_MANAGER',
     name: 'Warehouse Manager',
-    description: 'Manager of warehouse operations with inventory management capabilities',
+    description:
+      'Manager of warehouse operations with inventory management capabilities',
     scope: 'organization',
     permissions: [
       'org.warehouses.read',
@@ -149,9 +152,7 @@ const SYSTEM_ROLES: RoleDef[] = [
     name: 'Report Viewer',
     description: 'View-only access to reports and analytics',
     scope: 'organization',
-    permissions: [
-      'org.reports.read',
-    ],
+    permissions: ['org.reports.read'],
     isSystem: true,
   },
   {
@@ -159,9 +160,7 @@ const SYSTEM_ROLES: RoleDef[] = [
     name: 'Guest',
     description: 'Limited guest access for external users',
     scope: 'organization',
-    permissions: [
-      'org.inventory.read',
-    ],
+    permissions: ['org.inventory.read'],
     isSystem: false,
   },
 ];
@@ -197,13 +196,16 @@ async function connectToDatabase(): Promise<void> {
     console.log('✓ Connected to MongoDB');
   } catch (err: any) {
     // Retry with embedded credentials
-    console.warn('Initial connection failed, retrying with embedded credentials...');
-    const authPart = dbConfig.user && dbConfig.pass
-      ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
-      : '';
+    console.warn(
+      'Initial connection failed, retrying with embedded credentials...',
+    );
+    const authPart =
+      dbConfig.user && dbConfig.pass
+        ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
+        : '';
     const hostPart = connectUri.replace('mongodb://', '');
     const retryUri = `mongodb://${authPart}${hostPart}`;
-    
+
     await connect(retryUri, {
       dbName: mongooseOpts.dbName,
       authSource: mongooseOpts.authSource,
@@ -272,7 +274,7 @@ export async function seedRoles(options: SeedOptions = {}): Promise<SeedStats> {
               organizationId: null,
             },
           },
-          { upsert: true }
+          { upsert: true },
         );
 
         if (result.upsertedCount > 0) {

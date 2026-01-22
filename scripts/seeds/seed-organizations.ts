@@ -2,16 +2,16 @@
 
 /**
  * Seed organizations with realistic data
- * 
+ *
  * Creates/upserts organizations with comprehensive data including:
  * - Company information (name, taxId, type)
  * - Contact details (address, phone, email, website)
  * - Legal information (representative, founded date)
  * - Optional type distribution for HOLDING and BRANCH organizations
- * 
+ *
  * Usage:
  *   ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts [options]
- * 
+ *
  * Options:
  *   --count <n>         Number of organizations to create (default: 500)
  *   --batch-size <n>    Number of orgs to process per batch (default: 100)
@@ -77,10 +77,11 @@ function generateTaxId(index: number): string {
 function generateOrganization(
   index: number,
   systemUserId: string,
-  forceType?: OrganizationType
+  forceType?: OrganizationType,
 ): OrganizationData {
   // Determine organization type
-  const type = forceType || faker.helpers.arrayElement(Object.values(OrganizationType));
+  const type =
+    forceType || faker.helpers.arrayElement(Object.values(OrganizationType));
 
   // Status distribution: 85% active, 10% inactive, 5% other
   let status: OrganizationStatus;
@@ -96,12 +97,14 @@ function generateOrganization(
   }
 
   const companyName = faker.company.name();
-  const emailDomain = companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company';
-  
+  const emailDomain =
+    companyName.toLowerCase().replace(/[^a-z0-9]/g, '') || 'company';
+
   return {
     type,
     name: companyName,
-    internationalName: Math.random() > 0.5 ? `${companyName} International` : undefined,
+    internationalName:
+      Math.random() > 0.5 ? `${companyName} International` : undefined,
     taxId: generateTaxId(index),
     headquartersAddress: faker.location.streetAddress(true),
     legalRepresentative: faker.person.fullName(),
@@ -122,7 +125,7 @@ function generateOrganization(
 function generateOrganizations(
   count: number,
   systemUserId: string,
-  withHierarchy: boolean
+  withHierarchy: boolean,
 ): OrganizationData[] {
   const organizations: OrganizationData[] = [];
 
@@ -141,13 +144,21 @@ function generateOrganizations(
 
     // Generate HOLDINGs
     for (let i = 0; i < holdingCount; i++) {
-      const org = generateOrganization(orgIndex++, systemUserId, OrganizationType.HOLDING);
+      const org = generateOrganization(
+        orgIndex++,
+        systemUserId,
+        OrganizationType.HOLDING,
+      );
       organizations.push(org);
     }
 
     // Generate BRANCHes
     for (let i = 0; i < branchCount; i++) {
-      const org = generateOrganization(orgIndex++, systemUserId, OrganizationType.BRANCH);
+      const org = generateOrganization(
+        orgIndex++,
+        systemUserId,
+        OrganizationType.BRANCH,
+      );
       organizations.push(org);
     }
 
@@ -197,13 +208,16 @@ async function connectToDatabase(): Promise<void> {
     });
     console.log('✓ Connected to MongoDB');
   } catch (err: any) {
-    console.warn('Initial connection failed, retrying with embedded credentials...');
-    const authPart = dbConfig.user && dbConfig.pass
-      ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
-      : '';
+    console.warn(
+      'Initial connection failed, retrying with embedded credentials...',
+    );
+    const authPart =
+      dbConfig.user && dbConfig.pass
+        ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
+        : '';
     const hostPart = connectUri.replace('mongodb://', '');
     const retryUri = `mongodb://${authPart}${hostPart}`;
-    
+
     await connect(retryUri, {
       dbName: mongooseOpts.dbName,
       authSource: mongooseOpts.authSource,
@@ -226,11 +240,13 @@ async function connectToDatabase(): Promise<void> {
 async function getSystemUserId(): Promise<string> {
   try {
     const UserModel = connection.model('User');
-    const systemUser = await UserModel.findOne({ email: 'system@open-erp.local' });
-    
+    const systemUser = await UserModel.findOne({
+      email: 'system@open-erp.local',
+    });
+
     if (systemUser) {
       console.log('✓ Using existing system user');
-      return (systemUser as any)._id.toString();
+      return systemUser._id.toString();
     }
 
     console.log('! No system user found, using placeholder ObjectId');
@@ -244,12 +260,14 @@ async function getSystemUserId(): Promise<string> {
 /**
  * Seed organizations
  */
-export async function seedOrganizations(options: SeedOptions = {}): Promise<SeedStats> {
+export async function seedOrganizations(
+  options: SeedOptions = {},
+): Promise<SeedStats> {
   const startTime = Date.now();
   const count = options.count || 500;
   const batchSize = options.batchSize || 100;
   const withHierarchy = options.hierarchy || false;
-  
+
   const stats: SeedStats = {
     total: count,
     inserted: 0,
@@ -268,13 +286,18 @@ export async function seedOrganizations(options: SeedOptions = {}): Promise<Seed
   console.log(`Dry run: ${options.dryRun ? 'YES' : 'NO'}`);
   console.log('');
 
-  const OrganizationModel: Model<Organization> = connection.model('Organization', OrganizationSchema);
+  const OrganizationModel: Model<Organization> = connection.model(
+    'Organization',
+    OrganizationSchema,
+  );
 
   // Drop existing organizations if requested
   if (options.drop && !options.dryRun) {
     console.log('Dropping existing organizations...');
     const deleteResult = await OrganizationModel.deleteMany({});
-    console.log(`✓ Dropped ${deleteResult.deletedCount} existing organizations`);
+    console.log(
+      `✓ Dropped ${deleteResult.deletedCount} existing organizations`,
+    );
   }
 
   // Get system user ID
@@ -282,7 +305,11 @@ export async function seedOrganizations(options: SeedOptions = {}): Promise<Seed
 
   // Generate organization data
   console.log('\nGenerating organization data...');
-  const organizations = generateOrganizations(count, systemUserId, withHierarchy);
+  const organizations = generateOrganizations(
+    count,
+    systemUserId,
+    withHierarchy,
+  );
   console.log(`✓ Generated ${organizations.length} organizations`);
 
   if (options.dryRun) {
@@ -299,10 +326,10 @@ export async function seedOrganizations(options: SeedOptions = {}): Promise<Seed
 
   for (let batchIndex = 0; batchIndex < batches.length; batchIndex++) {
     const batch = batches[batchIndex];
-    
+
     try {
       // Prepare bulk operations
-      const bulkOps = batch.map(org => ({
+      const bulkOps = batch.map((org) => ({
         updateOne: {
           filter: { taxId: org.taxId },
           update: {
@@ -329,14 +356,20 @@ export async function seedOrganizations(options: SeedOptions = {}): Promise<Seed
       }));
 
       const result = await OrganizationModel.bulkWrite(bulkOps as any);
-      
+
       stats.inserted += result.upsertedCount || 0;
       stats.updated += result.modifiedCount || 0;
-      stats.skipped += batch.length - (result.upsertedCount || 0) - (result.modifiedCount || 0);
+      stats.skipped +=
+        batch.length -
+        (result.upsertedCount || 0) -
+        (result.modifiedCount || 0);
 
       progress.increment(batch.length);
     } catch (err: any) {
-      console.error(`\n✗ Error processing batch ${batchIndex + 1}:`, err.message);
+      console.error(
+        `\n✗ Error processing batch ${batchIndex + 1}:`,
+        err.message,
+      );
       stats.errors += batch.length;
       stats.errorDetails?.push({
         record: { batch: batchIndex + 1, size: batch.length },
@@ -360,11 +393,11 @@ export async function seedOrganizations(options: SeedOptions = {}): Promise<Seed
  */
 async function main() {
   const options = parseArgs(process.argv.slice(2));
-  
+
   // Set defaults
   if (!options.count) options.count = 500;
   if (!options.batchSize) options.batchSize = 100;
-  
+
   validateDestructiveOps(options);
 
   const startTime = Date.now();

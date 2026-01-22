@@ -2,20 +2,20 @@
 
 /**
  * Seed users with realistic data
- * 
+ *
  * Creates/upserts users including:
  * - 1 SuperAdmin user with global privileges
  * - N regular users with faker-generated data and role assignments
- * 
+ *
  * ⚠️ SECURITY WARNING:
  * - Regular users use a common password "Password123" (hardcoded for dev/test)
  * - This is INTENTIONAL for development/testing environments
  * - DO NOT use this script in production without modifying password logic
  * - SuperAdmin password should always be set via --seed-superadmin-password in production
- * 
+ *
  * Usage:
  *   ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts [options]
- * 
+ *
  * Options:
  *   --count <n>                     Number of regular users to create (default: 10000)
  *   --batch-size <n>                Number of users to process per batch (default: 500)
@@ -28,11 +28,20 @@
  */
 
 import 'tsconfig-paths/register';
-import { connect, connection, Model, Schema as MongooseSchema, Types } from 'mongoose';
+import {
+  connect,
+  connection,
+  Model,
+  Schema as MongooseSchema,
+  Types,
+} from 'mongoose';
 import { faker } from '@faker-js/faker';
 import { UserSchema, User, RoleAssignment } from '@shared/schemas/user.schema';
 import { Role, RoleSchema } from '@shared/schemas/role.schema';
-import { OrganizationSchema, Organization } from '@shared/schemas/organization.schema';
+import {
+  OrganizationSchema,
+  Organization,
+} from '@shared/schemas/organization.schema';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
 import * as bcrypt from 'bcrypt';
 import {
@@ -54,8 +63,8 @@ require('dotenv').config();
 const MAX_UNIQUENESS_SUFFIX = 100000; // Maximum suffix value for ensuring uniqueness
 const COMMON_DEV_PASSWORD = 'Password123'; // Common password for dev/test users (NOT FOR PRODUCTION)
 const STATUS_DISTRIBUTION = {
-  ACTIVE_THRESHOLD: 0.90,    // 90% active users
-  PENDING_THRESHOLD: 0.95,   // 5% pending users (90-95%)
+  ACTIVE_THRESHOLD: 0.9, // 90% active users
+  PENDING_THRESHOLD: 0.95, // 5% pending users (90-95%)
   // Remaining 5% will be inactive (95-100%)
 };
 const PHONE_NUMBER_PROBABILITY = 0.7; // 70% of users will have phone numbers
@@ -110,13 +119,16 @@ async function connectToDatabase(): Promise<void> {
     });
     console.log('✓ Connected to MongoDB');
   } catch (err: any) {
-    console.warn('Initial connection failed, retrying with embedded credentials...');
-    const authPart = dbConfig.user && dbConfig.pass
-      ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
-      : '';
+    console.warn(
+      'Initial connection failed, retrying with embedded credentials...',
+    );
+    const authPart =
+      dbConfig.user && dbConfig.pass
+        ? `${encodeURIComponent(dbConfig.user)}:${encodeURIComponent(dbConfig.pass)}@`
+        : '';
     const hostPart = connectUri.replace('mongodb://', '');
     const retryUri = `mongodb://${authPart}${hostPart}`;
-    
+
     await connect(retryUri, {
       dbName: mongooseOpts.dbName,
       authSource: mongooseOpts.authSource,
@@ -136,18 +148,24 @@ async function connectToDatabase(): Promise<void> {
 /**
  * Generate a unique email with domain override
  */
-function generateUniqueEmail(domain: string, maxAttempts: number = 100): string {
+function generateUniqueEmail(
+  domain: string,
+  maxAttempts: number = 100,
+): string {
   for (let i = 0; i < maxAttempts; i++) {
-    const username = faker.internet.username().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+    const username = faker.internet
+      .username()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]/g, '');
     const randomSuffix = Math.floor(Math.random() * MAX_UNIQUENESS_SUFFIX);
     const email = `${username}${randomSuffix}@${domain}`;
-    
+
     if (!generatedEmails.has(email)) {
       generatedEmails.add(email);
       return email;
     }
   }
-  
+
   // Fallback with timestamp
   const timestamp = Date.now();
   const email = `user${timestamp}@${domain}`;
@@ -160,16 +178,19 @@ function generateUniqueEmail(domain: string, maxAttempts: number = 100): string 
  */
 function generateUniqueUsername(maxAttempts: number = 100): string {
   for (let i = 0; i < maxAttempts; i++) {
-    const baseUsername = faker.internet.username().toLowerCase().replace(/[^a-z0-9._-]/g, '');
+    const baseUsername = faker.internet
+      .username()
+      .toLowerCase()
+      .replace(/[^a-z0-9._-]/g, '');
     const suffix = Math.floor(Math.random() * MAX_UNIQUENESS_SUFFIX);
     const username = `${baseUsername}${suffix}`;
-    
+
     if (!generatedUsernames.has(username) && username.length >= 3) {
       generatedUsernames.add(username);
       return username;
     }
   }
-  
+
   // Fallback with timestamp
   const timestamp = Date.now();
   const username = `user${timestamp}`;
@@ -190,7 +211,7 @@ async function hashPassword(password: string): Promise<string> {
 async function generateSuperAdminUser(
   domain: string,
   superAdminRoleId: any,
-  providedPassword?: string
+  providedPassword?: string,
 ): Promise<{ user: UserData; plainPassword: string }> {
   const plainPassword = providedPassword || generateStrongPassword(16);
   const hashedPassword = await hashPassword(plainPassword);
@@ -229,7 +250,7 @@ async function generateRegularUser(
   domain: string,
   orgUserRoleId: any,
   organizationIds: any[],
-  commonPassword: string
+  commonPassword: string,
 ): Promise<UserData> {
   const hashedPassword = await hashPassword(commonPassword);
 
@@ -249,12 +270,14 @@ async function generateRegularUser(
   const fullName = `${firstName} ${lastName}`;
 
   // 70% of users have phone numbers (realistic distribution - not all users provide phone)
-  const phone = Math.random() < PHONE_NUMBER_PROBABILITY ? faker.phone.number() : undefined;
+  const phone =
+    Math.random() < PHONE_NUMBER_PROBABILITY ? faker.phone.number() : undefined;
 
   // Randomly assign to an organization (if any exist)
-  const organizationId = organizationIds.length > 0
-    ? faker.helpers.arrayElement(organizationIds)
-    : undefined;
+  const organizationId =
+    organizationIds.length > 0
+      ? faker.helpers.arrayElement(organizationIds)
+      : undefined;
 
   const user: UserData = {
     username: generateUniqueUsername(),
@@ -302,7 +325,9 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
   console.log('\n' + '='.repeat(60));
   console.log('SEEDING USERS');
   console.log('='.repeat(60));
-  console.log(`Total users to seed: ${stats.total} (1 SuperAdmin + ${count} regular users)`);
+  console.log(
+    `Total users to seed: ${stats.total} (1 SuperAdmin + ${count} regular users)`,
+  );
   console.log(`Batch size: ${batchSize}`);
   console.log(`Domain: ${domain}`);
   console.log(`Dry run: ${options.dryRun ? 'YES' : 'NO'}`);
@@ -310,15 +335,22 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
 
   const UserModel: Model<User> = connection.model('User', UserSchema);
   const RoleModel: Model<Role> = connection.model('Role', RoleSchema);
-  const OrganizationModel: Model<Organization> = connection.model('Organization', OrganizationSchema);
+  const OrganizationModel: Model<Organization> = connection.model(
+    'Organization',
+    OrganizationSchema,
+  );
 
   // Get required roles
   console.log('Fetching roles...');
-  const superAdminRole = await RoleModel.findOne({ code: 'SUPER_ADMIN' }).exec();
+  const superAdminRole = await RoleModel.findOne({
+    code: 'SUPER_ADMIN',
+  }).exec();
   const orgUserRole = await RoleModel.findOne({ code: 'ORG_USER' }).exec();
 
   if (!superAdminRole) {
-    throw new Error('SUPER_ADMIN role not found. Please run seed-roles.ts first.');
+    throw new Error(
+      'SUPER_ADMIN role not found. Please run seed-roles.ts first.',
+    );
   }
   if (!orgUserRole) {
     throw new Error('ORG_USER role not found. Please run seed-roles.ts first.');
@@ -333,7 +365,7 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
     .select('_id')
     .limit(1000)
     .exec();
-  const organizationIds = organizations.map(org => org._id);
+  const organizationIds = organizations.map((org) => org._id);
   console.log(`✓ Found ${organizationIds.length} organizations`);
 
   // Drop existing users if requested
@@ -349,7 +381,7 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
   const { user: superAdminData, plainPassword } = await generateSuperAdminUser(
     domain,
     superAdminRole._id,
-    options.seedSuperadminPassword
+    options.seedSuperadminPassword,
   );
 
   if (options.dryRun) {
@@ -358,16 +390,20 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
   } else {
     try {
       // Check if SuperAdmin already exists
-      const existingSuperAdmin = await UserModel.findOne({ email: superAdminData.email }).exec();
-      
+      const existingSuperAdmin = await UserModel.findOne({
+        email: superAdminData.email,
+      }).exec();
+
       if (existingSuperAdmin && options.skipIfExists) {
-        console.log(`- Skipped SuperAdmin (already exists): ${superAdminData.email}`);
+        console.log(
+          `- Skipped SuperAdmin (already exists): ${superAdminData.email}`,
+        );
         stats.skipped++;
       } else if (existingSuperAdmin) {
         // Update existing
         await UserModel.updateOne(
           { email: superAdminData.email },
-          { $set: superAdminData }
+          { $set: superAdminData },
         ).exec();
         console.log(`✓ Updated SuperAdmin: ${superAdminData.email}`);
         stats.updated++;
@@ -407,7 +443,7 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
         domain,
         orgUserRole._id,
         organizationIds,
-        commonPassword
+        commonPassword,
       );
       regularUsers.push(user);
       progress.increment();
@@ -438,23 +474,25 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
         if (options.skipIfExists) {
           // Check which users already exist
           const existingEmails = await UserModel.find({
-            email: { $in: batch.map(u => u.email) }
+            email: { $in: batch.map((u) => u.email) },
           })
             .select('email')
             .exec();
-          
-          const existingEmailSet = new Set(existingEmails.map(u => u.email));
-          const newUsers = batch.filter(u => !existingEmailSet.has(u.email));
-          
+
+          const existingEmailSet = new Set(existingEmails.map((u) => u.email));
+          const newUsers = batch.filter((u) => !existingEmailSet.has(u.email));
+
           if (newUsers.length > 0) {
-            const result = await UserModel.insertMany(newUsers, { ordered: false });
+            const result = await UserModel.insertMany(newUsers, {
+              ordered: false,
+            });
             stats.inserted += result.length;
           }
-          
+
           stats.skipped += batch.length - newUsers.length;
         } else {
           // Use bulkWrite for upsert behavior
-          const bulkOps = batch.map(user => ({
+          const bulkOps = batch.map((user) => ({
             updateOne: {
               filter: { email: user.email },
               update: { $set: user as any },
@@ -465,7 +503,10 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
           const result = await UserModel.bulkWrite(bulkOps, { ordered: false });
           stats.inserted += result.upsertedCount || 0;
           stats.updated += result.modifiedCount || 0;
-          stats.skipped += batch.length - (result.upsertedCount || 0) - (result.modifiedCount || 0);
+          stats.skipped +=
+            batch.length -
+            (result.upsertedCount || 0) -
+            (result.modifiedCount || 0);
         }
 
         batchProgress.increment();
@@ -474,17 +515,23 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
         if (err.writeErrors) {
           stats.errors += err.writeErrors.length;
           stats.inserted += batch.length - err.writeErrors.length;
-          
+
           // Log first few errors
           err.writeErrors.slice(0, 3).forEach((writeErr: any) => {
-            console.error(`  ✗ Error in batch ${batchIndex + 1}:`, writeErr.errmsg);
+            console.error(
+              `  ✗ Error in batch ${batchIndex + 1}:`,
+              writeErr.errmsg,
+            );
             stats.errorDetails?.push({
               record: { batch: batchIndex + 1 },
               error: writeErr.errmsg,
             });
           });
         } else {
-          console.error(`✗ Error processing batch ${batchIndex + 1}:`, err.message);
+          console.error(
+            `✗ Error processing batch ${batchIndex + 1}:`,
+            err.message,
+          );
           stats.errors += batch.length;
           stats.errorDetails?.push({
             record: { batch: batchIndex + 1 },
@@ -505,7 +552,9 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
   console.log('\n' + '-'.repeat(60));
   printStats(stats);
   console.log(`Duration: ${(duration / 1000).toFixed(2)}s`);
-  console.log(`Throughput: ${(stats.total / (duration / 1000)).toFixed(0)} users/second`);
+  console.log(
+    `Throughput: ${(stats.total / (duration / 1000)).toFixed(0)} users/second`,
+  );
 
   return stats;
 }

@@ -109,7 +109,8 @@ export class RegionController {
       if (err instanceof HttpException) {
         throw err;
       }
-      const errorMessage = err instanceof Error ? err.message : 'Failed to query regions';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to query regions';
       throw new HttpException(
         error('SPATIAL_QUERY_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -223,7 +224,8 @@ export class RegionController {
       if (err instanceof HttpException) {
         throw err;
       }
-      const errorMessage = err instanceof Error ? err.message : 'Failed to query regions';
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to query regions';
       throw new HttpException(
         error('SPATIAL_QUERY_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
