@@ -18,6 +18,7 @@
  *   --skip-warehouse-types  Skip warehouse types seeding
  *   --skip-warehouses   Skip warehouses seeding
  *   --skip-relations    Skip relationships seeding
+ *   --skip-navigation   Skip navigation seeding
  *   --warehouse-count   Number of sample warehouses to create (default: 20)
  *   --org-count         Number of organizations to create (default: 500)
  *   --user-count        Number of regular users to create (default: 10000)
@@ -33,6 +34,7 @@ import { seedUsers } from './seed-users';
 import { seedWarehouseTypes } from './seed-warehouse-types';
 import { seedWarehouses } from './seed-warehouses';
 import { seedRelations } from './seed-relations';
+import { seedNavigation } from './seed-navigation';
 
 require('dotenv').config();
 
@@ -48,6 +50,7 @@ interface Options {
   skipWarehouseTypes?: boolean;
   skipWarehouses?: boolean;
   skipRelations?: boolean;
+  skipNavigation?: boolean;
   warehouseCount?: number;
   orgCount?: number;
   userCount?: number;
@@ -93,6 +96,9 @@ function parseArgs(): Options {
         break;
       case '--skip-relations':
         opts.skipRelations = true;
+        break;
+      case '--skip-navigation':
+        opts.skipNavigation = true;
         break;
       case '--warehouse-count':
         if (args[i + 1]) {
@@ -354,6 +360,31 @@ async function seedAll() {
     }
   } else {
     console.log('\nSkipping relations seeding');
+  }
+
+  // 9. Seed Navigation
+  if (!opts.skipNavigation) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 9: Seeding Navigation');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedNavigation({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+        confirm: opts.confirm,
+      });
+      results.push({ name: 'Navigation', success: true, stats });
+      console.log('✓ Navigation seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({ name: 'Navigation', success: false, error: errorMsg });
+      console.error('✗ Navigation seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping navigation seeding');
   }
 
   // Print summary
