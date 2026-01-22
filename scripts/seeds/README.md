@@ -338,6 +338,136 @@ ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --dry-run
 }
 ```
 
+### 8. seed-users.ts - Sample Users
+
+Generates sample user accounts with realistic data using @faker-js/faker, including 1 SuperAdmin and N regular users.
+
+**Usage:**
+```bash
+npm run db:seed:users
+
+# Or with ts-node
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts
+
+# With options
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --count 10000
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --count 100 --batch-size 50
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --seed-superadmin-password "MySecretPass123"
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --domain "mycompany.com"
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --drop --confirm
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --dry-run
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --skip-if-exists
+```
+
+**Options:**
+- `--count <n>` - Number of regular users to create (default: 10000)
+- `--batch-size <n>` - Number of users to process per batch (default: 500)
+- `--drop` - Drop existing users before seeding (requires --confirm)
+- `--confirm` - Confirm destructive operations
+- `--dry-run` - Validate without writing to database
+- `--seed-superadmin-password <p>` - Password for SuperAdmin (generates strong random if not provided)
+- `--domain <domain>` - Email domain for users (default: example.com)
+- `--skip-if-exists` - Skip users that already exist by email
+
+**Features:**
+- Creates 1 SuperAdmin user with global privileges (SUPER_ADMIN role)
+- Generates N regular users with faker-generated data (ORG_USER role)
+- All passwords are hashed using bcrypt (10 rounds)
+- SuperAdmin credentials are printed to stdout ONCE after creation
+- Unique email and username generation with deduplication logic
+- Random organization assignment from existing organizations
+- Status distribution: 90% active, 5% pending, 5% inactive
+- Phone numbers for 70% of users
+- Batch processing with configurable batch size
+- Progress logging during execution
+- Creates JSON reports in reports/ directory
+- Idempotent with upsert support
+
+**SuperAdmin User:**
+- `username`: "superadmin"
+- `email`: "superadmin@{domain}"
+- `password`: From --seed-superadmin-password OR auto-generated strong password (16 chars)
+- `displayName`: "Super Administrator"
+- `fullName`: "Super Administrator"
+- `status`: "active"
+- `verifiedAt`: Current date
+- `roleAssignments`: SUPER_ADMIN role
+- `organizationId`: null (global scope)
+
+**Regular Users:**
+- `username`: Unique faker-generated username (e.g., john.doe123)
+- `email`: Unique email with domain override (e.g., user1@example.com)
+- `password`: Hashed "Password123" (common password for dev/test)
+- `displayName`: Faker full name
+- `fullName`: Faker full name
+- `firstName`: Faker first name
+- `lastName`: Faker last name
+- `phone`: Faker phone (70% of users)
+- `status`: 90% active, 5% pending, 5% inactive
+- `verifiedAt`: Current date for active users, null for pending
+- `organizationId`: Randomly assigned from existing organizations
+- `roleAssignments`: ORG_USER role
+
+**Generated Fields:**
+- `username` - Unique username (3-50 chars)
+- `email` - Unique email address
+- `password` - Bcrypt hashed password
+- `firstName` - First name
+- `lastName` - Last name
+- `fullName` - Full name
+- `displayName` - Display name
+- `phone` - Phone number (optional)
+- `status` - User status (active, pending, inactive)
+- `verifiedAt` - Verification timestamp
+- `organizationId` - Associated organization
+- `roleAssignments` - Array of role assignments with roleId, grantedAt
+- `specialPermissions` - Array of special permissions (empty by default)
+
+**Example SuperAdmin Output:**
+```
+═══════════════════════════════════════════════════════════
+SuperAdmin credentials:
+  Email:    superadmin@example.com
+  Password: Xk9#mP2$vL4@nQ7*
+═══════════════════════════════════════════════════════════
+```
+
+**Example Regular User:**
+```json
+{
+  "username": "john.doe123",
+  "email": "john.doe123@example.com",
+  "password": "$2b$10$hashed...",
+  "firstName": "John",
+  "lastName": "Doe",
+  "fullName": "John Doe",
+  "displayName": "John Doe",
+  "phone": "+1-555-0123",
+  "status": "active",
+  "verifiedAt": "2025-01-22T00:00:00.000Z",
+  "organizationId": "507f1f77bcf86cd799439011",
+  "roleAssignments": [
+    {
+      "roleId": "507f191e810c19729de860ea",
+      "grantedAt": "2025-01-22T00:00:00.000Z"
+    }
+  ],
+  "specialPermissions": []
+}
+```
+
+**Performance:**
+- ~2000-5000 users/second (varies by hardware)
+- Batch processing prevents memory issues
+- Progress logging every 1000 records or 5 seconds
+
+**Important Notes:**
+- ⚠️ SuperAdmin credentials are printed ONLY ONCE - save them immediately!
+- ⚠️ Regular users all share the same password "Password123" (for dev/test only)
+- ⚠️ Always use --dry-run first to validate before inserting real data
+- ⚠️ Requires seed-roles.ts to be run first (needs SUPER_ADMIN and ORG_USER roles)
+- ⚠️ Optionally run seed-organizations.ts first for organization assignments
+
 ## Common Workflows
 
 ### Initial Database Setup
@@ -347,11 +477,12 @@ ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --dry-run
 # 2. Run all seeds
 npm run db:seed:all
 
-# Or run individually
+# Or run individually (in order)
 npm run db:seed:provinces
 npm run db:seed:wards
-npm run db:seed:roles
-npm run db:seed:organizations
+npm run db:seed:roles             # Required before users
+npm run db:seed:organizations     # Optional, for user org assignments
+npm run db:seed:users             # Creates SuperAdmin + regular users
 npm run db:seed:warehouse-types
 npm run db:seed:warehouses
 ```
@@ -367,6 +498,7 @@ ts-node scripts/seeds/seed-provinces.ts --drop
 ts-node scripts/seeds/seed-wards.ts --drop
 ts-node -r tsconfig-paths/register scripts/seeds/seed-roles.ts --drop --confirm
 ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --drop --confirm
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --drop --confirm
 ts-node scripts/seeds/seed-warehouse-types.ts --drop
 ts-node scripts/seeds/seed-warehouses.ts --drop
 ```
@@ -380,6 +512,7 @@ ts-node scripts/seeds/seed-all.ts --dry-run
 # Test with limited data
 ts-node scripts/seeds/seed-provinces.ts --limit 5 --dry-run
 ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --count 10 --dry-run
+ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --count 10 --dry-run
 ts-node scripts/seeds/seed-warehouses.ts --count 5 --dry-run
 ```
 
@@ -411,6 +544,13 @@ The seed scripts ensure the following indexes exist:
 - Unique index on `code`
 - 2dsphere index on `location`
 - Regular indexes on `type`, `status`, `province.code`, `ward.code`
+
+**Users:**
+- Unique index on `email`
+- Unique index on `username`
+- Compound indexes on `{email, status}`, `{username, status}`, `{organizationId, status}`
+- Text index on `{username, email, firstName, lastName, fullName}`
+- TTL index on `deletedAt` (90 days expiration for soft-deleted users)
 
 ## Troubleshooting
 
