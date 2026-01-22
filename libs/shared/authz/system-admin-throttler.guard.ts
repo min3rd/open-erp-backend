@@ -57,7 +57,7 @@ export class SystemAdminThrottlerGuard extends ThrottlerGuard {
     if (
       user?.roles &&
       Array.isArray(user.roles) &&
-      user.roles.includes(Role.SYSTEM_ADMIN)
+      user.roles.includes(Role.SUPER_ADMIN)
     ) {
       // Log the bypass for audit purposes
       this.logger.log({

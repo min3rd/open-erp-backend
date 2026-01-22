@@ -89,7 +89,7 @@ export class RolesGuard implements CanActivate {
       }
 
       // Check for SUPER_ADMIN bypass
-      if (user.roles && user.roles.includes(Role.SYSTEM_ADMIN)) {
+      if (user.roles && user.roles.includes(Role.SUPER_ADMIN)) {
         this.logger.debug(
           `SYSTEM_ADMIN bypass granted for user ${user.userId} on route ${route}`,
         );

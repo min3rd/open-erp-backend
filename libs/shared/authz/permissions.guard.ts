@@ -143,7 +143,7 @@ export class PermissionsGuard implements CanActivate {
       }
 
       // Check for SYSTEM_ADMIN bypass (before expensive permission checks)
-      if (user.roles && user.roles.includes(Role.SYSTEM_ADMIN)) {
+      if (user.roles && user.roles.includes(Role.SUPER_ADMIN)) {
         this.logger.debug(
           `SYSTEM_ADMIN bypass granted for user ${user.userId} on route ${route}`,
         );

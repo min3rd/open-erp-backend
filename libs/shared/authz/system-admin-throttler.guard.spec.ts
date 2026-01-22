@@ -69,7 +69,7 @@ describe('SystemAdminThrottlerGuard', () => {
     const user = {
       userId: 'admin-user-123',
       email: 'admin@example.com',
-      roles: [Role.SYSTEM_ADMIN],
+      roles: [Role.SUPER_ADMIN],
     };
 
     const context = createMockExecutionContext(user);
@@ -112,7 +112,7 @@ describe('SystemAdminThrottlerGuard', () => {
     const user = {
       userId: 'multi-role-user',
       email: 'multirole@example.com',
-      roles: [Role.USER, Role.SYSTEM_ADMIN, Role.ORGANIZATION_ADMIN],
+      roles: [Role.USER, Role.SUPER_ADMIN, Role.ORGANIZATION_ADMIN],
     };
 
     const context = createMockExecutionContext(user);

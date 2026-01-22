@@ -4,7 +4,7 @@
  */
 export enum Role {
   // System-level roles
-  SYSTEM_ADMIN = 'SYSTEM_ADMIN', // Full system administrator
+  SUPER_ADMIN = 'SUPER_ADMIN', // Full system administrator
 
   // Tenant/Organization-level roles
   TENANT_ADMIN = 'TENANT_ADMIN', // Tenant administrator (legacy)
@@ -41,11 +41,11 @@ export function isValidRole(role: string): boolean {
  * Role groups for easier permission assignment
  */
 export const RoleGroups = {
-  ADMIN_ROLES: [Role.SYSTEM_ADMIN, Role.TENANT_ADMIN, Role.ORGANIZATION_ADMIN],
-  NAVIGATION_ADMINS: [Role.SYSTEM_ADMIN, Role.NAV_ADMIN],
-  CONFIG_ADMINS: [Role.SYSTEM_ADMIN, Role.CONFIG_ADMIN],
+  ADMIN_ROLES: [Role.SUPER_ADMIN, Role.TENANT_ADMIN, Role.ORGANIZATION_ADMIN],
+  NAVIGATION_ADMINS: [Role.SUPER_ADMIN, Role.NAV_ADMIN],
+  CONFIG_ADMINS: [Role.SUPER_ADMIN, Role.CONFIG_ADMIN],
   USER_ADMINS: [
-    Role.SYSTEM_ADMIN,
+    Role.SUPER_ADMIN,
     Role.USER_ADMIN,
     Role.TENANT_ADMIN,
     Role.ORGANIZATION_ADMIN,

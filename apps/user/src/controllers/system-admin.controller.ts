@@ -24,7 +24,7 @@ import { ok, created, deleted } from '@shared/response';
  */
 @Controller('admin/system-admins')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles(Role.SYSTEM_ADMIN)
+@Roles(Role.SUPER_ADMIN)
 export class SystemAdminController {
   private readonly logger = new Logger(SystemAdminController.name);
 

@@ -174,7 +174,7 @@ export class NavigationController {
   }
 
   @Get('preview')
-  @Roles([Role.SYSTEM_ADMIN])
+  @Roles([Role.SUPER_ADMIN])
   @ApiOperation({
     summary: 'Preview navigation as a specific role (admin only)',
     description:
@@ -749,7 +749,7 @@ export class NavigationController {
   // ========================================
 
   @Post('cache/reload')
-  @Roles([Role.SYSTEM_ADMIN])
+  @Roles([Role.SUPER_ADMIN])
   @ApiOperation({
     summary: 'Reload navigation cache',
     description:
