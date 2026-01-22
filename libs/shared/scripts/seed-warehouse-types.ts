@@ -5,6 +5,7 @@
 import { connect, connection } from 'mongoose';
 import { WarehouseTypeSchema } from '../schemas/warehouse-type.schema';
 import { WarehouseType } from '../constants/warehouse.constants';
+import { getDatabaseConfig, getMongooseOptions } from '../database';
 
 // Warehouse types master data
 const warehouseTypesData = [
@@ -107,13 +108,68 @@ const warehouseTypesData = [
 ];
 
 async function seedWarehouseTypes() {
-  const mongoUri =
-    process.env.MONGODB_URI || 'mongodb://localhost:27017/open-erp';
+  const dbConfig = getDatabaseConfig();
+  const mongooseOpts = getMongooseOptions(dbConfig) as any;
+  const connectUri = dbConfig.uri;
+
+  const maskedAuth = dbConfig.user ? `${dbConfig.user}:***` : '(no-auth)';
+  console.log(`Connecting to MongoDB...`);
+  console.log(`  URI: ${connectUri}`);
+  console.log(`  Database: ${mongooseOpts.dbName}`);
+  console.log(`  Auth: ${maskedAuth}`);
+
+  async function doConnect(uri: string, opts: any) {
+    return await connect(uri, opts);
+  }
 
   try {
-    console.log('Connecting to MongoDB...');
-    await connect(mongoUri);
-    console.log('Connected to MongoDB');
+    await doConnect(connectUri, {
+      dbName: mongooseOpts.dbName,
+      auth: mongooseOpts.auth,
+      authSource: mongooseOpts.authSource,
+      maxPoolSize: mongooseOpts.maxPoolSize,
+      minPoolSize: mongooseOpts.minPoolSize,
+      serverSelectionTimeoutMS: mongooseOpts.serverSelectionTimeoutMS,
+      connectTimeoutMS: mongooseOpts.connectTimeoutMS,
+      socketTimeoutMS: mongooseOpts.socketTimeoutMS,
+      tls: mongooseOpts.tls,
+      tlsAllowInvalidCertificates: mongooseOpts.tlsAllowInvalidCertificates,
+      replicaSet: mongooseOpts.replicaSet,
+    });
+    console.log('✓ Connected to MongoDB');
+  } catch (err: any) {
+    console.error('Initial connection failed:', err?.message || err);
+
+    // Fallback: try embedding credentials in URI
+    if (dbConfig.user && dbConfig.pass) {
+      const user = encodeURIComponent(dbConfig.user);
+      const pass = encodeURIComponent(dbConfig.pass);
+      const credentialedUri = connectUri.replace(/^(mongodb(\+srv)?:\/\/)/, `$1${user}:${pass}@`);
+      
+      console.log('Retrying with credentials embedded in URI...');
+      try {
+        await doConnect(credentialedUri, {
+          dbName: mongooseOpts.dbName,
+          maxPoolSize: mongooseOpts.maxPoolSize,
+          minPoolSize: mongooseOpts.minPoolSize,
+          serverSelectionTimeoutMS: mongooseOpts.serverSelectionTimeoutMS,
+          connectTimeoutMS: mongooseOpts.connectTimeoutMS,
+          socketTimeoutMS: mongooseOpts.socketTimeoutMS,
+          tls: mongooseOpts.tls,
+          tlsAllowInvalidCertificates: mongooseOpts.tlsAllowInvalidCertificates,
+          replicaSet: mongooseOpts.replicaSet,
+        });
+        console.log('✓ Connected to MongoDB with embedded credentials');
+      } catch (err2: any) {
+        console.error('Retry with embedded credentials failed:', err2?.message || err2);
+        throw err2;
+      }
+    } else {
+      throw err;
+    }
+  }
+
+  try {
 
     const WarehouseTypeMaster = connection.model(
       'WarehouseTypeMaster',
