@@ -333,6 +333,8 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
   console.log(`Dry run: ${options.dryRun ? 'YES' : 'NO'}`);
   console.log('');
 
+  await connectToDatabase();
+
   const UserModel: Model<User> = connection.model('User', UserSchema);
   const RoleModel: Model<Role> = connection.model('Role', RoleSchema);
   const OrganizationModel: Model<Organization> = connection.model(

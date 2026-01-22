@@ -286,10 +286,9 @@ export async function seedOrganizations(
   console.log(`Dry run: ${options.dryRun ? 'YES' : 'NO'}`);
   console.log('');
 
-  const OrganizationModel: Model<Organization> = connection.model(
-    'Organization',
-    OrganizationSchema,
-  );
+  await connectToDatabase();
+
+  const OrganizationModel: Model<Organization> = connection.model('Organization', OrganizationSchema);
 
   // Drop existing organizations if requested
   if (options.drop && !options.dryRun) {
