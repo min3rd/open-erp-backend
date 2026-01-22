@@ -164,6 +164,56 @@ describe('WarehouseService', () => {
         BadRequestException,
       );
     });
+
+    it('should allow creating multiple warehouses with same province and ward codes but different warehouse codes', async () => {
+      // First warehouse
+      const firstWarehouse = {
+        ...mockWarehouse,
+        code: 'WH-HN-001',
+        name: 'Warehouse A',
+      };
+
+      // Second warehouse with same province/ward but different code
+      const secondWarehouseDto: CreateWarehouseDto = {
+        code: 'WH-HN-002',
+        name: 'Warehouse B',
+        type: WarehouseType.GENERAL,
+        status: WarehouseStatus.ACTIVE,
+        addressDetail: '456 Đường XYZ',
+        ward: { code: '00001', name: 'Phúc Xá' }, // Same ward
+        province: { code: '01', name: 'Hà Nội' }, // Same province
+        region: Region.NORTHERN,
+      };
+
+      const secondWarehouse = {
+        ...firstWarehouse,
+        _id: '507f1f77bcf86cd799439012',
+        code: 'WH-HN-002',
+        name: 'Warehouse B',
+        addressDetail: '456 Đường XYZ',
+      };
+
+      // First create - should succeed
+      mockRepository.provinceExists.mockResolvedValue(true);
+      mockRepository.wardExists.mockResolvedValue(true);
+      mockRepository.findByCode.mockResolvedValueOnce(null); // First code check
+      mockRepository.create.mockResolvedValueOnce(firstWarehouse);
+
+      const result1 = await service.create(createDto, 'user-id');
+      expect(result1.code).toEqual('WH-HN-001');
+
+      // Second create - should also succeed with same province/ward
+      mockRepository.findByCode.mockResolvedValueOnce(null); // Second code check
+      mockRepository.create.mockResolvedValueOnce(secondWarehouse);
+
+      const result2 = await service.create(secondWarehouseDto, 'user-id');
+      expect(result2.code).toEqual('WH-HN-002');
+
+      // Verify both calls used the same province and ward
+      expect(mockRepository.create).toHaveBeenCalledTimes(2);
+      expect(mockRepository.provinceExists).toHaveBeenCalledWith('01');
+      expect(mockRepository.wardExists).toHaveBeenCalledWith('00001', '01');
+    });
   });
 
   describe('findAll', () => {
