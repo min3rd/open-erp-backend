@@ -65,6 +65,7 @@ ts-node scripts/seeds/seed-all.ts --skip-warehouses
 - `--skip-organizations` - Skip organizations seeding
 - `--skip-warehouse-types` - Skip warehouse types seeding
 - `--skip-warehouses` - Skip warehouses seeding
+- `--skip-relations` - Skip relationships seeding
 - `--warehouse-count <n>` - Number of sample warehouses (default: 20)
 - `--organization-count <n>` - Number of organizations (default: 500)
 
@@ -468,6 +469,163 @@ SuperAdmin credentials:
 - ⚠️ Requires seed-roles.ts to be run first (needs SUPER_ADMIN and ORG_USER roles)
 - ⚠️ Optionally run seed-organizations.ts first for organization assignments
 
+### 9. seed-relations.ts - User-Role-Organization Relationships
+
+Creates and manages relationships between users, roles, and organizations, including:
+- Organization admin assignments
+- Organization member entries
+- Warehouse manager assignments
+- Special role assignments (viewers)
+
+**Usage:**
+```bash
+npm run db:seed:relations
+
+# Or with ts-node
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts
+
+# With options
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts --batch-size 100
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts --drop --confirm
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts --dry-run
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts --skip-if-exists
+```
+
+**Options:**
+- `--batch-size <n>` - Number of operations per batch (default: 100)
+- `--drop` - Drop existing OrganizationMember entries before seeding (requires --confirm)
+- `--confirm` - Confirm destructive operations
+- `--dry-run` - Validate without writing to database
+- `--skip-if-exists` - Skip relationships that already exist
+
+**Features:**
+- **Idempotent** - Safe to run multiple times, checks existing relationships
+- Uses `$addToSet` for user role assignments to avoid duplicates
+- Uses upsert for OrganizationMember documents
+- Batch processing for efficient bulk updates
+- Progress logging for long-running operations
+- Generates detailed JSON reports
+
+**Relationship Logic:**
+
+1. **Organization Admins:**
+   - Selects 1-2 users (15% of org users, min 1, max 2) as admins
+   - Updates User.roleAssignments to add ORG_ADMIN role
+   - Creates/updates OrganizationMember with roles: ['admin', 'member']
+   - Status: 'active', joinedAt: current date
+
+2. **Organization Members:**
+   - Creates OrganizationMember entry for all users in organization
+   - roles: ['member'] for regular ORG_USER role
+   - Status: 'active', joinedAt: current date
+   - Required createdBy field set to system user
+
+3. **Warehouse Managers:**
+   - For organizations with warehouses, assigns 1-2 users as WAREHOUSE_MANAGER
+   - Updates User.roleAssignments to add WAREHOUSE_MANAGER role
+   - Prefers non-admin users for this role
+   - Checks warehouses collection for organization
+
+4. **Special Roles:**
+   - Randomly assigns INVENTORY_VIEWER and/or REPORT_VIEWER to 10-20% of users
+   - Updates User.roleAssignments only
+   - No OrganizationMember changes needed
+   - Each user may get 0, 1, or 2 special roles
+
+**Generated Relationships:**
+
+OrganizationMember Entry:
+```json
+{
+  "organizationId": "507f1f77bcf86cd799439011",
+  "userId": "507f191e810c19729de860ea",
+  "roles": ["admin", "member"],
+  "status": "active",
+  "joinedAt": "2025-01-22T00:00:00.000Z",
+  "createdBy": "507f191e810c19729de860eb",
+  "updatedBy": "507f191e810c19729de860eb"
+}
+```
+
+User.roleAssignments Update:
+```json
+{
+  "roleAssignments": [
+    {
+      "roleId": "507f191e810c19729de860ec",
+      "grantedAt": "2025-01-22T00:00:00.000Z",
+      "grantedBy": "507f191e810c19729de860eb"
+    }
+  ]
+}
+```
+
+**Statistics Tracked:**
+- Organization admins created
+- Organization members created
+- Warehouse managers assigned
+- Special roles assigned
+- Total updated, inserted, skipped, errors
+
+**Example Output:**
+```
+============================================================
+SEEDING RELATIONSHIPS
+============================================================
+Loading roles...
+✓ Loaded 7 roles
+  - ORG_ADMIN: 507f191e810c19729de860ea
+  - ORG_USER: 507f191e810c19729de860eb
+  ...
+
+Loading organizations...
+✓ Loaded 500 active organizations
+
+Loading users...
+✓ Loaded 9500 users with organization assignments
+
+Processing organizations...
+  Progress: 500/500 (100.0%) - 45.2s elapsed
+  Completed: 500/500 - 45.2s total
+
+Updating user role assignments...
+  Progress: 15/15 (100.0%) - 2.3s elapsed
+  Completed: 15/15 - 2.3s total
+
+Upserting OrganizationMember entries...
+  Progress: 95/95 (100.0%) - 8.5s elapsed
+  Completed: 95/95 - 8.5s total
+
+Relationship Statistics:
+  Organization Admins: 750
+  Organization Members: 9500
+  Warehouse Managers: 25
+  Special Roles Assigned: 1425
+
+Statistics:
+  Total: 9500
+  Inserted: 9500
+  Updated: 2200
+  Skipped: 0
+  Errors: 0
+Duration: 56.02s
+
+✓ Report saved to: reports/2025-01-22T12-30-00-000Z-seed-relations-report.json
+```
+
+**Prerequisites:**
+- ⚠️ Requires seed-roles.ts to be run first (needs ORG_ADMIN, ORG_USER, WAREHOUSE_MANAGER, INVENTORY_VIEWER, REPORT_VIEWER)
+- ⚠️ Requires seed-organizations.ts to be run first (needs active organizations)
+- ⚠️ Requires seed-users.ts to be run first (needs users with organizationId assignments)
+- ⚠️ Optionally seed-warehouses.ts for warehouse manager assignments
+
+**Important Notes:**
+- Always safe to re-run - checks existing relationships
+- Uses `$addToSet` to prevent duplicate role assignments
+- Uses upsert to handle existing OrganizationMember entries
+- Progress logging for visibility into long-running operations
+- Detailed error reporting for troubleshooting
+
 ## Common Workflows
 
 ### Initial Database Setup
@@ -481,10 +639,11 @@ npm run db:seed:all
 npm run db:seed:provinces
 npm run db:seed:wards
 npm run db:seed:roles             # Required before users
-npm run db:seed:organizations     # Optional, for user org assignments
+npm run db:seed:organizations     # Required before users
 npm run db:seed:users             # Creates SuperAdmin + regular users
 npm run db:seed:warehouse-types
 npm run db:seed:warehouses
+npm run db:seed:relations         # Creates user-role-organization relationships
 ```
 
 ### Reset and Re-seed
@@ -501,6 +660,7 @@ ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --drop --
 ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --drop --confirm
 ts-node scripts/seeds/seed-warehouse-types.ts --drop
 ts-node scripts/seeds/seed-warehouses.ts --drop
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts --drop --confirm
 ```
 
 ### Testing Before Making Changes
@@ -514,6 +674,7 @@ ts-node scripts/seeds/seed-provinces.ts --limit 5 --dry-run
 ts-node -r tsconfig-paths/register scripts/seeds/seed-organizations.ts --count 10 --dry-run
 ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts --count 10 --dry-run
 ts-node scripts/seeds/seed-warehouses.ts --count 5 --dry-run
+ts-node -r tsconfig-paths/register scripts/seeds/seed-relations.ts --dry-run
 ```
 
 ## Database Indexes
