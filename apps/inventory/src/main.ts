@@ -1,5 +1,5 @@
 import { NestFactory } from '@nestjs/core';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, VersioningType } from '@nestjs/common';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { InventoryModule } from './inventory.module';
 
@@ -9,6 +9,12 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors({
     origin: '*',
+  });
+
+  app.enableVersioning({
+    type: VersioningType.URI,
+    defaultVersion: '1',
+    prefix: 'v',
   });
 
   // Global validation pipe
