@@ -14,16 +14,6 @@
       }
     },
     {
-      "id": "nav-modules",
-      "label": "Modules",
-      "labelKey": "navigation.modules",
-      "route": "/modules",
-      "icon": "pi pi-th-large",
-      "module": "modules",
-      "scope": "global",
-      "order": 2
-    },
-    {
       "id": "nav-organization",
       "label": "Organization",
       "labelKey": "navigation.modules.organization",
@@ -56,8 +46,7 @@
       "icon": "pi pi-users",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 1,
       "permissions": {
         "include": ["users.read"]
@@ -71,8 +60,7 @@
       "icon": "pi pi-sitemap",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 2,
       "permissions": {
         "include": ["navigation.manage"]
@@ -86,8 +74,7 @@
       "icon": "pi pi-map",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 3,
       "permissions": {
         "include": ["provinces.read"]
@@ -101,8 +88,7 @@
       "icon": "pi pi-map-marker",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 4,
       "permissions": {
         "include": ["districts.read"]
@@ -116,8 +102,7 @@
       "icon": "pi pi-compass",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 5,
       "permissions": {
         "include": ["wards.read"]
@@ -131,8 +116,7 @@
       "icon": "pi pi-flag",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 6,
       "permissions": {
         "include": ["administrative_units.read"]
@@ -146,8 +130,7 @@
       "icon": "pi pi-box",
       "module": "management",
       "scope": "module",
-      "moduleId": "management",
-      "parentId": "nav-management",
+      "moduleId": "nav-management",
       "order": 7,
       "permissions": {
         "include": ["warehouses.read"]
