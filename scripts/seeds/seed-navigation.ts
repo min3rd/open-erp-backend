@@ -31,7 +31,7 @@
 
 import 'tsconfig-paths/register';
 import { connect, connection, Model, Schema } from 'mongoose';
-import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
+import { getDatabaseConfig } from '@shared/database';
 import {
   parseArgs,
   validateDestructiveOps,
@@ -148,8 +148,8 @@ interface ManifestNavigationItem {
   id?: string;
   label: string;
   labelKey?: string;
-  route?: string;
-  routerLink?: string;
+  route?: string | string[];
+  routerLink?: string | string[];
   icon?: string;
   module?: string;
   scope?: 'global' | 'module';

@@ -130,9 +130,9 @@ describe('Navigation Seed Script', () => {
     });
 
     it('should handle array route format', () => {
-      const item = {
+      const item: ManifestNavigationItem = {
         label: 'Users',
-        route: ['users', 'list'] as any,
+        route: ['users', 'list'],
         scope: 'global' as const,
       };
 

@@ -1,8 +1,19 @@
 /**
  * Utility to parse Angular route files and extract navigation structure
  * 
- * This is a simple parser that extracts routes from TypeScript files.
- * For complex route structures, consider creating a JSON manifest manually.
+ * This is a basic parser that extracts routes from TypeScript files using regex.
+ * 
+ * ⚠️ LIMITATIONS:
+ * - Does not handle template literals or dynamic paths
+ * - Does not handle complex nested route configurations
+ * - Does not parse route data objects or guards
+ * 
+ * For production use, consider:
+ * 1. Using a proper TypeScript AST parser (ts-morph, @babel/parser)
+ * 2. Or maintaining a JSON manifest manually
+ * 3. Or exporting navigation from the Angular app at build time
+ * 
+ * This parser is provided as a starting point for simple route structures.
  */
 
 import * as fs from 'fs';
