@@ -127,8 +127,14 @@ export function generateStrongPassword(length: number = 16): string {
     password += all[Math.floor(Math.random() * all.length)];
   }
   
-  // Shuffle
-  return password.split('').sort(() => Math.random() - 0.5).join('');
+  // Shuffle using Fisher-Yates algorithm
+  const chars = password.split('');
+  for (let i = chars.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [chars[i], chars[j]] = [chars[j], chars[i]];
+  }
+  
+  return chars.join('');
 }
 
 /**

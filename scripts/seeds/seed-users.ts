@@ -7,6 +7,12 @@
  * - 1 SuperAdmin user with global privileges
  * - N regular users with faker-generated data and role assignments
  * 
+ * ⚠️ SECURITY WARNING:
+ * - Regular users use a common password "Password123" (hardcoded for dev/test)
+ * - This is INTENTIONAL for development/testing environments
+ * - DO NOT use this script in production without modifying password logic
+ * - SuperAdmin password should always be set via --seed-superadmin-password in production
+ * 
  * Usage:
  *   ts-node -r tsconfig-paths/register scripts/seeds/seed-users.ts [options]
  * 
@@ -124,7 +130,7 @@ function generateUniqueEmail(domain: string, maxAttempts: number = 100): string 
   for (let i = 0; i < maxAttempts; i++) {
     const username = faker.internet.username().toLowerCase().replace(/[^a-z0-9._-]/g, '');
     const randomSuffix = Math.floor(Math.random() * 100000);
-    const email = `${username}${i > 0 ? randomSuffix : ''}@${domain}`;
+    const email = `${username}${randomSuffix}@${domain}`;
     
     if (!generatedEmails.has(email)) {
       generatedEmails.add(email);
@@ -145,7 +151,7 @@ function generateUniqueEmail(domain: string, maxAttempts: number = 100): string 
 function generateUniqueUsername(maxAttempts: number = 100): string {
   for (let i = 0; i < maxAttempts; i++) {
     const baseUsername = faker.internet.username().toLowerCase().replace(/[^a-z0-9._-]/g, '');
-    const suffix = i > 0 ? Math.floor(Math.random() * 10000) : '';
+    const suffix = Math.floor(Math.random() * 100000);
     const username = `${baseUsername}${suffix}`;
     
     if (!generatedUsernames.has(username) && username.length >= 3) {
@@ -232,7 +238,7 @@ async function generateRegularUser(
   const lastName = faker.person.lastName();
   const fullName = `${firstName} ${lastName}`;
 
-  // 70% of users have phone numbers
+  // 70% of users have phone numbers (realistic distribution - not all users provide phone)
   const phone = Math.random() < 0.7 ? faker.phone.number() : undefined;
 
   // Randomly assign to an organization (if any exist)
