@@ -270,7 +270,7 @@ export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedSta
 
     // Generate and insert warehouses
     console.log(`Generating ${count} sample warehouses...`);
-    const warehousesData = [];
+    const warehousesData: any[] = [];
     
     for (let i = 0; i < count; i++) {
       const province = provinces[i % provinces.length];
@@ -280,9 +280,22 @@ export async function seedWarehouses(options: SeedOptions = {}): Promise<SeedSta
       warehousesData.push(warehouseData);
     }
 
-    console.log('Inserting warehouses...');
-    const inserted = await Warehouse.insertMany(warehousesData);
-    stats.inserted = inserted.length;
+    console.log('Upserting warehouses...');
+    let insertedCount = 0;
+    for (const warehouseData of warehousesData) {
+      try {
+        await Warehouse.updateOne(
+          { code: warehouseData.code },
+          { $set: warehouseData },
+          { upsert: true }
+        );
+        insertedCount++;
+      } catch (err) {
+        console.error(`Error upserting warehouse ${warehouseData.code}:`, err);
+        stats.errors++;
+      }
+    }
+    stats.inserted = insertedCount;
 
     console.log('\n' + '='.repeat(60));
     console.log('WAREHOUSES SEEDING COMPLETE');
