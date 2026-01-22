@@ -2,11 +2,7 @@ import { Injectable, BadRequestException } from '@nestjs/common';
 import * as turf from '@turf/turf';
 import { validate as validateGeoJSON } from 'geojson-validation';
 import { FeatureCollection, Feature } from 'geojson';
-import {
-  AdminGeometry,
-  Centroid,
-  BBox,
-} from '@shared/types/geometry.types';
+import { AdminGeometry, Centroid, BBox } from '@shared/types/geometry.types';
 
 /**
  * Service for geospatial operations and validation
@@ -59,7 +55,6 @@ export class GeometryUtilService {
   private validateCoordinateBounds(geometry: AdminGeometry): void {
     const coordinates = geometry.coordinates;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const checkCoord = (coord: any): void => {
       if (Array.isArray(coord[0])) {
         coord.forEach(checkCoord);
@@ -217,7 +212,6 @@ export class GeometryUtilService {
     const feature2 = turf.feature(geometry2);
 
     try {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const intersection = turf.intersect(feature1 as any, feature2 as any);
       return intersection !== null;
     } catch {

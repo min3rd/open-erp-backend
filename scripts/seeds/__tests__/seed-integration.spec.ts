@@ -6,9 +6,15 @@
 import { MongoMemoryServer } from 'mongodb-memory-server';
 import { connect, connection, Model } from 'mongoose';
 import { RoleSchema, Role } from '@shared/schemas/role.schema';
-import { OrganizationSchema, Organization } from '@shared/schemas/organization.schema';
+import {
+  OrganizationSchema,
+  Organization,
+} from '@shared/schemas/organization.schema';
 import { UserSchema, User } from '@shared/schemas/user.schema';
-import { OrganizationMemberSchema, OrganizationMember } from '@shared/schemas/organization-member.schema';
+import {
+  OrganizationMemberSchema,
+  OrganizationMember,
+} from '@shared/schemas/organization-member.schema';
 
 describe('Seed Scripts Integration Tests', () => {
   let mongoServer: MongoMemoryServer;
@@ -23,11 +29,15 @@ describe('Seed Scripts Integration Tests', () => {
     try {
       mongoServer = await MongoMemoryServer.create();
     } catch (err) {
-      console.warn('MongoDB Memory Server could not be started. Skipping integration tests.');
-      console.warn('To run integration tests locally, ensure internet connection is available.');
+      console.warn(
+        'MongoDB Memory Server could not be started. Skipping integration tests.',
+      );
+      console.warn(
+        'To run integration tests locally, ensure internet connection is available.',
+      );
       return;
     }
-    
+
     const mongoUri = mongoServer.getUri();
 
     // Connect to in-memory database
@@ -37,7 +47,10 @@ describe('Seed Scripts Integration Tests', () => {
     RoleModel = connection.model('Role', RoleSchema);
     OrganizationModel = connection.model('Organization', OrganizationSchema);
     UserModel = connection.model('User', UserSchema);
-    OrganizationMemberModel = connection.model('OrganizationMember', OrganizationMemberSchema);
+    OrganizationMemberModel = connection.model(
+      'OrganizationMember',
+      OrganizationMemberSchema,
+    );
   });
 
   afterAll(async () => {
@@ -89,14 +102,14 @@ describe('Seed Scripts Integration Tests', () => {
         await RoleModel.updateOne(
           { code: role.code, scope: role.scope },
           { $set: role },
-          { upsert: true }
+          { upsert: true },
         );
       }
 
       // Verify roles were inserted
       const roles = await RoleModel.find({});
       expect(roles.length).toBe(2);
-      
+
       const superAdminRole = await RoleModel.findOne({ code: 'SUPER_ADMIN' });
       expect(superAdminRole).toBeDefined();
       expect(superAdminRole?.name).toBe('Super Administrator');
@@ -118,7 +131,7 @@ describe('Seed Scripts Integration Tests', () => {
       await RoleModel.updateOne(
         { code: role.code, scope: role.scope },
         { $set: role },
-        { upsert: true }
+        { upsert: true },
       );
 
       // Verify first insert
@@ -129,7 +142,7 @@ describe('Seed Scripts Integration Tests', () => {
       await RoleModel.updateOne(
         { code: role.code, scope: role.scope },
         { $set: { ...role, name: 'Updated Test Role' } },
-        { upsert: true }
+        { upsert: true },
       );
 
       // Verify still only one document
@@ -192,7 +205,7 @@ describe('Seed Scripts Integration Tests', () => {
       // Verify organizations were inserted
       const orgs = await OrganizationModel.find({});
       expect(orgs.length).toBe(2);
-      
+
       const org1 = await OrganizationModel.findOne({ taxId: 'ORG0000000001' });
       expect(org1).toBeDefined();
       expect(org1?.name).toBe('Test Company 1');
@@ -273,7 +286,9 @@ describe('Seed Scripts Integration Tests', () => {
       expect(superadmin).toBeDefined();
       expect(superadmin.username).toBe('superadmin');
       expect(superadmin.roleAssignments.length).toBe(1);
-      expect(superadmin.roleAssignments[0].roleId.toString()).toBe(superAdminRole._id.toString());
+      expect(superadmin.roleAssignments[0].roleId.toString()).toBe(
+        superAdminRole._id.toString(),
+      );
     });
 
     it('should seed regular users with organization assignment', async () => {
@@ -297,7 +312,9 @@ describe('Seed Scripts Integration Tests', () => {
       });
 
       expect(regularUser).toBeDefined();
-      expect(regularUser.organizationId?.toString()).toBe(testOrg._id.toString());
+      expect(regularUser.organizationId?.toString()).toBe(
+        testOrg._id.toString(),
+      );
       expect(regularUser.roleAssignments.length).toBe(1);
     });
 
@@ -318,7 +335,7 @@ describe('Seed Scripts Integration Tests', () => {
           password: 'hashedpassword',
           displayName: 'User 2',
           status: 'active',
-        })
+        }),
       ).rejects.toThrow();
     });
   });
@@ -430,14 +447,20 @@ describe('Seed Scripts Integration Tests', () => {
       });
 
       // Verify relationships
-      const members = await OrganizationMemberModel.find({ organizationId: testOrg._id });
+      const members = await OrganizationMemberModel.find({
+        organizationId: testOrg._id,
+      });
       expect(members.length).toBe(2);
 
-      const adminMember = members.find(m => m.userId.toString() === adminUser._id.toString());
+      const adminMember = members.find(
+        (m) => m.userId.toString() === adminUser._id.toString(),
+      );
       expect(adminMember).toBeDefined();
       expect(adminMember?.roles).toContain('admin');
 
-      const regularMember = members.find(m => m.userId.toString() === regularUser._id.toString());
+      const regularMember = members.find(
+        (m) => m.userId.toString() === regularUser._id.toString(),
+      );
       expect(regularMember).toBeDefined();
       expect(regularMember?.roles).toContain('member');
     });
@@ -461,7 +484,7 @@ describe('Seed Scripts Integration Tests', () => {
           status: 'active',
           joinedAt: new Date(),
           createdBy: systemUser._id,
-        })
+        }),
       ).rejects.toThrow();
     });
   });

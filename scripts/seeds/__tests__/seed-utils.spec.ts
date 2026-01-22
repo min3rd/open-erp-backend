@@ -26,7 +26,13 @@ describe('Seed Utils', () => {
     });
 
     it('should parse boolean flags', () => {
-      const args = ['--drop', '--confirm', '--dry-run', '--skip-if-exists', '--hierarchy'];
+      const args = [
+        '--drop',
+        '--confirm',
+        '--dry-run',
+        '--skip-if-exists',
+        '--hierarchy',
+      ];
       const opts = parseArgs(args);
       expect(opts.drop).toBe(true);
       expect(opts.confirm).toBe(true);
@@ -97,7 +103,7 @@ describe('Seed Utils', () => {
       const password1 = generateStrongPassword();
       const password2 = generateStrongPassword();
       const password3 = generateStrongPassword();
-      
+
       // Very unlikely to generate same password twice
       expect(password1).not.toBe(password2);
       expect(password2).not.toBe(password3);
@@ -123,7 +129,7 @@ describe('Seed Utils', () => {
     it('should handle items not evenly divisible by batch size', () => {
       const items = Array.from({ length: 105 }, (_, i) => i);
       const batches = createBatches(items, 10);
-      
+
       expect(batches.length).toBe(11);
       expect(batches[10].length).toBe(5); // Last batch has 5 items
     });
@@ -131,7 +137,7 @@ describe('Seed Utils', () => {
     it('should preserve item order', () => {
       const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
       const batches = createBatches(items, 3);
-      
+
       expect(batches[0]).toEqual([1, 2, 3]);
       expect(batches[1]).toEqual([4, 5, 6]);
       expect(batches[2]).toEqual([7, 8, 9]);
@@ -158,9 +164,11 @@ describe('Seed Utils', () => {
 
     beforeEach(() => {
       consoleErrorSpy = jest.spyOn(console, 'error').mockImplementation();
-      processExitSpy = jest.spyOn(process, 'exit').mockImplementation((code?: string | number) => {
-        throw new Error(`process.exit called with code ${code}`);
-      });
+      processExitSpy = jest
+        .spyOn(process, 'exit')
+        .mockImplementation((code?: string | number) => {
+          throw new Error(`process.exit called with code ${code}`);
+        });
     });
 
     afterEach(() => {
@@ -170,19 +178,19 @@ describe('Seed Utils', () => {
 
     it('should exit when --drop is used without --confirm', () => {
       const opts: SeedOptions = { drop: true };
-      
+
       expect(() => {
         validateDestructiveOps(opts);
       }).toThrow('process.exit called with code 1');
 
       expect(consoleErrorSpy).toHaveBeenCalledWith(
-        'ERROR: --drop requires --confirm flag for safety'
+        'ERROR: --drop requires --confirm flag for safety',
       );
     });
 
     it('should not exit when --drop is used with --confirm', () => {
       const opts: SeedOptions = { drop: true, confirm: true };
-      
+
       expect(() => {
         validateDestructiveOps(opts);
       }).not.toThrow();
@@ -190,7 +198,7 @@ describe('Seed Utils', () => {
 
     it('should not exit when --drop is not used', () => {
       const opts: SeedOptions = {};
-      
+
       expect(() => {
         validateDestructiveOps(opts);
       }).not.toThrow();
@@ -215,55 +223,61 @@ describe('Seed Utils', () => {
 
     it('should log progress at 1000 item intervals', () => {
       const logger = new ProgressLogger(10000);
-      
+
       // Increment 1000 times
       for (let i = 0; i < 1000; i++) {
         logger.increment();
       }
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      expect(consoleLogSpy.mock.calls.some((call) => 
-        call[0].includes('Progress: 1000/10000')
-      )).toBe(true);
+      expect(
+        consoleLogSpy.mock.calls.some((call) =>
+          call[0].includes('Progress: 1000/10000'),
+        ),
+      ).toBe(true);
     });
 
     it('should increment by custom amount', () => {
       const logger = new ProgressLogger(10000);
-      
+
       logger.increment(500);
       logger.increment(500);
 
       expect(consoleLogSpy).toHaveBeenCalled();
-      expect(consoleLogSpy.mock.calls.some((call) => 
-        call[0].includes('Progress: 1000/10000')
-      )).toBe(true);
+      expect(
+        consoleLogSpy.mock.calls.some((call) =>
+          call[0].includes('Progress: 1000/10000'),
+        ),
+      ).toBe(true);
     });
 
     it('should show completion on finish', () => {
       const logger = new ProgressLogger(100);
-      
+
       for (let i = 0; i < 100; i++) {
         logger.increment();
       }
-      
+
       logger.finish();
 
-      expect(consoleLogSpy.mock.calls.some((call) => 
-        call[0].includes('Completed: 100/100')
-      )).toBe(true);
+      expect(
+        consoleLogSpy.mock.calls.some((call) =>
+          call[0].includes('Completed: 100/100'),
+        ),
+      ).toBe(true);
     });
 
     it('should include elapsed time in logs', () => {
       const logger = new ProgressLogger(1000);
-      
+
       for (let i = 0; i < 1000; i++) {
         logger.increment();
       }
 
       const progressLogs = consoleLogSpy.mock.calls.filter((call) =>
-        call[0].includes('elapsed')
+        call[0].includes('elapsed'),
       );
-      
+
       expect(progressLogs.length).toBeGreaterThan(0);
     });
   });

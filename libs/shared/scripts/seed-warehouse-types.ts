@@ -144,8 +144,11 @@ async function seedWarehouseTypes() {
     if (dbConfig.user && dbConfig.pass) {
       const user = encodeURIComponent(dbConfig.user);
       const pass = encodeURIComponent(dbConfig.pass);
-      const credentialedUri = connectUri.replace(/^(mongodb(\+srv)?:\/\/)/, `$1${user}:${pass}@`);
-      
+      const credentialedUri = connectUri.replace(
+        /^(mongodb(\+srv)?:\/\/)/,
+        `$1${user}:${pass}@`,
+      );
+
       console.log('Retrying with credentials embedded in URI...');
       try {
         await doConnect(credentialedUri, {
@@ -161,7 +164,10 @@ async function seedWarehouseTypes() {
         });
         console.log('✓ Connected to MongoDB with embedded credentials');
       } catch (err2: any) {
-        console.error('Retry with embedded credentials failed:', err2?.message || err2);
+        console.error(
+          'Retry with embedded credentials failed:',
+          err2?.message || err2,
+        );
         throw err2;
       }
     } else {
@@ -170,7 +176,6 @@ async function seedWarehouseTypes() {
   }
 
   try {
-
     const WarehouseTypeMaster = connection.model(
       'WarehouseTypeMaster',
       WarehouseTypeSchema,
@@ -188,7 +193,7 @@ async function seedWarehouseTypes() {
         await WarehouseTypeMaster.updateOne(
           { code: typeData.code },
           { $set: typeData },
-          { upsert: true }
+          { upsert: true },
         );
         insertedCount++;
       } catch (err) {

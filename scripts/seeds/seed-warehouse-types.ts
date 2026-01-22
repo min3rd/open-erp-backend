@@ -2,10 +2,10 @@
 
 /**
  * Seed warehouse types (master data)
- * 
+ *
  * Usage:
  *   ts-node scripts/seeds/seed-warehouse-types.ts [options]
- * 
+ *
  * Options:
  *   --drop              Drop existing warehouse types before seeding
  *   --dry-run           Validate without writing to database
@@ -33,7 +33,7 @@ interface SeedStats {
 function parseArgs(): SeedOptions {
   const opts: SeedOptions = {};
   const args = process.argv.slice(2);
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
@@ -45,7 +45,7 @@ function parseArgs(): SeedOptions {
         break;
     }
   }
-  
+
   return opts;
 }
 
@@ -89,8 +89,11 @@ async function connectToDatabase(): Promise<void> {
     if (dbConfig.user && dbConfig.pass) {
       const user = encodeURIComponent(dbConfig.user);
       const pass = encodeURIComponent(dbConfig.pass);
-      const credentialedUri = connectUri.replace(/^(mongodb(\+srv)?:\/\/)/, `$1${user}:${pass}@`);
-      
+      const credentialedUri = connectUri.replace(
+        /^(mongodb(\+srv)?:\/\/)/,
+        `$1${user}:${pass}@`,
+      );
+
       console.log('Retrying with credentials embedded in URI...');
       try {
         await doConnect(credentialedUri, {
@@ -106,7 +109,10 @@ async function connectToDatabase(): Promise<void> {
         });
         console.log('✓ Connected to MongoDB with embedded credentials');
       } catch (err2: any) {
-        console.error('Retry with embedded credentials failed:', err2?.message || err2);
+        console.error(
+          'Retry with embedded credentials failed:',
+          err2?.message || err2,
+        );
         throw err2;
       }
     } else {
@@ -218,9 +224,11 @@ const warehouseTypesData = [
 /**
  * Seed warehouse types
  */
-export async function seedWarehouseTypes(options: SeedOptions = {}): Promise<SeedStats> {
+export async function seedWarehouseTypes(
+  options: SeedOptions = {},
+): Promise<SeedStats> {
   const opts = { ...parseArgs(), ...options };
-  
+
   const stats: SeedStats = {
     total: warehouseTypesData.length,
     inserted: 0,
@@ -237,7 +245,10 @@ export async function seedWarehouseTypes(options: SeedOptions = {}): Promise<See
   // Connect to database
   await connectToDatabase();
 
-  const WarehouseTypeMaster = connection.model('WarehouseTypeMaster', WarehouseTypeSchema);
+  const WarehouseTypeMaster = connection.model(
+    'WarehouseTypeMaster',
+    WarehouseTypeSchema,
+  );
 
   try {
     // Drop existing data if requested
@@ -255,7 +266,7 @@ export async function seedWarehouseTypes(options: SeedOptions = {}): Promise<See
         await WarehouseTypeMaster.updateOne(
           { code: typeData.code },
           { $set: typeData },
-          { upsert: true }
+          { upsert: true },
         );
         insertedCount++;
       } catch (err) {
@@ -272,7 +283,6 @@ export async function seedWarehouseTypes(options: SeedOptions = {}): Promise<See
     console.log(`Inserted: ${stats.inserted}`);
     console.log(`Errors: ${stats.errors}`);
     console.log('='.repeat(60));
-
   } catch (err) {
     console.error('Error seeding warehouse types:', err);
     throw err;

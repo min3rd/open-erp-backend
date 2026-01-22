@@ -312,22 +312,22 @@ export class NavigationService {
 
     // Process each item update
     for (const item of items) {
-       const moveDto: MoveNavigationDto = {
-         newParentId: item.newParentId,
-         order: item.newOrder
-       };
-       // Reuse moveNavigation to ensure consistent validation and events
-       // Note: This might emit multiple events, which is acceptable for now.
-       // In a more optimized version, we might want to batch updates.
-       try {
-         await this.moveNavigation(item.id, moveDto, userId);
-       } catch (error) {
-         this.logger.warn(`Failed to reorder item ${item.id}: ${error.message}`);
-         // Continue with other items or throw? 
-         // For bulk reorder, partial success might be better than full fail if not transactional.
-         // But let's fail fast if validation fails.
-         throw error;
-       }
+      const moveDto: MoveNavigationDto = {
+        newParentId: item.newParentId,
+        order: item.newOrder,
+      };
+      // Reuse moveNavigation to ensure consistent validation and events
+      // Note: This might emit multiple events, which is acceptable for now.
+      // In a more optimized version, we might want to batch updates.
+      try {
+        await this.moveNavigation(item.id, moveDto, userId);
+      } catch (error) {
+        this.logger.warn(`Failed to reorder item ${item.id}: ${error.message}`);
+        // Continue with other items or throw?
+        // For bulk reorder, partial success might be better than full fail if not transactional.
+        // But let's fail fast if validation fails.
+        throw error;
+      }
     }
   }
 

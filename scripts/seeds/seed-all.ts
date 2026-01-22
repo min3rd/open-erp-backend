@@ -2,10 +2,10 @@
 
 /**
  * Master seed script to run all database seed operations
- * 
+ *
  * Usage:
  *   ts-node scripts/seeds/seed-all.ts [options]
- * 
+ *
  * Options:
  *   --drop              Drop existing data before seeding (requires --confirm)
  *   --confirm           Confirm destructive operations
@@ -57,7 +57,7 @@ interface Options {
 function parseArgs(): Options {
   const opts: Options = {};
   const args = process.argv.slice(2);
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
@@ -120,19 +120,19 @@ function parseArgs(): Options {
         break;
     }
   }
-  
+
   return opts;
 }
 
 async function seedAll() {
   const opts = parseArgs();
-  
+
   // Validate destructive operations
   if (opts.drop && !opts.confirm) {
     console.error('ERROR: --drop requires --confirm flag for safety');
     process.exit(1);
   }
-  
+
   console.log('='.repeat(60));
   console.log('DATABASE SEED - ALL OPERATIONS');
   console.log('='.repeat(60));
@@ -144,9 +144,14 @@ async function seedAll() {
   console.log(`  User count: ${opts.userCount || 10000}`);
   console.log(`  Warehouse count: ${opts.warehouseCount || 20}`);
   console.log('');
-  
-  const results: { name: string; success: boolean; error?: string; stats?: any }[] = [];
-  
+
+  const results: {
+    name: string;
+    success: boolean;
+    error?: string;
+    stats?: any;
+  }[] = [];
+
   // 1. Seed Provinces
   if (!opts.skipProvinces) {
     console.log('\n' + '='.repeat(60));
@@ -170,7 +175,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping provinces seeding');
   }
-  
+
   // 2. Seed Wards
   if (!opts.skipWards) {
     console.log('\n' + '='.repeat(60));
@@ -194,7 +199,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping wards seeding');
   }
-  
+
   // 3. Seed Roles
   if (!opts.skipRoles) {
     console.log('\n' + '='.repeat(60));
@@ -218,7 +223,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping roles seeding');
   }
-  
+
   // 4. Seed Organizations
   if (!opts.skipOrganizations) {
     console.log('\n' + '='.repeat(60));
@@ -244,7 +249,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping organizations seeding');
   }
-  
+
   // 5. Seed Users
   if (!opts.skipUsers) {
     console.log('\n' + '='.repeat(60));
@@ -272,7 +277,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping users seeding');
   }
-  
+
   // 6. Seed Warehouse Types
   if (!opts.skipWarehouseTypes) {
     console.log('\n' + '='.repeat(60));
@@ -287,7 +292,11 @@ async function seedAll() {
       console.log('✓ Warehouse types seeding completed successfully');
     } catch (err: any) {
       const errorMsg = err.message || String(err);
-      results.push({ name: 'Warehouse Types', success: false, error: errorMsg });
+      results.push({
+        name: 'Warehouse Types',
+        success: false,
+        error: errorMsg,
+      });
       console.error('✗ Warehouse types seeding failed:', errorMsg);
       if (!opts.dryRun) {
         throw err;
@@ -296,7 +305,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping warehouse types seeding');
   }
-  
+
   // 7. Seed Sample Warehouses
   if (!opts.skipWarehouses) {
     console.log('\n' + '='.repeat(60));
@@ -321,7 +330,7 @@ async function seedAll() {
   } else {
     console.log('\nSkipping warehouses seeding');
   }
-  
+
   // 8. Seed Relationships (User-Role-Organization)
   if (!opts.skipRelations) {
     console.log('\n' + '='.repeat(60));
@@ -346,15 +355,17 @@ async function seedAll() {
   } else {
     console.log('\nSkipping relations seeding');
   }
-  
+
   // Print summary
   console.log('\n' + '='.repeat(60));
   console.log('SUMMARY');
   console.log('='.repeat(60));
-  
+
   results.forEach((result) => {
     const status = result.success ? '✓' : '✗';
-    console.log(`${status} ${result.name}: ${result.success ? 'SUCCESS' : 'FAILED'}`);
+    console.log(
+      `${status} ${result.name}: ${result.success ? 'SUCCESS' : 'FAILED'}`,
+    );
     if (result.stats) {
       console.log(`  Stats:`, JSON.stringify(result.stats, null, 2));
     }
@@ -362,16 +373,16 @@ async function seedAll() {
       console.log(`  Error: ${result.error}`);
     }
   });
-  
-  const successCount = results.filter(r => r.success).length;
-  const failCount = results.filter(r => !r.success).length;
-  
+
+  const successCount = results.filter((r) => r.success).length;
+  const failCount = results.filter((r) => !r.success).length;
+
   console.log('');
   console.log(`Total: ${results.length} operations`);
   console.log(`Success: ${successCount}`);
   console.log(`Failed: ${failCount}`);
   console.log('='.repeat(60));
-  
+
   if (failCount > 0 && !opts.dryRun) {
     process.exit(1);
   }

@@ -2,10 +2,10 @@
 
 /**
  * Seed provinces from a GeoJSON FeatureCollection file
- * 
+ *
  * Usage:
  *   ts-node scripts/seeds/seed-provinces.ts [options]
- * 
+ *
  * Options:
  *   --file <path>       Path to GeoJSON file (default: scripts/data/Việt Nam (tỉnh thành) - 34.geojson)
  *   --drop              Drop existing provinces before seeding
@@ -49,7 +49,7 @@ interface SeedStats {
 function parseArgs(): SeedOptions {
   const opts: SeedOptions = {};
   const args = process.argv.slice(2);
-  
+
   for (let i = 0; i < args.length; i++) {
     const arg = args[i];
     switch (arg) {
@@ -85,7 +85,7 @@ function parseArgs(): SeedOptions {
         break;
     }
   }
-  
+
   return opts;
 }
 
@@ -129,8 +129,11 @@ async function connectToDatabase(): Promise<void> {
     if (dbConfig.user && dbConfig.pass) {
       const user = encodeURIComponent(dbConfig.user);
       const pass = encodeURIComponent(dbConfig.pass);
-      const credentialedUri = connectUri.replace(/^(mongodb(\+srv)?:\/\/)/, `$1${user}:${pass}@`);
-      
+      const credentialedUri = connectUri.replace(
+        /^(mongodb(\+srv)?:\/\/)/,
+        `$1${user}:${pass}@`,
+      );
+
       console.log('Retrying with credentials embedded in URI...');
       try {
         await doConnect(credentialedUri, {
@@ -146,7 +149,10 @@ async function connectToDatabase(): Promise<void> {
         });
         console.log('✓ Connected to MongoDB with embedded credentials');
       } catch (err2: any) {
-        console.error('Retry with embedded credentials failed:', err2?.message || err2);
+        console.error(
+          'Retry with embedded credentials failed:',
+          err2?.message || err2,
+        );
         throw err2;
       }
     } else {
@@ -158,15 +164,24 @@ async function connectToDatabase(): Promise<void> {
 /**
  * Seed provinces from GeoJSON file
  */
-export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promise<SeedStats> {
+export async function seedProvincesFromGeoJSON(
+  options: SeedOptions = {},
+): Promise<SeedStats> {
   const opts = { ...parseArgs(), ...options };
-  
-  const defaultFile = path.resolve(__dirname, '..', 'data', 'Việt Nam (tỉnh thành) - 34.geojson');
-  const filePath = opts.file ? path.resolve(process.cwd(), opts.file) : defaultFile;
+
+  const defaultFile = path.resolve(
+    __dirname,
+    '..',
+    'data',
+    'Việt Nam (tỉnh thành) - 34.geojson',
+  );
+  const filePath = opts.file
+    ? path.resolve(process.cwd(), opts.file)
+    : defaultFile;
   const geomSource = (opts.source as any) || GeometrySource.GOV;
 
   console.log(`Reading GeoJSON from: ${filePath}`);
-  
+
   const stats: SeedStats = {
     total: 0,
     upserted: 0,
@@ -177,7 +192,7 @@ export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promi
   // Read and parse GeoJSON file
   const raw = await fs.readFile(filePath, { encoding: 'utf8' });
   let parsed: FeatureCollection | null = null;
-  
+
   try {
     parsed = JSON.parse(raw) as FeatureCollection;
   } catch (err) {
@@ -185,12 +200,16 @@ export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promi
     throw new Error('Invalid GeoJSON file');
   }
 
-  if (!parsed || parsed.type !== 'FeatureCollection' || !Array.isArray(parsed.features)) {
+  if (
+    !parsed ||
+    parsed.type !== 'FeatureCollection' ||
+    !Array.isArray(parsed.features)
+  ) {
     throw new Error('Provided file is not a valid FeatureCollection');
   }
 
   console.log(`Found ${parsed.features.length} features in GeoJSON`);
-  
+
   if (opts.dryRun) {
     console.log('DRY RUN MODE - No database changes will be made');
   }
@@ -211,22 +230,29 @@ export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promi
     }
 
     // Process features
-    const featuresToProcess = parsed.features
-      .slice(opts.skip || 0, opts.limit ? (opts.skip || 0) + opts.limit : undefined);
-    
+    const featuresToProcess = parsed.features.slice(
+      opts.skip || 0,
+      opts.limit ? (opts.skip || 0) + opts.limit : undefined,
+    );
+
     stats.total = featuresToProcess.length;
     console.log(`Processing ${stats.total} features...`);
 
-    for (const feat of featuresToProcess as Feature[]) {
+    for (const feat of featuresToProcess) {
       const props: any = (feat.properties || {}) as GeoJsonProperties;
 
       // Extract code and name from various property names used in Vietnamese datasets
       const code = String(
-        props.ma_tinh ?? props.code ?? props.id ?? props.Ma ?? props['GID_1'] ?? ''
+        props.ma_tinh ??
+          props.code ??
+          props.id ??
+          props.Ma ??
+          props['GID_1'] ??
+          '',
       ).trim();
-      
+
       const name = String(
-        props.ten_tinh ?? props.TEN_TINH ?? props.name ?? props.NAME ?? ''
+        props.ten_tinh ?? props.TEN_TINH ?? props.name ?? props.NAME ?? '',
       ).trim();
 
       if (!code || !name) {
@@ -247,7 +273,10 @@ export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promi
           bb = bbox(feat);
           const c = centroid(feat);
           if (c?.geometry && Array.isArray((c.geometry as any).coordinates)) {
-            const [lon, lat] = (c.geometry as any).coordinates as [number, number];
+            const [lon, lat] = (c.geometry as any).coordinates as [
+              number,
+              number,
+            ];
             ctr = { lat, lon };
           }
           const a = area(feat); // in square meters
@@ -280,9 +309,9 @@ export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promi
           const res = await Province.updateOne(
             { code },
             { $set: updateDoc, $setOnInsert: { createdAt: new Date() } },
-            { upsert: true }
+            { upsert: true },
           );
-          
+
           if (res.upsertedCount || res.matchedCount) {
             stats.upserted++;
           }
@@ -301,7 +330,6 @@ export async function seedProvincesFromGeoJSON(options: SeedOptions = {}): Promi
     console.log(`Skipped: ${stats.skipped}`);
     console.log(`Errors: ${stats.errors}`);
     console.log('='.repeat(60));
-
   } catch (err) {
     console.error('Error during seeding:', err);
     throw err;
