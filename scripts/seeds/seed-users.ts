@@ -50,6 +50,16 @@ import {
 
 require('dotenv').config();
 
+// Constants for user generation
+const MAX_UNIQUENESS_SUFFIX = 100000; // Maximum suffix value for ensuring uniqueness
+const COMMON_DEV_PASSWORD = 'Password123'; // Common password for dev/test users (NOT FOR PRODUCTION)
+const STATUS_DISTRIBUTION = {
+  ACTIVE_THRESHOLD: 0.90,    // 90% active users
+  PENDING_THRESHOLD: 0.95,   // 5% pending users (90-95%)
+  // Remaining 5% will be inactive (95-100%)
+};
+const PHONE_NUMBER_PROBABILITY = 0.7; // 70% of users will have phone numbers
+
 interface UserData {
   username: string;
   email: string;
@@ -129,7 +139,7 @@ async function connectToDatabase(): Promise<void> {
 function generateUniqueEmail(domain: string, maxAttempts: number = 100): string {
   for (let i = 0; i < maxAttempts; i++) {
     const username = faker.internet.username().toLowerCase().replace(/[^a-z0-9._-]/g, '');
-    const randomSuffix = Math.floor(Math.random() * 100000);
+    const randomSuffix = Math.floor(Math.random() * MAX_UNIQUENESS_SUFFIX);
     const email = `${username}${randomSuffix}@${domain}`;
     
     if (!generatedEmails.has(email)) {
@@ -151,7 +161,7 @@ function generateUniqueEmail(domain: string, maxAttempts: number = 100): string 
 function generateUniqueUsername(maxAttempts: number = 100): string {
   for (let i = 0; i < maxAttempts; i++) {
     const baseUsername = faker.internet.username().toLowerCase().replace(/[^a-z0-9._-]/g, '');
-    const suffix = Math.floor(Math.random() * 100000);
+    const suffix = Math.floor(Math.random() * MAX_UNIQUENESS_SUFFIX);
     const username = `${baseUsername}${suffix}`;
     
     if (!generatedUsernames.has(username) && username.length >= 3) {
@@ -226,9 +236,9 @@ async function generateRegularUser(
   // Status distribution: 90% active, 5% pending, 5% inactive
   let status: string;
   const statusRand = Math.random();
-  if (statusRand < 0.90) {
+  if (statusRand < STATUS_DISTRIBUTION.ACTIVE_THRESHOLD) {
     status = 'active';
-  } else if (statusRand < 0.95) {
+  } else if (statusRand < STATUS_DISTRIBUTION.PENDING_THRESHOLD) {
     status = 'pending';
   } else {
     status = 'inactive';
@@ -239,7 +249,7 @@ async function generateRegularUser(
   const fullName = `${firstName} ${lastName}`;
 
   // 70% of users have phone numbers (realistic distribution - not all users provide phone)
-  const phone = Math.random() < 0.7 ? faker.phone.number() : undefined;
+  const phone = Math.random() < PHONE_NUMBER_PROBABILITY ? faker.phone.number() : undefined;
 
   // Randomly assign to an organization (if any exist)
   const organizationId = organizationIds.length > 0
@@ -278,7 +288,7 @@ export async function seedUsers(options: SeedOptions = {}): Promise<SeedStats> {
   const count = options.count || 10000;
   const batchSize = options.batchSize || 500;
   const domain = options.domain || 'example.com';
-  const commonPassword = 'Password123'; // Common password for regular users (dev/test purposes)
+  const commonPassword = COMMON_DEV_PASSWORD; // Use constant for dev/test password
 
   const stats: SeedStats = {
     total: count + 1, // +1 for SuperAdmin
