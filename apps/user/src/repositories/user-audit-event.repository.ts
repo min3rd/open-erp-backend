@@ -83,9 +83,9 @@ export class UserAuditEventRepository {
         query.action = options.action;
       }
 
-      // Filter by resource
+      // Filter by resource (exact match to avoid regex DoS)
       if (options.resource) {
-        query.resource = new RegExp(options.resource, 'i');
+        query.resource = options.resource;
       }
 
       // Filter by status

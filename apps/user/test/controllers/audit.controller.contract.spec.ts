@@ -202,7 +202,7 @@ describe('User Audit Log API Contract Tests', () => {
         success: false,
         message: 'User not found',
         error: {
-          code: 'USER_NOT_FOUND',
+          code: 'USER_0001',
           message: 'User not found',
           details: {
             identifier: 'nonexistent@example.com',
@@ -223,7 +223,7 @@ describe('User Audit Log API Contract Tests', () => {
         success: false,
         message: 'Audit log not found',
         error: {
-          code: 'AUDIT_LOG_NOT_FOUND',
+          code: 'AUDIT_0001',
           message: 'Audit log not found',
           details: {
             id: '507f1f77bcf86cd799439011',
@@ -245,7 +245,7 @@ describe('User Audit Log API Contract Tests', () => {
         message:
           'Insufficient permissions. Required: organization.manage_users_and_orgs (any)',
         error: {
-          code: 'AUTH_INSUFFICIENT_PERMISSIONS',
+          code: 'AUTH_0010',
           message:
             'Insufficient permissions. Required: organization.manage_users_and_orgs (any)',
           details: {
