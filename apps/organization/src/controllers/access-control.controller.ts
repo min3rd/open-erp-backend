@@ -67,16 +67,22 @@ export class AccessControlController {
   async getOrganizationRoles() {
     const roles = getRolesByScope('organization');
 
-    // Map enum values using metadata
-    const rolesData = roles.map((roleCode) => {
-      const meta = RoleMetadata[roleCode];
-      return {
-        code: roleCode,
-        name: meta.name,
-        description: meta.description,
-        scope: meta.scope,
-      };
-    });
+    // Map enum values using metadata with defensive checks
+    const rolesData = roles
+      .map((roleCode) => {
+        const meta = RoleMetadata[roleCode];
+        if (!meta) {
+          console.warn(`Missing metadata for role: ${roleCode}`);
+          return null;
+        }
+        return {
+          code: roleCode,
+          name: meta.name,
+          description: meta.description,
+          scope: meta.scope,
+        };
+      })
+      .filter((role): role is NonNullable<typeof role> => role !== null);
 
     return ok(rolesData, 'Organization roles retrieved successfully');
   }
@@ -127,23 +133,32 @@ export class AccessControlController {
   async getOrganizationPermissions() {
     const permissions = getPermissionsByScope('organization');
 
-    // Map enum values using metadata
-    const permissionsData = permissions.map((permissionCode) => {
-      const meta = PermissionMetadata[permissionCode];
-      const dotIndex = permissionCode.indexOf('.');
-      const resource =
-        dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
-      const action =
-        dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
-      return {
-        code: permissionCode,
-        resource,
-        action,
-        name: formatPermissionName(permissionCode),
-        description: meta.description,
-        scope: meta.scope,
-      };
-    });
+    // Map enum values using metadata with defensive checks
+    const permissionsData = permissions
+      .map((permissionCode) => {
+        const meta = PermissionMetadata[permissionCode];
+        if (!meta) {
+          console.warn(`Missing metadata for permission: ${permissionCode}`);
+          return null;
+        }
+        const dotIndex = permissionCode.indexOf('.');
+        const resource =
+          dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
+        const action =
+          dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
+        return {
+          code: permissionCode,
+          resource,
+          action,
+          name: formatPermissionName(permissionCode),
+          description: meta.description,
+          scope: meta.scope,
+        };
+      })
+      .filter(
+        (permission): permission is NonNullable<typeof permission> =>
+          permission !== null,
+      );
 
     return ok(
       permissionsData,

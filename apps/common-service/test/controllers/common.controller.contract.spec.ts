@@ -20,10 +20,10 @@ describe('Common API Contract Tests', () => {
             scope: 'global',
           },
           {
-            code: 'USER',
-            name: 'User',
-            description: 'Standard user with basic access',
-            scope: 'organization',
+            code: 'NAV_ADMIN',
+            name: 'Navigation Admin',
+            description: 'Navigation administrator',
+            scope: 'global',
           },
         ],
       };
@@ -72,12 +72,12 @@ describe('Common API Contract Tests', () => {
             scope: 'global',
           },
           {
-            code: 'organization.read',
-            resource: 'organization',
+            code: 'role.read',
+            resource: 'role',
             action: 'read',
-            name: 'Organization Read',
-            description: 'Permission to view organization information',
-            scope: 'organization',
+            name: 'Role Read',
+            description: 'Permission to view role information',
+            scope: 'global',
           },
         ],
       };

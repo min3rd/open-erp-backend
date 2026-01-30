@@ -31,7 +31,7 @@ export class CommonController {
   @ApiOperation({
     summary: 'Get all global roles',
     description:
-      'Returns a list of all system-wide roles available in the system (e.g., SUPER_ADMIN, USER, etc.)',
+      'Returns a list of all system-wide roles available in the system (e.g., SUPER_ADMIN, NAV_ADMIN, CONFIG_ADMIN, USER_ADMIN, GUEST)',
   })
   @ApiResponse({
     status: 200,
@@ -64,16 +64,22 @@ export class CommonController {
   async getGlobalRoles() {
     const roles = getRolesByScope('global');
 
-    // Map enum values using metadata
-    const rolesData = roles.map((roleCode) => {
-      const meta = RoleMetadata[roleCode];
-      return {
-        code: roleCode,
-        name: meta.name,
-        description: meta.description,
-        scope: meta.scope,
-      };
-    });
+    // Map enum values using metadata with defensive checks
+    const rolesData = roles
+      .map((roleCode) => {
+        const meta = RoleMetadata[roleCode];
+        if (!meta) {
+          console.warn(`Missing metadata for role: ${roleCode}`);
+          return null;
+        }
+        return {
+          code: roleCode,
+          name: meta.name,
+          description: meta.description,
+          scope: meta.scope,
+        };
+      })
+      .filter((role): role is NonNullable<typeof role> => role !== null);
 
     return ok(rolesData, 'Global roles retrieved successfully');
   }
@@ -86,7 +92,7 @@ export class CommonController {
   @ApiOperation({
     summary: 'Get all global permissions',
     description:
-      'Returns a list of all system-wide permissions available in the system (e.g., user.create, organization.read, etc.)',
+      'Returns a list of all system-wide (global) permissions available in the system (e.g., user.*, role.*, system.*, navigation.*, config.*)',
   })
   @ApiResponse({
     status: 200,
@@ -124,21 +130,27 @@ export class CommonController {
   async getGlobalPermissions() {
     const permissions = getPermissionsByScope('global');
 
-    // Map enum values using metadata
-    const permissionsData = permissions.map((permissionCode) => {
-      const meta = PermissionMetadata[permissionCode];
-      const dotIndex = permissionCode.indexOf('.');
-      const resource = dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
-      const action = dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
-      return {
-        code: permissionCode,
-        resource,
-        action,
-        name: formatPermissionName(permissionCode),
-        description: meta.description,
-        scope: meta.scope,
-      };
-    });
+    // Map enum values using metadata with defensive checks
+    const permissionsData = permissions
+      .map((permissionCode) => {
+        const meta = PermissionMetadata[permissionCode];
+        if (!meta) {
+          console.warn(`Missing metadata for permission: ${permissionCode}`);
+          return null;
+        }
+        const dotIndex = permissionCode.indexOf('.');
+        const resource = dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
+        const action = dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
+        return {
+          code: permissionCode,
+          resource,
+          action,
+          name: formatPermissionName(permissionCode),
+          description: meta.description,
+          scope: meta.scope,
+        };
+      })
+      .filter((permission): permission is NonNullable<typeof permission> => permission !== null);
 
     return ok(permissionsData, 'Global permissions retrieved successfully');
   }
