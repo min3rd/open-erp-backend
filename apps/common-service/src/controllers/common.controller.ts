@@ -1,4 +1,4 @@
-import { Controller, Get, UseGuards } from '@nestjs/common';
+import { Controller, Get, UseGuards, Logger } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
@@ -23,6 +23,7 @@ import {
 @Controller('common')
 @UseGuards(JwtAuthGuard)
 export class CommonController {
+  private readonly logger = new Logger(CommonController.name);
   /**
    * GET /common/roles/global
    * Returns all system-wide (global) roles
@@ -69,7 +70,7 @@ export class CommonController {
       .map((roleCode) => {
         const meta = RoleMetadata[roleCode];
         if (!meta) {
-          console.warn(`Missing metadata for role: ${roleCode}`);
+          this.logger.warn(`Missing metadata for role: ${roleCode}`);
           return null;
         }
         return {
@@ -135,7 +136,7 @@ export class CommonController {
       .map((permissionCode) => {
         const meta = PermissionMetadata[permissionCode];
         if (!meta) {
-          console.warn(`Missing metadata for permission: ${permissionCode}`);
+          this.logger.warn(`Missing metadata for permission: ${permissionCode}`);
           return null;
         }
         const dotIndex = permissionCode.indexOf('.');
