@@ -1043,7 +1043,7 @@ export class AuthService {
     const rolesWithDetails =
       await this.authorizationService.getUserRolesWithDetails(userId);
     const globalRoles = rolesWithDetails
-      .filter((r) => r.role.scope === 'global')
+      .filter((r) => r.role.scope === 'global' && r.role.status === 'active')
       .map((r) => ({
         id: r.role._id.toString(),
         code: r.role.code,
