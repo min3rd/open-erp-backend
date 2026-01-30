@@ -37,9 +37,9 @@ export enum UserAuditEventType {
   USER_PERMISSION_REVOKED = 'user.permission.revoked',
 
   // Organization membership
-  USER_JOINED_ORGANIZATION = 'user.organization.joined',
-  USER_LEFT_ORGANIZATION = 'user.organization.left',
-  USER_REMOVED_FROM_ORGANIZATION = 'user.organization.removed',
+  USER_ORGANIZATION_JOINED = 'user.organization.joined',
+  USER_ORGANIZATION_LEFT = 'user.organization.left',
+  USER_ORGANIZATION_REMOVED = 'user.organization.removed',
 }
 
 @Schema({

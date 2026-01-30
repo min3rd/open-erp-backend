@@ -1,6 +1,7 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsOptional, IsString, IsInt, Min, IsDateString, IsEnum } from 'class-validator';
+import { IsOptional, IsString, IsInt, Min, IsDateString, IsEnum, Matches } from 'class-validator';
 import { Type } from 'class-transformer';
+import { UserAuditEventType } from '@shared/schemas';
 
 export class ListUserAuditLogsQueryDto {
   @ApiPropertyOptional({
@@ -34,11 +35,14 @@ export class ListUserAuditLogsQueryDto {
   search?: string;
 
   @ApiPropertyOptional({
-    description: 'Sort by field (default: createdAt:desc)',
+    description: 'Sort by field (default: createdAt:desc). Format: field:order where field is one of [createdAt, action, status] and order is [asc, desc]',
     example: 'createdAt:desc',
+    pattern: '^(createdAt|action|status):(asc|desc)$',
   })
   @IsOptional()
-  @IsString()
+  @Matches(/^(createdAt|action|status):(asc|desc)$/, {
+    message: 'sortBy must be in format field:order where field is createdAt, action, or status and order is asc or desc',
+  })
   sortBy?: string = 'createdAt:desc';
 
   @ApiPropertyOptional({
@@ -60,10 +64,13 @@ export class ListUserAuditLogsQueryDto {
   @ApiPropertyOptional({
     description: 'Filter by action type',
     example: 'user.password.changed',
+    enum: UserAuditEventType,
   })
   @IsOptional()
-  @IsString()
-  action?: string;
+  @IsEnum(UserAuditEventType, {
+    message: 'action must be a valid UserAuditEventType',
+  })
+  action?: UserAuditEventType;
 
   @ApiPropertyOptional({
     description: 'Filter by resource',
