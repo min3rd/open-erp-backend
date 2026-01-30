@@ -39,6 +39,53 @@ export class MeController {
   @ApiResponse({
     status: 200,
     description: 'User profile retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: { type: 'string', example: 'User profile retrieved successfully' },
+        error: { type: 'null' },
+        data: {
+          type: 'object',
+          properties: {
+            mode: { type: 'string', example: 'get' },
+            item: {
+              type: 'object',
+              properties: {
+                id: { type: 'string', example: '507f1f77bcf86cd799439011' },
+                email: { type: 'string', example: 'user@example.com' },
+                username: { type: 'string', example: 'johndoe' },
+                fullName: { type: 'string', example: 'John Doe' },
+                avatarUrl: { type: 'string', nullable: true, example: 'https://example.com/avatar.jpg' },
+                status: { type: 'string', example: 'active' },
+                verifiedAt: { type: 'string', format: 'date-time' },
+                createdAt: { type: 'string', format: 'date-time' },
+                roles: {
+                  type: 'array',
+                  items: {
+                    type: 'object',
+                    properties: {
+                      id: { type: 'string', example: '507f1f77bcf86cd799439012' },
+                      code: { type: 'string', example: 'SYSTEM_ADMIN' },
+                      name: { type: 'string', example: 'System Administrator' },
+                      description: { type: 'string', example: 'Full system access' },
+                    },
+                  },
+                  description: 'Global roles assigned to the user',
+                },
+                permissions: {
+                  type: 'array',
+                  items: { type: 'string' },
+                  example: ['users.create', 'users.read', 'users.update', 'users.delete'],
+                  description: 'Global permissions derived from roles',
+                },
+              },
+            },
+          },
+        },
+        meta: { type: 'object' },
+      },
+    },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized - Invalid token' })
   @ApiResponse({

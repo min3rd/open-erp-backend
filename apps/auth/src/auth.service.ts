@@ -46,6 +46,7 @@ import {
   hashRefreshToken,
 } from './utils/token.util';
 import { Types } from 'mongoose';
+import { AuthorizationService } from '@shared/authz';
 
 @Injectable()
 export class AuthService {
@@ -68,6 +69,7 @@ export class AuthService {
     private readonly verificationTokenRepository: VerificationTokenRepository,
     private readonly refreshTokenRepository: RefreshTokenRepository,
     private readonly passwordResetTokenRepository: PasswordResetTokenRepository,
+    private readonly authorizationService: AuthorizationService,
   ) {
     this.verificationTokenTTL = parseInt(
       process.env.VERIFICATION_TOKEN_TTL || '15',
@@ -1037,7 +1039,25 @@ export class AuthService {
       });
     }
 
-    // Return user profile information
+    // Get global roles and permissions
+    const rolesWithDetails =
+      await this.authorizationService.getUserRolesWithDetails(userId);
+    const globalRoles = rolesWithDetails
+      .filter((r) => r.role.scope === 'global')
+      .map((r) => ({
+        id: r.role._id.toString(),
+        code: r.role.code,
+        name: r.role.name,
+        description: r.role.description,
+      }));
+
+    const globalPermissions =
+      await this.authorizationService.getEffectivePermissions(
+        userId,
+        'global',
+      );
+
+    // Return user profile information with roles and permissions
     return {
       id: user.id.toString(),
       email: user.email,
@@ -1047,6 +1067,8 @@ export class AuthService {
       status: user.status,
       verifiedAt: user.verifiedAt,
       createdAt: user.createdAt,
+      roles: globalRoles,
+      permissions: globalPermissions,
     };
   }
 }
