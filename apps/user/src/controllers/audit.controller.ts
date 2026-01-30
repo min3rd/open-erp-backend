@@ -25,6 +25,53 @@ import { paginated, fetched, error } from '@shared/response';
 import { USER_NOT_FOUND, AUDIT_LOG_NOT_FOUND } from '@shared/errors/error-codes';
 
 /**
+ * Sanitize sensitive fields from payload
+ * Redacts passwords, tokens, secrets, and other sensitive data
+ */
+function sanitizePayload(payload: any): any {
+  if (!payload || typeof payload !== 'object') {
+    return payload;
+  }
+
+  const sensitiveFields = [
+    'password',
+    'newPassword',
+    'oldPassword',
+    'currentPassword',
+    'token',
+    'accessToken',
+    'refreshToken',
+    'secret',
+    'apiKey',
+    'privateKey',
+    'secretKey',
+    'creditCard',
+    'ssn',
+    'taxId',
+  ];
+
+  const sanitized = Array.isArray(payload) ? [...payload] : { ...payload };
+
+  for (const key in sanitized) {
+    const lowerKey = key.toLowerCase();
+    
+    // Check if field name contains sensitive keywords
+    const isSensitive = sensitiveFields.some(field => 
+      lowerKey.includes(field.toLowerCase())
+    );
+
+    if (isSensitive) {
+      sanitized[key] = '[REDACTED]';
+    } else if (typeof sanitized[key] === 'object' && sanitized[key] !== null) {
+      // Recursively sanitize nested objects
+      sanitized[key] = sanitizePayload(sanitized[key]);
+    }
+  }
+
+  return sanitized;
+}
+
+/**
  * Audit Log Controller
  * Handles retrieval of user audit logs for administrators
  */
@@ -237,9 +284,12 @@ export class AuditController {
       ipAddress: auditLog.ipAddress,
       status: auditLog.status,
       description: auditLog.description,
-      payload: auditLog.payload,
+      payload: sanitizePayload(auditLog.payload),
       userAgent: auditLog.userAgent,
-      metadata: auditLog.metadata,
+      metadata:
+        auditLog.metadata instanceof Map
+          ? Object.fromEntries(auditLog.metadata)
+          : auditLog.metadata,
       performedBy: auditLog.performedBy?.toString(),
       userId: auditLog.userId.toString(),
     };

@@ -131,12 +131,15 @@ UserAuditEventSchema.index({ userId: 1, status: 1 });
 UserAuditEventSchema.index({ resource: 1, createdAt: -1 });
 
 // Text index for search functionality
-UserAuditEventSchema.index({ action: 'text', resource: 'text', description: 'text' });
+UserAuditEventSchema.index(
+  { action: 'text', resource: 'text', description: 'text' },
+  { name: 'user_audit_events_text_search' },
+);
 
 // TTL index to auto-delete old audit logs after 2 years
 UserAuditEventSchema.index(
   { createdAt: 1 },
-  { expireAfterSeconds: 63072000 },
+  { expireAfterSeconds: 63072000, name: 'user_audit_events_ttl' },
 );
 
 // Ensure virtuals are included in JSON output
