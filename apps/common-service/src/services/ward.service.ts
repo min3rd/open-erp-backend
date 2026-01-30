@@ -29,7 +29,9 @@ export class WardService {
     } = options;
     const skip = (page - 1) * limit;
 
-    this.logger.debug(`Finding wards with options: ${JSON.stringify({ page, limit, provinceCode, districtCode, q })}`);
+    this.logger.debug(
+      `Finding wards with options: ${JSON.stringify({ page, limit, provinceCode, districtCode, q })}`,
+    );
 
     const filter: any = {};
     if (provinceCode) {
@@ -128,4 +130,3 @@ export class WardService {
     );
   }
 }
-

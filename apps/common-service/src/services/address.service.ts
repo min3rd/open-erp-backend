@@ -34,7 +34,9 @@ export class AddressService {
     const { page = 1, limit = 20, scope, userId, organizationId } = options;
     const skip = (page - 1) * limit;
 
-    this.logger.debug(`Finding addresses with options: ${JSON.stringify({ page, limit, scope, userId, organizationId })}`);
+    this.logger.debug(
+      `Finding addresses with options: ${JSON.stringify({ page, limit, scope, userId, organizationId })}`,
+    );
 
     const filter: any = { isDeleted: false };
 
@@ -228,4 +230,3 @@ export class AddressService {
     this.logger.log(`Deleted address: ${id}`);
   }
 }
-

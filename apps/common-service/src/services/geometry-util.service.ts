@@ -250,10 +250,14 @@ export class GeometryUtilService {
     const jsonString = JSON.stringify(data);
     const sizeInMB = Buffer.byteLength(jsonString, 'utf8') / (1024 * 1024);
 
-    this.logger.debug(`Validating file size: ${sizeInMB.toFixed(2)}MB (max: ${maxSizeInMB}MB)`);
+    this.logger.debug(
+      `Validating file size: ${sizeInMB.toFixed(2)}MB (max: ${maxSizeInMB}MB)`,
+    );
 
     if (sizeInMB > maxSizeInMB) {
-      this.logger.warn(`File size exceeds maximum: ${sizeInMB.toFixed(2)}MB > ${maxSizeInMB}MB`);
+      this.logger.warn(
+        `File size exceeds maximum: ${sizeInMB.toFixed(2)}MB > ${maxSizeInMB}MB`,
+      );
       throw new BadRequestException(
         `File size exceeds maximum allowed size of ${maxSizeInMB}MB. Current size: ${sizeInMB.toFixed(2)}MB`,
       );

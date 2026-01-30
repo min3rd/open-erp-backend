@@ -9,13 +9,11 @@ import {
   Query,
   HttpStatus,
   HttpException,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
@@ -32,7 +30,6 @@ import {
   paginated,
   error,
 } from '@shared/response';
-import { Permission } from '@shared/types';
 
 @ApiTags('product-types')
 @Controller('config/product-types')
@@ -86,11 +83,10 @@ export class ProductTypeController {
       if (err instanceof HttpException) {
         throw err;
       }
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to create product type';
       throw new HttpException(
-        error(
-          'PRODUCT_TYPE_CREATE_ERROR',
-          err.message || 'Failed to create product type',
-        ),
+        error('PRODUCT_TYPE_CREATE_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -125,11 +121,10 @@ export class ProductTypeController {
 
       return paginated(result.items, result.page, result.limit, result.total);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to fetch product types';
       throw new HttpException(
-        error(
-          'PRODUCT_TYPE_FETCH_ERROR',
-          err.message || 'Failed to fetch product types',
-        ),
+        error('PRODUCT_TYPE_FETCH_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -149,11 +144,12 @@ export class ProductTypeController {
       const productTypes = await this.productTypeService.findActive();
       return fetched(productTypes);
     } catch (err) {
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : 'Failed to fetch active product types';
       throw new HttpException(
-        error(
-          'PRODUCT_TYPE_FETCH_ERROR',
-          err.message || 'Failed to fetch active product types',
-        ),
+        error('PRODUCT_TYPE_FETCH_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -178,11 +174,10 @@ export class ProductTypeController {
       if (err instanceof HttpException) {
         throw err;
       }
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to fetch product type';
       throw new HttpException(
-        error(
-          'PRODUCT_TYPE_FETCH_ERROR',
-          err.message || 'Failed to fetch product type',
-        ),
+        error('PRODUCT_TYPE_FETCH_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -217,11 +212,10 @@ export class ProductTypeController {
       if (err instanceof HttpException) {
         throw err;
       }
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to update product type';
       throw new HttpException(
-        error(
-          'PRODUCT_TYPE_UPDATE_ERROR',
-          err.message || 'Failed to update product type',
-        ),
+        error('PRODUCT_TYPE_UPDATE_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }
@@ -246,11 +240,10 @@ export class ProductTypeController {
       if (err instanceof HttpException) {
         throw err;
       }
+      const errorMessage =
+        err instanceof Error ? err.message : 'Failed to delete product type';
       throw new HttpException(
-        error(
-          'PRODUCT_TYPE_DELETE_ERROR',
-          err.message || 'Failed to delete product type',
-        ),
+        error('PRODUCT_TYPE_DELETE_ERROR', errorMessage),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
     }

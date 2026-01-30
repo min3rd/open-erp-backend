@@ -106,10 +106,12 @@ export class ProductCategoryRepository {
    * Check if code exists
    */
   async existsByCode(code: string, excludeId?: string): Promise<boolean> {
-    const query: FilterQuery<ProductCategory> = { code };
+    const query: any = { code };
     if (excludeId) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       query._id = { $ne: excludeId };
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const count = await this.model.countDocuments(query).exec();
     return count > 0;
   }
@@ -152,7 +154,10 @@ export class ProductCategoryRepository {
    * Get category tree structure
    */
   async getTree(): Promise<ProductCategoryDocument[]> {
-    return this.model.find({ isActive: true }).sort({ path: 1, order: 1 }).exec();
+    return this.model
+      .find({ isActive: true })
+      .sort({ path: 1, order: 1 })
+      .exec();
   }
 
   /**
@@ -188,10 +193,7 @@ export class ProductCategoryRepository {
   /**
    * Update children paths when parent path changes
    */
-  async updateChildrenPaths(
-    oldPath: string,
-    newPath: string,
-  ): Promise<void> {
+  async updateChildrenPaths(oldPath: string, newPath: string): Promise<void> {
     const children = await this.model.find({
       path: new RegExp(`^${oldPath}`),
     });
