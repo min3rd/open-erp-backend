@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from '@shared/logger';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -80,6 +81,7 @@ import { PermissionService } from '@shared/services';
         limit: 100,
       },
     ]),
+    LoggerModule,
   ],
   controllers: [
     ProductController,

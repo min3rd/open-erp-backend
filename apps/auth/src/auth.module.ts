@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from '@shared/logger';
 import { AuthController } from './auth.controller';
 import { MeController } from './me.controller';
 import { AuthService } from './auth.service';
@@ -27,6 +28,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    LoggerModule,
     DatabaseModule,
     RabbitMQClientModule.forRoot(), // Add NestJS ClientProxy for sending messages
     MongooseModule.forFeature([

@@ -7,10 +7,12 @@ import { MicroserviceOptions, Transport } from '@nestjs/microservices';
 import { getRabbitMQConfig } from '@shared/config/rabbitmq.config';
 import { formatRabbitMQUrl } from '@shared/rabbitmq';
 
-async function bootstrap() {
-  const logger = new Logger('NotificationService');
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+async function bootstrap() {
   const app = await NestFactory.create(NotificationModule);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const logger = new Logger('NotificationService');
 
   // Connect RabbitMQ microservice
   const rabbitMQConfig = getRabbitMQConfig();

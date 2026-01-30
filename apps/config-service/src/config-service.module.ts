@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from '@shared/logger';
 import { ConfigModule as NestConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ThrottlerModule } from '@nestjs/throttler';
@@ -21,6 +22,7 @@ import { Navigation, NavigationSchema } from './schemas/navigation.schema';
 @Module({
   imports: [
     NestConfigModule.forRoot(),
+    LoggerModule,
     DatabaseModule,
     RabbitMQClientModule.forRoot(),
     MongooseModule.forFeature([

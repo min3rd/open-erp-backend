@@ -5,10 +5,12 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
 import { Response } from 'express';
 
-async function bootstrap() {
-  const logger = new Logger('ConfigService');
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+async function bootstrap() {
   const app = await NestFactory.create(ConfigServiceModule);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const logger = new Logger('ConfigService');
 
   app.enableVersioning({
     type: VersioningType.URI,

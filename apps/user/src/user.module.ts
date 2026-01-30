@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from '@shared/logger';
 import { HealthController } from './health.controller';
 import { UserRpcController } from './user-rpc.controller';
 import { UserEventController } from './user-event.controller';
@@ -32,6 +33,7 @@ import { RoleRepository } from './repositories/role.repository';
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    LoggerModule,
     RabbitMQClientModule.forRoot(), // Add NestJS ClientProxy module
     ThrottlerModule.forRoot([
       {

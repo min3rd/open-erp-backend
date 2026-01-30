@@ -1,4 +1,5 @@
 import { Module } from '@nestjs/common';
+import { LoggerModule } from '@shared/logger';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
 import { getDatabaseConfig, getMongooseOptions } from '@shared/database';
@@ -54,6 +55,7 @@ import { WarehouseRepository } from '../../inventory/src/repositories/warehouse.
 @Module({
   imports: [
     ConfigModule.forRoot(),
+    LoggerModule,
     MongooseModule.forRootAsync({
       useFactory: () => {
         const config = getDatabaseConfig();

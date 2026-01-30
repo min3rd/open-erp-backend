@@ -4,10 +4,12 @@ import { Logger, ValidationPipe, VersioningType } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { GlobalExceptionFilter } from '@shared/errors';
 
-async function bootstrap() {
-  const logger = new Logger('AuthService');
+import { WINSTON_MODULE_NEST_PROVIDER } from 'nest-winston';
 
+async function bootstrap() {
   const app = await NestFactory.create(AuthModule);
+  app.useLogger(app.get(WINSTON_MODULE_NEST_PROVIDER));
+  const logger = new Logger('AuthService');
 
   app.enableVersioning({
     type: VersioningType.URI,
