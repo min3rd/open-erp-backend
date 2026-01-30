@@ -36,7 +36,7 @@ import {
   JwtAuthGuard,
   PermissionsGuard,
   CurrentUser,
-  UserContext,
+  type UserContext,
 } from '@shared/authz';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types';
