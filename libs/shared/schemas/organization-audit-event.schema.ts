@@ -16,6 +16,8 @@ export enum AuditEventType {
   MEMBER_JOINED = 'member.joined',
   MEMBER_ROLE_UPDATED = 'member.role_updated',
   MEMBER_REMOVED = 'member.removed',
+  MEMBER_ROLE_GRANTED = 'member.role_granted',
+  MEMBER_PERMISSION_GRANTED = 'member.permission_granted',
   INVITATION_ACCEPTED = 'invitation.accepted',
   INVITATION_REJECTED = 'invitation.rejected',
   INVITATION_REVOKED = 'invitation.revoked',

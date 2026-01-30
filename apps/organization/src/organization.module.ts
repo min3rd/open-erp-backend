@@ -29,6 +29,7 @@ import { InvitationController } from './controllers/invitation.controller';
 import { MembershipController } from './controllers/membership.controller';
 import { RelationController } from './controllers/relation.controller';
 import { HealthController } from './controllers/health.controller';
+import { OrgAdminController } from './controllers/org-admin.controller';
 import { WarehouseController } from '../../inventory/src/controllers/warehouse.controller';
 
 // Services
@@ -37,6 +38,7 @@ import { InvitationService } from './services/invitation.service';
 import { MembershipService } from './services/membership.service';
 import { RelationService } from './services/relation.service';
 import { AuditService } from './services/audit.service';
+import { OrgAdminService } from './services/org-admin.service';
 import { WarehouseService } from '../../inventory/src/services/warehouse.service';
 
 // Repositories
@@ -79,6 +81,7 @@ import { WarehouseRepository } from '../../inventory/src/repositories/warehouse.
     MembershipController,
     RelationController,
     HealthController,
+    OrgAdminController,
     WarehouseController,
   ],
   providers: [
@@ -87,6 +90,7 @@ import { WarehouseRepository } from '../../inventory/src/repositories/warehouse.
     MembershipService,
     RelationService,
     AuditService,
+    OrgAdminService,
     WarehouseService,
     OrganizationRepository,
     OrganizationRelationRepository,
