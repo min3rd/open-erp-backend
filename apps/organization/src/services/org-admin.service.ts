@@ -63,16 +63,21 @@ export class OrgAdminService {
    * @returns The resolved userId
    */
   async resolveUserIdentifier(identifier: string): Promise<string> {
+    // Email regex pattern from User schema
+    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
     // First, check if it's a valid ObjectId
     if (Types.ObjectId.isValid(identifier)) {
       const user = await this.userModel.findById(identifier).exec();
       if (user) {
         return user._id.toHexString();
       }
+      // Valid ObjectId format but no user found - throw immediately
+      throw new NotFoundException(`User not found with ID: ${identifier}`);
     }
 
-    // Check if it's an email
-    if (identifier.includes('@')) {
+    // Check if it's a valid email format
+    if (emailPattern.test(identifier)) {
       const user = await this.userModel
         .findOne({ email: identifier.toLowerCase() })
         .exec();
@@ -88,9 +93,7 @@ export class OrgAdminService {
       return user._id.toHexString();
     }
 
-    throw new NotFoundException(
-      `User not found with identifier: ${identifier}`,
-    );
+    throw new NotFoundException(`User not found with username: ${identifier}`);
   }
 
   /**
@@ -105,6 +108,10 @@ export class OrgAdminService {
       if (org) {
         return org._id.toHexString();
       }
+      // Valid ObjectId format but no org found - throw immediately
+      throw new NotFoundException(
+        `Organization not found with ID: ${identifier}`,
+      );
     }
 
     // Try to find by taxId
@@ -116,7 +123,7 @@ export class OrgAdminService {
     }
 
     throw new NotFoundException(
-      `Organization not found with identifier: ${identifier}`,
+      `Organization not found with taxId: ${identifier}`,
     );
   }
 
@@ -140,8 +147,8 @@ export class OrgAdminService {
         { includeOrgDetails: options.includeOrgDetails },
       );
 
-      // Log audit event for data access
-      this.logger.log(
+      // Debug log for troubleshooting
+      this.logger.debug(
         `User orgs retrieved for user ${userId} (identifier: ${userIdentifier})`,
       );
 
@@ -257,8 +264,8 @@ export class OrgAdminService {
           membershipWithPerms.permissions || [];
       }
 
-      // Log audit event for data access
-      this.logger.log(
+      // Debug log for troubleshooting
+      this.logger.debug(
         `User roles/permissions retrieved for user ${userId} (identifier: ${userIdentifier})`,
       );
 
@@ -290,19 +297,13 @@ export class OrgAdminService {
     },
   ): Promise<GrantResult> {
     try {
-      // Resolve identifiers
+      // Resolve identifiers (this also validates they exist)
       const orgId = await this.resolveOrgIdentifier(orgIdentifier);
       const userId = await this.resolveUserIdentifier(userIdentifier);
 
       // Validate actor ID
       if (!Types.ObjectId.isValid(actorId)) {
         throw new BadRequestException('Invalid actor ID format');
-      }
-
-      // Validate organization exists (already validated by resolveOrgIdentifier, but let's get the document)
-      const org = await this.organizationRepository.findById(orgId);
-      if (!org) {
-        throw new NotFoundException(`Organization not found: ${orgId}`);
       }
 
       // Validate roles are valid MemberRole enum values
@@ -353,8 +354,9 @@ export class OrgAdminService {
         },
       );
 
-      this.logger.log(
-        `Grant operation completed: user=${userIdentifier}, org=${orgIdentifier}, roles=${roles.join(',')}, permissions=${permissions.join(',')}`,
+      // Debug log for troubleshooting
+      this.logger.debug(
+        `Grant operation completed: user=${userIdentifier}, org=${orgIdentifier}, roles=${roles?.join(',') || 'none'}, permissions=${permissions?.join(',') || 'none'}`,
       );
 
       // Access permissions from membership
