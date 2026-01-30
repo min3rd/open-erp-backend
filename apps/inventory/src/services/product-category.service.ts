@@ -1,4 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Schema as MongooseSchema } from 'mongoose';
 import { ProductCategoryRepository } from '../repositories/product-category.repository';
 import {
   CreateProductCategoryDto,
@@ -41,12 +42,17 @@ export class ProductCategoryService {
       }
     }
 
-    const data = {
+    const data: any = {
       ...dto,
-      createdBy: userId,
+      createdBy: new MongooseSchema.Types.ObjectId(userId),
       isActive: dto.isActive !== undefined ? dto.isActive : true,
       order: dto.order !== undefined ? dto.order : 0,
     };
+
+    // Convert parentId string to ObjectId if provided
+    if (dto.parentId) {
+      data.parentId = new MongooseSchema.Types.ObjectId(dto.parentId);
+    }
 
     return this.repository.create(data);
   }
@@ -186,7 +192,10 @@ export class ProductCategoryService {
     }
 
     // Validate parent if being changed
-    if (dto.parentId !== undefined && dto.parentId !== existing.parentId) {
+    if (
+      dto.parentId !== undefined &&
+      dto.parentId !== existing.parentId?.toString()
+    ) {
       if (dto.parentId) {
         // Check parent exists
         const parent = await this.repository.findById(dto.parentId);
@@ -225,8 +234,8 @@ export class ProductCategoryService {
     const oldPath = existing.path;
     const updated = await this.repository.update(id, {
       ...dto,
-      updatedBy: userId,
-    });
+      updatedBy: new MongooseSchema.Types.ObjectId(userId),
+    } as any);
 
     if (!updated) {
       throw new HttpException(

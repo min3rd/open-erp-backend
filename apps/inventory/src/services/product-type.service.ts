@@ -1,4 +1,5 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
+import { Schema as MongooseSchema } from 'mongoose';
 import { ProductTypeRepository } from '../repositories/product-type.repository';
 import {
   CreateProductTypeDto,
@@ -32,9 +33,9 @@ export class ProductTypeService {
 
     const data = {
       ...dto,
-      createdBy: userId,
+      createdBy: new MongooseSchema.Types.ObjectId(userId),
       isActive: dto.isActive !== undefined ? dto.isActive : true,
-    };
+    } as any;
 
     return this.repository.create(data);
   }
@@ -148,8 +149,8 @@ export class ProductTypeService {
 
     const updated = await this.repository.update(id, {
       ...dto,
-      updatedBy: userId,
-    });
+      updatedBy: new MongooseSchema.Types.ObjectId(userId),
+    } as any);
 
     if (!updated) {
       throw new HttpException(
