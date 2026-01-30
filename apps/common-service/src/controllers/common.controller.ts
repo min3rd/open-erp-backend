@@ -7,9 +7,9 @@ import {
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '@shared/authz';
 import { ok } from '@shared/response';
-import { getAllRoles, RoleMetadata } from '@shared/types/role.enum';
+import { getRolesByScope, RoleMetadata } from '@shared/types/role.enum';
 import {
-  getAllPermissions,
+  getPermissionsByScope,
   PermissionMetadata,
   formatPermissionName,
 } from '@shared/types/permission.enum';
@@ -51,8 +51,9 @@ export class CommonController {
               name: { type: 'string', example: 'Super Admin' },
               description: {
                 type: 'string',
-                example: 'Full system administrator',
+                example: 'Full system administrator with unrestricted access',
               },
+              scope: { type: 'string', example: 'global' },
             },
           },
         },
@@ -61,22 +62,18 @@ export class CommonController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getGlobalRoles() {
-    const roles = getAllRoles();
+    const roles = getRolesByScope('global');
 
     // Map enum values using metadata
-    const rolesData = roles
-      .filter((roleCode) => {
-        const meta = RoleMetadata[roleCode];
-        return meta && meta.scope === 'global';
-      })
-      .map((roleCode) => {
-        const meta = RoleMetadata[roleCode];
-        return {
-          code: roleCode,
-          name: meta.name,
-          description: meta.description,
-        };
-      });
+    const rolesData = roles.map((roleCode) => {
+      const meta = RoleMetadata[roleCode];
+      return {
+        code: roleCode,
+        name: meta.name,
+        description: meta.description,
+        scope: meta.scope,
+      };
+    });
 
     return ok(rolesData, 'Global roles retrieved successfully');
   }
@@ -114,8 +111,9 @@ export class CommonController {
               name: { type: 'string', example: 'User Create' },
               description: {
                 type: 'string',
-                example: 'Permission to create users',
+                example: 'Permission to create new users',
               },
+              scope: { type: 'string', example: 'global' },
             },
           },
         },
@@ -124,27 +122,23 @@ export class CommonController {
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
   async getGlobalPermissions() {
-    const permissions = getAllPermissions();
+    const permissions = getPermissionsByScope('global');
 
     // Map enum values using metadata
-    const permissionsData = permissions
-      .filter((permissionCode) => {
-        const meta = PermissionMetadata[permissionCode];
-        return meta && meta.scope === 'global';
-      })
-      .map((permissionCode) => {
-        const meta = PermissionMetadata[permissionCode];
-        const dotIndex = permissionCode.indexOf('.');
-        const resource = dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
-        const action = dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
-        return {
-          code: permissionCode,
-          resource,
-          action,
-          name: formatPermissionName(permissionCode),
-          description: meta.description,
-        };
-      });
+    const permissionsData = permissions.map((permissionCode) => {
+      const meta = PermissionMetadata[permissionCode];
+      const dotIndex = permissionCode.indexOf('.');
+      const resource = dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
+      const action = dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
+      return {
+        code: permissionCode,
+        resource,
+        action,
+        name: formatPermissionName(permissionCode),
+        description: meta.description,
+        scope: meta.scope,
+      };
+    });
 
     return ok(permissionsData, 'Global permissions retrieved successfully');
   }

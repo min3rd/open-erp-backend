@@ -17,11 +17,13 @@ describe('Common API Contract Tests', () => {
             code: 'SUPER_ADMIN',
             name: 'Super Admin',
             description: 'Full system administrator with unrestricted access',
+            scope: 'global',
           },
           {
             code: 'USER',
             name: 'User',
             description: 'Standard user with basic access',
+            scope: 'organization',
           },
         ],
       };
@@ -36,6 +38,7 @@ describe('Common API Contract Tests', () => {
       expect(response.data[0]).toHaveProperty('code');
       expect(response.data[0]).toHaveProperty('name');
       expect(response.data[0]).toHaveProperty('description');
+      expect(response.data[0]).toHaveProperty('scope');
     });
 
     it('should validate empty global roles response', () => {
@@ -66,6 +69,7 @@ describe('Common API Contract Tests', () => {
             action: 'create',
             name: 'User Create',
             description: 'Permission to create new users',
+            scope: 'global',
           },
           {
             code: 'organization.read',
@@ -73,6 +77,7 @@ describe('Common API Contract Tests', () => {
             action: 'read',
             name: 'Organization Read',
             description: 'Permission to view organization information',
+            scope: 'organization',
           },
         ],
       };
@@ -89,6 +94,7 @@ describe('Common API Contract Tests', () => {
       expect(response.data[0]).toHaveProperty('action');
       expect(response.data[0]).toHaveProperty('name');
       expect(response.data[0]).toHaveProperty('description');
+      expect(response.data[0]).toHaveProperty('scope');
     });
 
     it('should validate empty global permissions response', () => {
