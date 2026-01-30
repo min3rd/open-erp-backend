@@ -109,6 +109,7 @@ describe('AuthService - GetMe Integration Tests', () => {
             name: 'System Administrator',
             description: 'Full system access',
             scope: 'global',
+            status: 'active',
           },
           grantedAt: new Date('2024-01-01'),
         },
@@ -218,6 +219,7 @@ describe('AuthService - GetMe Integration Tests', () => {
             name: 'System Administrator',
             description: 'Full system access',
             scope: 'global',
+            status: 'active',
           },
           grantedAt: new Date('2024-01-01'),
         },
@@ -228,6 +230,7 @@ describe('AuthService - GetMe Integration Tests', () => {
             name: 'Organization Administrator',
             description: 'Organization level access',
             scope: 'organization',
+            status: 'active',
           },
           grantedAt: new Date('2024-01-01'),
         },
@@ -241,6 +244,65 @@ describe('AuthService - GetMe Integration Tests', () => {
       const result = await service.getMe(mockUserId);
 
       // Should only include the global role
+      expect(result.roles).toHaveLength(1);
+      expect(result.roles[0].code).toBe('SYSTEM_ADMIN');
+      expect(result.roles[0].id).toBe('507f1f77bcf86cd799439012');
+    });
+
+    it('should filter out inactive global roles', async () => {
+      mockRabbitMQClient.sendRPCRequest.mockImplementation(
+        (exchange, routingKey, method, params) => {
+          if (method === 'findUserById') {
+            return Promise.resolve({
+              id: mockUserId,
+              _id: mockUserId,
+              email: 'test@example.com',
+              username: 'testuser',
+              fullName: 'Test User',
+              avatarUrl: null,
+              status: 'active',
+              verifiedAt: new Date('2024-01-01'),
+              createdAt: new Date('2024-01-01'),
+            });
+          }
+          return Promise.resolve(null);
+        },
+      );
+
+      // Mock roles with active and inactive global roles
+      mockAuthorizationService.getUserRolesWithDetails.mockResolvedValue([
+        {
+          role: {
+            _id: new Types.ObjectId('507f1f77bcf86cd799439012'),
+            code: 'SYSTEM_ADMIN',
+            name: 'System Administrator',
+            description: 'Full system access',
+            scope: 'global',
+            status: 'active',
+          },
+          grantedAt: new Date('2024-01-01'),
+        },
+        {
+          role: {
+            _id: new Types.ObjectId('507f1f77bcf86cd799439014'),
+            code: 'DEPRECATED_ADMIN',
+            name: 'Deprecated Administrator',
+            description: 'Old admin role',
+            scope: 'global',
+            status: 'inactive',
+          },
+          grantedAt: new Date('2024-01-01'),
+        },
+      ]);
+
+      mockAuthorizationService.getEffectivePermissions.mockResolvedValue([
+        'users.create',
+        'users.read',
+      ]);
+
+      const result = await service.getMe(mockUserId);
+
+      // Should only include the active global role
       expect(result.roles).toHaveLength(1);
       expect(result.roles[0].code).toBe('SYSTEM_ADMIN');
       expect(result.roles[0].id).toBe('507f1f77bcf86cd799439012');
