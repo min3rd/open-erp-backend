@@ -215,4 +215,72 @@ export class OrganizationRepository {
       throw error;
     }
   }
+
+  /**
+   * List organizations with pagination, search, and sorting
+   */
+  async listWithPagination(options: {
+    q?: string;
+    page?: number;
+    limit?: number;
+    sort?: { field: string; order: 'asc' | 'desc' };
+    type?: OrganizationType;
+    status?: OrganizationStatus;
+  }): Promise<{
+    items: OrganizationDocument[];
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+  }> {
+    try {
+      const { q, page = 1, limit = 50, sort, type, status } = options;
+
+      const query: any = {};
+      if (type) query.type = type;
+      if (status) query.status = status;
+
+      // Text search or regex search
+      if (q) {
+        query.$or = [
+          { name: { $regex: q, $options: 'i' } },
+          { taxId: { $regex: q, $options: 'i' } },
+          { internationalName: { $regex: q, $options: 'i' } },
+        ];
+      }
+
+      const sortOption: any = {};
+      if (sort) {
+        sortOption[sort.field] = sort.order === 'asc' ? 1 : -1;
+      } else {
+        sortOption.createdAt = -1;
+      }
+
+      const skip = (page - 1) * limit;
+
+      const [items, total] = await Promise.all([
+        this.organizationModel
+          .find(query)
+          .sort(sortOption)
+          .skip(skip)
+          .limit(limit)
+          .exec(),
+        this.organizationModel.countDocuments(query).exec(),
+      ]);
+
+      return {
+        items,
+        total,
+        page,
+        limit,
+        totalPages: Math.ceil(total / limit),
+      };
+    } catch (error) {
+      this.logger.error(
+        `Error listing organizations with pagination: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
 }

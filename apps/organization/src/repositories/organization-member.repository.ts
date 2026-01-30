@@ -21,6 +21,7 @@ export interface CreateMemberDto {
 
 export interface UpdateMemberDto {
   roles?: MemberRole[];
+  permissions?: string[];
   status?: MemberStatus;
   leftAt?: Date;
   metadata?: Map<string, any>;
@@ -209,6 +210,115 @@ export class OrganizationMemberRepository {
     } catch (error) {
       this.logger.error(
         `Error counting members: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Find user memberships with organization details
+   */
+  async findUserOrgsWithDetails(
+    userId: string,
+    options: { includeOrgDetails?: boolean } = {},
+  ): Promise<OrganizationMemberDocument[]> {
+    try {
+      const filter: any = {
+        userId: new Types.ObjectId(userId),
+        status: MemberStatus.ACTIVE,
+      };
+      let query = this.memberModel.find(filter);
+
+      if (options.includeOrgDetails) {
+        query = query.populate('organizationId');
+      }
+
+      return await query.exec();
+    } catch (error) {
+      this.logger.error(
+        `Error finding user orgs with details: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Add roles and/or permissions to a member
+   */
+  async addRolesAndPermissions(
+    membershipId: string,
+    roles: MemberRole[],
+    permissions: string[],
+    updatedBy: Types.ObjectId,
+  ): Promise<OrganizationMemberDocument | null> {
+    try {
+      const update: any = {
+        updatedBy,
+      };
+
+      if (roles && roles.length > 0) {
+        update.$addToSet = { ...update.$addToSet, roles: { $each: roles } };
+      }
+
+      if (permissions && permissions.length > 0) {
+        update.$addToSet = {
+          ...update.$addToSet,
+          permissions: { $each: permissions },
+        };
+      }
+
+      return await this.memberModel
+        .findByIdAndUpdate(membershipId, update, { new: true })
+        .exec();
+    } catch (error) {
+      this.logger.error(
+        `Error adding roles and permissions: ${error.message}`,
+        error.stack,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Upsert membership: create if not exists, update roles/permissions if exists
+   */
+  async upsertMembership(
+    organizationId: string,
+    userId: string,
+    roles: MemberRole[],
+    permissions: string[],
+    createdBy: Types.ObjectId,
+  ): Promise<OrganizationMemberDocument> {
+    try {
+      const existingMember = await this.findByOrganizationAndUser(
+        organizationId,
+        userId,
+      );
+
+      if (existingMember) {
+        // Update existing membership
+        return (await this.addRolesAndPermissions(
+          existingMember._id.toString(),
+          roles,
+          permissions,
+          createdBy,
+        )) as OrganizationMemberDocument;
+      }
+
+      // Create new membership
+      return await this.create({
+        organizationId: new Types.ObjectId(organizationId),
+        userId: new Types.ObjectId(userId),
+        roles: roles.length > 0 ? roles : [MemberRole.MEMBER],
+        status: MemberStatus.ACTIVE,
+        joinedAt: new Date(),
+        createdBy,
+      });
+    } catch (error) {
+      this.logger.error(
+        `Error upserting membership: ${error.message}`,
         error.stack,
       );
       throw error;

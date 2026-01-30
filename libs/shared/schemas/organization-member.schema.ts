@@ -49,6 +49,12 @@ export class OrganizationMember extends Document {
   roles: MemberRole[];
 
   @Prop({
+    type: [String],
+    default: [],
+  })
+  permissions: string[];
+
+  @Prop({
     type: String,
     enum: Object.values(MemberStatus),
     default: MemberStatus.ACTIVE,
