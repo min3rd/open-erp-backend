@@ -94,6 +94,10 @@ export class UserAuditEventRepository {
       }
 
       // Text search on action, resource, and description
+      // Note: When using text search with sorting, we sort by the specified field
+      // rather than text relevance score. This provides more predictable ordering
+      // for users but means results aren't sorted by search relevance.
+      // Text search will still filter results appropriately.
       if (options.search) {
         query.$text = { $search: options.search };
       }
@@ -112,8 +116,16 @@ export class UserAuditEventRepository {
       // Parse sortBy (e.g., "createdAt:desc" or "action:asc")
       let sort: any = { createdAt: -1 }; // default sort
       if (options.sortBy) {
-        const [field, order] = options.sortBy.split(':');
-        sort = { [field]: order === 'asc' ? 1 : -1 };
+        const parts = options.sortBy.split(':');
+        if (parts.length === 2) {
+          const [field, order] = parts;
+          // Validate field and order
+          const allowedFields = ['createdAt', 'action', 'status'];
+          if (allowedFields.includes(field) && ['asc', 'desc'].includes(order)) {
+            sort = { [field]: order === 'asc' ? 1 : -1 };
+          }
+        }
+        // If invalid format, keep default sort
       }
 
       // Get total count
