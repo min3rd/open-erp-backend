@@ -27,6 +27,7 @@ import {
 import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types/permission.enum';
+import { Role } from '@shared/types/role.enum';
 import { ok, fetched, updated, paginated } from '@shared/response';
 
 interface AuthenticatedRequest {
@@ -450,25 +451,25 @@ export class OrgAdminController {
     // Organization-scoped roles
     const orgRoles = [
       {
-        code: 'ORGANIZATION_ADMIN',
+        code: Role.ORGANIZATION_ADMIN,
         name: 'Organization Admin',
         description: 'Organization administrator with full control',
         scope: 'organization',
       },
       {
-        code: 'TENANT_ADMIN',
+        code: Role.TENANT_ADMIN,
         name: 'Tenant Admin',
         description: 'Tenant administrator (legacy)',
         scope: 'organization',
       },
       {
-        code: 'MANAGER',
+        code: Role.MANAGER,
         name: 'Manager',
         description: 'Department or team manager',
         scope: 'organization',
       },
       {
-        code: 'USER',
+        code: Role.USER,
         name: 'User',
         description: 'Standard organization member',
         scope: 'organization',

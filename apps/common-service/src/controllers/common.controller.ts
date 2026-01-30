@@ -116,7 +116,9 @@ export class CommonController {
 
     // Map enum values to more user-friendly format
     const permissionsData = permissions.map((permissionCode) => {
-      const [resource, action] = permissionCode.split('.');
+      const dotIndex = permissionCode.indexOf('.');
+      const resource = dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
+      const action = dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
       return {
         code: permissionCode,
         resource,
@@ -192,6 +194,13 @@ export class CommonController {
       [Permission.USER_DELETE]: 'Permission to delete users',
       [Permission.USER_MANAGE]: 'Full user management permissions',
 
+      // Tenant Management (Legacy)
+      [Permission.TENANT_CREATE]: 'Permission to create tenants (legacy)',
+      [Permission.TENANT_READ]: 'Permission to view tenant information (legacy)',
+      [Permission.TENANT_UPDATE]: 'Permission to update tenant information (legacy)',
+      [Permission.TENANT_DELETE]: 'Permission to delete tenants (legacy)',
+      [Permission.TENANT_MANAGE]: 'Full tenant management permissions (legacy)',
+
       // Organization Management
       [Permission.ORGANIZATION_CREATE]: 'Permission to create organizations',
       [Permission.ORGANIZATION_READ]:
@@ -219,10 +228,51 @@ export class CommonController {
       [Permission.ROLE_MANAGE]: 'Full role management permissions',
       [Permission.ROLE_ASSIGN]: 'Permission to assign roles to users',
 
+      // Department Management
+      [Permission.DEPARTMENT_CREATE]: 'Permission to create departments',
+      [Permission.DEPARTMENT_READ]: 'Permission to view department information',
+      [Permission.DEPARTMENT_UPDATE]: 'Permission to update departments',
+      [Permission.DEPARTMENT_DELETE]: 'Permission to delete departments',
+      [Permission.DEPARTMENT_MANAGE]: 'Full department management permissions',
+
       // System Administration
       [Permission.SYSTEM_ADMIN]: 'Full system access',
       [Permission.SYSTEM_CONFIG]: 'System configuration access',
       [Permission.SYSTEM_LOGS]: 'View system logs',
+
+      // Order Management
+      [Permission.ORDER_CREATE]: 'Permission to create orders',
+      [Permission.ORDER_READ]: 'Permission to view order information',
+      [Permission.ORDER_UPDATE]: 'Permission to update orders',
+      [Permission.ORDER_DELETE]: 'Permission to delete orders',
+      [Permission.ORDER_APPROVE]: 'Permission to approve orders',
+      [Permission.ORDER_MANAGE]: 'Full order management permissions',
+
+      // Product Management
+      [Permission.PRODUCT_CREATE]: 'Permission to create products',
+      [Permission.PRODUCT_READ]: 'Permission to view product information',
+      [Permission.PRODUCT_UPDATE]: 'Permission to update products',
+      [Permission.PRODUCT_DELETE]: 'Permission to delete products',
+      [Permission.PRODUCT_MANAGE]: 'Full product management permissions',
+
+      // Product Type Management
+      [Permission.PRODUCT_TYPE_CREATE]: 'Permission to create product types',
+      [Permission.PRODUCT_TYPE_READ]: 'Permission to view product type information',
+      [Permission.PRODUCT_TYPE_UPDATE]: 'Permission to update product types',
+      [Permission.PRODUCT_TYPE_DELETE]: 'Permission to delete product types',
+      [Permission.MANAGE_PRODUCT_TYPE]: 'Full product type management permissions',
+
+      // Product Category Management
+      [Permission.PRODUCT_CATEGORY_CREATE]: 'Permission to create product categories',
+      [Permission.PRODUCT_CATEGORY_READ]: 'Permission to view product category information',
+      [Permission.PRODUCT_CATEGORY_UPDATE]: 'Permission to update product categories',
+      [Permission.PRODUCT_CATEGORY_DELETE]: 'Permission to delete product categories',
+      [Permission.MANAGE_PRODUCT_CATEGORY]: 'Full product category management permissions',
+
+      // Report Access
+      [Permission.REPORT_VIEW]: 'Permission to view reports',
+      [Permission.REPORT_EXPORT]: 'Permission to export reports',
+      [Permission.REPORT_MANAGE]: 'Full report management permissions',
 
       // Navigation Management
       [Permission.NAVIGATION_READ]: 'Permission to view navigation items',
