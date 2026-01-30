@@ -4,7 +4,8 @@ import {
   NotFoundException,
   BadRequestException,
 } from '@nestjs/common';
-import { Types } from 'mongoose';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model, Types } from 'mongoose';
 import { OrganizationRepository } from '../repositories/organization.repository';
 import { OrganizationMemberRepository } from '../repositories/organization-member.repository';
 import { AuditService } from './audit.service';
@@ -13,6 +14,9 @@ import {
   MemberRole,
   OrganizationDocument,
   OrganizationMemberDocument,
+  User,
+  UserDocument,
+  Organization,
 } from '@shared/schemas';
 import {
   UserOrgItemDto,
@@ -48,27 +52,97 @@ export class OrgAdminService {
     private readonly organizationRepository: OrganizationRepository,
     private readonly memberRepository: OrganizationMemberRepository,
     private readonly auditService: AuditService,
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    @InjectModel(Organization.name)
+    private organizationModel: Model<OrganizationDocument>,
   ) {}
 
   /**
+   * Resolve user identifier (userId, email, or username) to userId
+   * @param identifier - Can be userId, email, or username
+   * @returns The resolved userId
+   */
+  async resolveUserIdentifier(identifier: string): Promise<string> {
+    // First, check if it's a valid ObjectId
+    if (Types.ObjectId.isValid(identifier)) {
+      const user = await this.userModel.findById(identifier).exec();
+      if (user) {
+        return user._id.toHexString();
+      }
+    }
+
+    // Check if it's an email
+    if (identifier.includes('@')) {
+      const user = await this.userModel
+        .findOne({ email: identifier.toLowerCase() })
+        .exec();
+      if (user) {
+        return user._id.toHexString();
+      }
+      throw new NotFoundException(`User not found with email: ${identifier}`);
+    }
+
+    // Try to find by username
+    const user = await this.userModel.findOne({ username: identifier }).exec();
+    if (user) {
+      return user._id.toHexString();
+    }
+
+    throw new NotFoundException(
+      `User not found with identifier: ${identifier}`,
+    );
+  }
+
+  /**
+   * Resolve organization identifier (orgId or taxId) to orgId
+   * @param identifier - Can be orgId or taxId
+   * @returns The resolved orgId
+   */
+  async resolveOrgIdentifier(identifier: string): Promise<string> {
+    // First, check if it's a valid ObjectId
+    if (Types.ObjectId.isValid(identifier)) {
+      const org = await this.organizationModel.findById(identifier).exec();
+      if (org) {
+        return org._id.toHexString();
+      }
+    }
+
+    // Try to find by taxId
+    const org = await this.organizationModel
+      .findOne({ taxId: identifier })
+      .exec();
+    if (org) {
+      return org._id.toHexString();
+    }
+
+    throw new NotFoundException(
+      `Organization not found with identifier: ${identifier}`,
+    );
+  }
+
+  /**
    * Get organizations that a user belongs to, with their roles in each org
+   * @param userIdentifier - Can be userId, email, or username
    */
   async getUserOrgs(
-    userId: string,
+    userIdentifier: string,
     options: {
       includeRoles?: boolean;
       includeOrgDetails?: boolean;
     } = {},
   ): Promise<UserOrgItemDto[]> {
     try {
-      // Validate userId is a valid ObjectId
-      if (!Types.ObjectId.isValid(userId)) {
-        throw new BadRequestException('Invalid user ID format');
-      }
+      // Resolve user identifier to userId
+      const userId = await this.resolveUserIdentifier(userIdentifier);
 
       const memberships = await this.memberRepository.findUserOrgsWithDetails(
         userId,
         { includeOrgDetails: options.includeOrgDetails },
+      );
+
+      // Log audit event for data access
+      this.logger.log(
+        `User orgs retrieved for user ${userId} (identifier: ${userIdentifier})`,
       );
 
       return memberships.map((membership) => {
@@ -132,16 +206,22 @@ export class OrgAdminService {
 
   /**
    * Get roles and permissions for a user - both global and per-org
-   * If orgId is provided, returns only permissions for that org plus global
+   * If orgIdentifier is provided, returns only permissions for that org plus global
+   * @param userIdentifier - Can be userId, email, or username
+   * @param orgIdentifier - Can be orgId or taxId (optional)
    */
   async getUserRolesPermissions(
-    userId: string,
-    orgId?: string,
+    userIdentifier: string,
+    orgIdentifier?: string,
   ): Promise<UserRolesPermissionsResponseDto> {
     try {
-      // Validate userId
-      if (!Types.ObjectId.isValid(userId)) {
-        throw new BadRequestException('Invalid user ID format');
+      // Resolve user identifier to userId
+      const userId = await this.resolveUserIdentifier(userIdentifier);
+
+      // Resolve org identifier if provided
+      let orgId: string | undefined;
+      if (orgIdentifier) {
+        orgId = await this.resolveOrgIdentifier(orgIdentifier);
       }
 
       // Get all memberships for the user
@@ -177,6 +257,11 @@ export class OrgAdminService {
           membershipWithPerms.permissions || [];
       }
 
+      // Log audit event for data access
+      this.logger.log(
+        `User roles/permissions retrieved for user ${userId} (identifier: ${userIdentifier})`,
+      );
+
       return result;
     } catch (error) {
       const err = error as Error;
@@ -190,10 +275,12 @@ export class OrgAdminService {
 
   /**
    * Grant roles and/or permissions to a user in an organization
+   * @param orgIdentifier - Can be orgId or taxId
+   * @param userIdentifier - Can be userId, email, or username
    */
   async grantRolesToUserInOrg(
-    orgId: string,
-    userId: string,
+    orgIdentifier: string,
+    userIdentifier: string,
     roles: MemberRole[],
     permissions: string[],
     actorId: string,
@@ -203,18 +290,16 @@ export class OrgAdminService {
     },
   ): Promise<GrantResult> {
     try {
-      // Validate IDs
-      if (!Types.ObjectId.isValid(orgId)) {
-        throw new BadRequestException('Invalid organization ID format');
-      }
-      if (!Types.ObjectId.isValid(userId)) {
-        throw new BadRequestException('Invalid user ID format');
-      }
+      // Resolve identifiers
+      const orgId = await this.resolveOrgIdentifier(orgIdentifier);
+      const userId = await this.resolveUserIdentifier(userIdentifier);
+
+      // Validate actor ID
       if (!Types.ObjectId.isValid(actorId)) {
         throw new BadRequestException('Invalid actor ID format');
       }
 
-      // Validate organization exists
+      // Validate organization exists (already validated by resolveOrgIdentifier, but let's get the document)
       const org = await this.organizationRepository.findById(orgId);
       if (!org) {
         throw new NotFoundException(`Organization not found: ${orgId}`);
@@ -248,22 +333,28 @@ export class OrgAdminService {
         new Types.ObjectId(actorId),
       );
 
-      // Log audit event
+      // Log audit event with more details
       await this.auditService.logEvent(
         AuditEventType.MEMBER_ROLE_GRANTED,
         orgId,
         actorId,
         {
           targetUserId: userId,
+          targetUserIdentifier: userIdentifier,
+          organizationIdentifier: orgIdentifier,
           grantedRoles: roles,
           grantedPermissions: permissions,
           membershipId: String(membership._id),
         },
         {
-          description: `Roles/permissions granted to user ${userId} in org ${orgId}`,
+          description: `Roles/permissions granted to user ${userIdentifier} (${userId}) in org ${orgIdentifier} (${orgId})`,
           ipAddress: options?.ipAddress,
           userAgent: options?.userAgent,
         },
+      );
+
+      this.logger.log(
+        `Grant operation completed: user=${userIdentifier}, org=${orgIdentifier}, roles=${roles.join(',')}, permissions=${permissions.join(',')}`,
       );
 
       // Access permissions from membership
