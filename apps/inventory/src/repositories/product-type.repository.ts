@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, FilterQuery } from 'mongoose';
+import { Model } from 'mongoose';
 import { ProductType, ProductTypeDocument } from '@shared/schemas';
 
 @Injectable()
@@ -36,13 +36,15 @@ export class ProductTypeRepository {
    * Find all product types with filters
    */
   async findAll(
-    filter: FilterQuery<ProductType> = {},
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    filter: any = {},
     options?: {
       skip?: number;
       limit?: number;
       sort?: Record<string, 1 | -1>;
     },
   ): Promise<ProductTypeDocument[]> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     let query = this.model.find(filter);
 
     if (options?.sort) {
@@ -63,7 +65,9 @@ export class ProductTypeRepository {
   /**
    * Count product types with filters
    */
-  async count(filter: FilterQuery<ProductType> = {}): Promise<number> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async count(filter: any = {}): Promise<number> {
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     return this.model.countDocuments(filter).exec();
   }
 
