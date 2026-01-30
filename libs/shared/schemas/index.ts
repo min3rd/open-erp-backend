@@ -12,6 +12,8 @@ export * from './ward.schema';
 export * from './district.schema';
 export * from './warehouse-type.schema';
 export * from './product.schema';
+export * from './product-type.schema';
+export * from './product-category.schema';
 export * from './product-version.schema';
 export * from './inventory-stock.schema';
 export * from './inventory-transaction.schema';

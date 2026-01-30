@@ -68,6 +68,20 @@ export enum Permission {
   PRODUCT_DELETE = 'product.delete',
   PRODUCT_MANAGE = 'product.manage',
 
+  // Product Type Management
+  PRODUCT_TYPE_CREATE = 'product_type.create',
+  PRODUCT_TYPE_READ = 'product_type.read',
+  PRODUCT_TYPE_UPDATE = 'product_type.update',
+  PRODUCT_TYPE_DELETE = 'product_type.delete',
+  MANAGE_PRODUCT_TYPE = 'product_type.manage',
+
+  // Product Category Management
+  PRODUCT_CATEGORY_CREATE = 'product_category.create',
+  PRODUCT_CATEGORY_READ = 'product_category.read',
+  PRODUCT_CATEGORY_UPDATE = 'product_category.update',
+  PRODUCT_CATEGORY_DELETE = 'product_category.delete',
+  MANAGE_PRODUCT_CATEGORY = 'product_category.manage',
+
   // Report Access
   REPORT_VIEW = 'report.view',
   REPORT_EXPORT = 'report.export',
@@ -156,6 +170,18 @@ export const PermissionGroups = {
     Permission.PRODUCT_READ,
     Permission.PRODUCT_UPDATE,
     Permission.PRODUCT_DELETE,
+  ],
+  PRODUCT_TYPE_FULL: [
+    Permission.PRODUCT_TYPE_CREATE,
+    Permission.PRODUCT_TYPE_READ,
+    Permission.PRODUCT_TYPE_UPDATE,
+    Permission.PRODUCT_TYPE_DELETE,
+  ],
+  PRODUCT_CATEGORY_FULL: [
+    Permission.PRODUCT_CATEGORY_CREATE,
+    Permission.PRODUCT_CATEGORY_READ,
+    Permission.PRODUCT_CATEGORY_UPDATE,
+    Permission.PRODUCT_CATEGORY_DELETE,
   ],
   REPORT_FULL: [
     Permission.REPORT_VIEW,
