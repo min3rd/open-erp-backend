@@ -28,6 +28,9 @@ export const USER_NOT_FOUND = 'USER_0001';
 export const USER_ALREADY_EXISTS = 'USER_0002';
 export const USER_INVALID_STATUS = 'USER_0003';
 export const USER_PROFILE_INCOMPLETE = 'USER_0004';
+export const USER_ALREADY_BLOCKED = 'USER_0005';
+export const USER_NOT_BLOCKED = 'USER_0006';
+export const USER_IDENTIFIER_AMBIGUOUS = 'USER_0007';
 
 // Validation errors
 export const VALIDATION_FAILED = 'VALIDATION_0001';

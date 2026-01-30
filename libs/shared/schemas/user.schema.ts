@@ -168,6 +168,51 @@ export class User extends Document {
   lastLoginAt?: Date;
 
   @Prop({
+    type: Boolean,
+    default: false,
+    index: true,
+  })
+  blocked?: boolean;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  blockedAt?: Date;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'User',
+    default: null,
+  })
+  blockedBy?: MongooseSchema.Types.ObjectId;
+
+  @Prop({
+    type: String,
+    default: null,
+  })
+  blockedReason?: string;
+
+  @Prop({
+    type: Number,
+    default: 0,
+    index: true,
+  })
+  tokenVersion?: number;
+
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  forcePasswordChange?: boolean;
+
+  @Prop({
+    type: Date,
+    default: null,
+  })
+  passwordChangedAt?: Date;
+
+  @Prop({
     type: Map,
     of: String,
     default: {},
