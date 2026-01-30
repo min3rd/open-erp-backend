@@ -5,9 +5,11 @@ import { UserEventController } from './user-event.controller';
 import { UserManagementController } from './controllers/user-management.controller';
 import { OrganizationMembershipController } from './controllers/organization-membership.controller';
 import { SystemAdminController } from './controllers/system-admin.controller';
+import { AdminUserController } from './controllers/admin-user.controller';
 import { UserService } from './user.service';
 import { UserManagementService } from './services/user-management.service';
 import { OrganizationMembershipService } from './services/organization-membership.service';
+import { AdminUserService } from './services/admin-user.service';
 import { RabbitMQClientModule } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -56,11 +58,13 @@ import { RoleRepository } from './repositories/role.repository';
     UserManagementController,
     OrganizationMembershipController,
     SystemAdminController,
+    AdminUserController,
   ],
   providers: [
     UserService,
     UserManagementService,
     OrganizationMembershipService,
+    AdminUserService,
     UserRepository,
     OrganizationMemberRepository,
     RoleRepository,
