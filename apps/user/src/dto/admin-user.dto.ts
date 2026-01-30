@@ -1,10 +1,5 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import {
-  IsString,
-  IsOptional,
-  MinLength,
-  IsBoolean,
-} from 'class-validator';
+import { IsString, IsOptional, MinLength, IsBoolean } from 'class-validator';
 
 /**
  * DTO for admin password reset operation

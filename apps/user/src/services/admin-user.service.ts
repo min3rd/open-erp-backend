@@ -1,4 +1,10 @@
-import { Injectable, Logger, HttpException, HttpStatus, Inject } from '@nestjs/common';
+import {
+  Injectable,
+  Logger,
+  HttpException,
+  HttpStatus,
+  Inject,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { User, UserDocument } from '@shared/schemas';
@@ -46,10 +52,10 @@ export class AdminUserService {
   async findUserByIdentifier(identifier: string): Promise<UserDocument | null> {
     try {
       const normalizedIdentifier = identifier.trim();
-      
+
       // Check if identifier is an email (contains @)
       const isEmail = normalizedIdentifier.includes('@');
-      
+
       let query;
       if (isEmail) {
         // For email, use case-insensitive search
@@ -60,9 +66,11 @@ export class AdminUserService {
       }
 
       const user = await this.userModel.findOne(query).exec();
-      
+
       if (!user) {
-        this.logger.warn(`User not found with identifier: ${normalizedIdentifier}`);
+        this.logger.warn(
+          `User not found with identifier: ${normalizedIdentifier}`,
+        );
         throw new HttpException(
           error(USER_NOT_FOUND, 'User not found', {
             identifier: normalizedIdentifier,
@@ -76,7 +84,10 @@ export class AdminUserService {
       if (error instanceof HttpException) {
         throw error;
       }
-      this.logger.error(`Error finding user by identifier: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error finding user by identifier: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -128,7 +139,11 @@ export class AdminUserService {
 
       // Revoke refresh tokens if requested
       if (sessionsRevoked) {
-        await this.revokeUserRefreshTokens(user._id.toString(), adminUserId, dto.reason);
+        await this.revokeUserRefreshTokens(
+          user._id.toString(),
+          adminUserId,
+          dto.reason,
+        );
       }
 
       // Send email notification if requested
@@ -171,7 +186,10 @@ export class AdminUserService {
       if (error instanceof HttpException) {
         throw error;
       }
-      this.logger.error(`Error resetting user password: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error resetting user password: ${error.message}`,
+        error.stack,
+      );
       throw new HttpException(
         error('SYS_0001', 'Failed to reset user password'),
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -243,7 +261,10 @@ export class AdminUserService {
       if (error instanceof HttpException) {
         throw error;
       }
-      this.logger.error(`Error revoking user sessions: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error revoking user sessions: ${error.message}`,
+        error.stack,
+      );
       throw new HttpException(
         error('SYS_0001', 'Failed to revoke user sessions'),
         HttpStatus.INTERNAL_SERVER_ERROR,
@@ -298,7 +319,11 @@ export class AdminUserService {
 
       // Revoke refresh tokens if needed
       if (sessionsRevoked) {
-        await this.revokeUserRefreshTokens(user._id.toString(), adminUserId, dto.reason);
+        await this.revokeUserRefreshTokens(
+          user._id.toString(),
+          adminUserId,
+          dto.reason,
+        );
       }
 
       // Send email notification if requested
@@ -542,7 +567,9 @@ export class AdminUserService {
   /**
    * Send account unblocked email
    */
-  private async sendAccountUnblockedEmail(user: UserDocument): Promise<boolean> {
+  private async sendAccountUnblockedEmail(
+    user: UserDocument,
+  ): Promise<boolean> {
     try {
       this.notificationClient.emit('email.send', {
         to: user.email,
@@ -569,7 +596,10 @@ export class AdminUserService {
     try {
       this.notificationClient.emit(eventName, data);
     } catch (error) {
-      this.logger.error(`Error emitting audit event: ${error.message}`, error.stack);
+      this.logger.error(
+        `Error emitting audit event: ${error.message}`,
+        error.stack,
+      );
     }
   }
 }

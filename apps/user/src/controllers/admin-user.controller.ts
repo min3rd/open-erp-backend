@@ -86,10 +86,13 @@ export class AdminUserController {
     status: 403,
     description: 'Insufficient permissions',
   })
-  @Permissions([Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS], {
-    mode: 'any',
-    scope: 'global',
-  })
+  @Permissions(
+    [Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS],
+    {
+      mode: 'any',
+      scope: 'global',
+    },
+  )
   async resetPassword(
     @Param('identifier') identifier: string,
     @Body() dto: AdminResetPasswordDto,
@@ -144,10 +147,13 @@ export class AdminUserController {
     status: 403,
     description: 'Insufficient permissions',
   })
-  @Permissions([Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS], {
-    mode: 'any',
-    scope: 'global',
-  })
+  @Permissions(
+    [Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS],
+    {
+      mode: 'any',
+      scope: 'global',
+    },
+  )
   async revokeSessions(
     @Param('identifier') identifier: string,
     @Body() dto: AdminRevokeSessionsDto,
@@ -208,10 +214,13 @@ export class AdminUserController {
     status: 403,
     description: 'Insufficient permissions',
   })
-  @Permissions([Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS], {
-    mode: 'any',
-    scope: 'global',
-  })
+  @Permissions(
+    [Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS],
+    {
+      mode: 'any',
+      scope: 'global',
+    },
+  )
   async blockUser(
     @Param('identifier') identifier: string,
     @Body() dto: AdminBlockUserDto,
@@ -269,10 +278,13 @@ export class AdminUserController {
     status: 403,
     description: 'Insufficient permissions',
   })
-  @Permissions([Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS], {
-    mode: 'any',
-    scope: 'global',
-  })
+  @Permissions(
+    [Permission.MANAGE_USERS_AND_ORGS, Permission.MANAGE_ORG_USERS],
+    {
+      mode: 'any',
+      scope: 'global',
+    },
+  )
   async unblockUser(
     @Param('identifier') identifier: string,
     @Body() dto: AdminUnblockUserDto,
