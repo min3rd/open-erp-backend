@@ -9,6 +9,7 @@ import {
   Query,
   HttpStatus,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ProductTypeService } from '../services/product-type.service';
 import {
@@ -30,15 +32,24 @@ import {
   paginated,
   error,
 } from '@shared/response';
+import {
+  JwtAuthGuard,
+  PermissionsGuard,
+  CurrentUser,
+  UserContext,
+} from '@shared/authz';
+import { Permissions } from '@shared/authz/decorators';
+import { Permission } from '@shared/types';
 
 @ApiTags('product-types')
 @Controller('config/product-types')
-// @UseGuards(AuthGuard, PermissionsGuard) // TODO: Implement auth guard
-// @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiBearerAuth()
 export class ProductTypeController {
   constructor(private readonly productTypeService: ProductTypeService) {}
 
   @Post()
+  @Permissions([Permission.MANAGE_PRODUCT_TYPE])
   @ApiOperation({
     summary: 'Create a new product type',
     description: 'Requires MANAGE_PRODUCT_TYPE permission',
@@ -70,13 +81,14 @@ export class ProductTypeController {
   })
   @ApiResponse({ status: 400, description: 'Bad request - validation error' })
   @ApiResponse({ status: 409, description: 'Conflict - code already exists' })
-  async create(@Body() createDto: CreateProductTypeDto) {
+  async create(
+    @Body() createDto: CreateProductTypeDto,
+    @CurrentUser() user: UserContext,
+  ) {
     try {
-      // TODO: Get userId from authenticated user
-      const userId = '000000000000000000000000'; // Placeholder
       const productType = await this.productTypeService.create(
         createDto,
-        userId,
+        user.userId,
       );
       return created(productType, 'Product type created successfully');
     } catch (err) {
@@ -93,6 +105,7 @@ export class ProductTypeController {
   }
 
   @Get()
+  @Permissions([Permission.PRODUCT_TYPE_READ])
   @ApiOperation({
     summary: 'Get all product types with filters',
     description: 'Requires PRODUCT_TYPE_READ permission',
@@ -131,6 +144,7 @@ export class ProductTypeController {
   }
 
   @Get('active')
+  @Permissions([Permission.PRODUCT_TYPE_READ])
   @ApiOperation({
     summary: 'Get all active product types',
     description: 'Returns only active product types for dropdown/selection',
@@ -156,6 +170,7 @@ export class ProductTypeController {
   }
 
   @Get(':id')
+  @Permissions([Permission.PRODUCT_TYPE_READ])
   @ApiOperation({
     summary: 'Get product type by ID',
     description: 'Requires PRODUCT_TYPE_READ permission',
@@ -184,6 +199,7 @@ export class ProductTypeController {
   }
 
   @Put(':id')
+  @Permissions([Permission.MANAGE_PRODUCT_TYPE])
   @ApiOperation({
     summary: 'Update product type',
     description: 'Requires MANAGE_PRODUCT_TYPE permission',
@@ -198,14 +214,13 @@ export class ProductTypeController {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateProductTypeDto,
+    @CurrentUser() user: UserContext,
   ) {
     try {
-      // TODO: Get userId from authenticated user
-      const userId = '000000000000000000000000'; // Placeholder
       const productType = await this.productTypeService.update(
         id,
         updateDto,
-        userId,
+        user.userId,
       );
       return updated(productType, 'Product type updated successfully');
     } catch (err) {
@@ -222,6 +237,7 @@ export class ProductTypeController {
   }
 
   @Delete(':id')
+  @Permissions([Permission.MANAGE_PRODUCT_TYPE])
   @ApiOperation({
     summary: 'Delete product type (soft delete)',
     description: 'Requires MANAGE_PRODUCT_TYPE permission',

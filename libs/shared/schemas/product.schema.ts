@@ -99,6 +99,53 @@ export class CategorySnapshot {
 }
 
 /**
+ * Product Type snapshot (embedded data)
+ * Stores full type information for tracing
+ */
+@Schema({ _id: false })
+export class ProductTypeSnapshot {
+  @Prop({ type: MongooseSchema.Types.ObjectId })
+  id: MongooseSchema.Types.ObjectId;
+
+  @Prop({ required: true, type: String })
+  code: string;
+
+  @Prop({ required: true, type: String })
+  name: string;
+
+  @Prop({ type: String })
+  description?: string;
+
+  @Prop({ type: Boolean })
+  isActive?: boolean;
+}
+
+/**
+ * Product Category snapshot (embedded data)
+ * Stores full category information for tracing
+ */
+@Schema({ _id: false })
+export class ProductCategorySnapshot {
+  @Prop({ type: MongooseSchema.Types.ObjectId })
+  id: MongooseSchema.Types.ObjectId;
+
+  @Prop({ required: true, type: String })
+  code: string;
+
+  @Prop({ required: true, type: String })
+  name: string;
+
+  @Prop({ type: String })
+  path?: string;
+
+  @Prop({ type: String })
+  description?: string;
+
+  @Prop({ type: Boolean })
+  isActive?: boolean;
+}
+
+/**
  * Media item sub-schema (images, videos, documents)
  */
 @Schema({ _id: false })
@@ -223,6 +270,11 @@ export class Product extends Document {
   typeId?: MongooseSchema.Types.ObjectId;
 
   @Prop({
+    type: ProductTypeSnapshot,
+  })
+  typeSnapshot?: ProductTypeSnapshot;
+
+  @Prop({
     type: CategorySnapshot,
   })
   category?: CategorySnapshot;
@@ -233,6 +285,11 @@ export class Product extends Document {
     index: true,
   })
   categoryId?: MongooseSchema.Types.ObjectId;
+
+  @Prop({
+    type: ProductCategorySnapshot,
+  })
+  categorySnapshot?: ProductCategorySnapshot;
 
   @Prop({
     type: String,
