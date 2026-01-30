@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { ProvinceRepository } from '../repositories/province.repository';
 import { Province } from '@shared/schemas';
@@ -18,6 +19,8 @@ import { FeatureCollection } from 'geojson';
 
 @Injectable()
 export class ProvinceService {
+  private readonly logger = new Logger(ProvinceService.name);
+
   constructor(
     private readonly provinceRepository: ProvinceRepository,
     private readonly geometryUtilService: GeometryUtilService,
@@ -66,22 +69,31 @@ export class ProvinceService {
   }
 
   async create(data: Partial<Province>): Promise<Province> {
-    return this.provinceRepository.create(data);
+    this.logger.log(`Creating province: ${data.code}`);
+    const province = await this.provinceRepository.create(data);
+    this.logger.log(`Created province: ${province.code}`);
+    return province;
   }
 
   async update(code: string, data: Partial<Province>): Promise<Province> {
+    this.logger.log(`Updating province: ${code}`);
     const province = await this.provinceRepository.update(code, data);
     if (!province) {
+      this.logger.warn(`Province not found for update: ${code}`);
       throw new NotFoundException(`Province with code ${code} not found`);
     }
+    this.logger.log(`Updated province: ${code}`);
     return province;
   }
 
   async delete(code: string): Promise<void> {
+    this.logger.log(`Deleting province: ${code}`);
     const province = await this.provinceRepository.delete(code);
     if (!province) {
+      this.logger.warn(`Province not found for deletion: ${code}`);
       throw new NotFoundException(`Province with code ${code} not found`);
     }
+    this.logger.log(`Deleted province: ${code}`);
   }
 
   /**
@@ -125,6 +137,7 @@ export class ProvinceService {
     geometryMeta?: GeometryMeta,
     simplificationTolerance?: number,
   ): Promise<Province> {
+    this.logger.log(`Updating geometry for province: ${code}`);
     const province = await this.findByCode(code);
 
     // Validate and process geometry

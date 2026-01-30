@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ForbiddenException,
+  Logger,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { AddressRepository } from '../repositories/address.repository';
@@ -14,6 +15,8 @@ import { CreateAddressDto, UpdateAddressDto } from '../dto/address.dto';
 
 @Injectable()
 export class AddressService {
+  private readonly logger = new Logger(AddressService.name);
+
   constructor(
     private readonly addressRepository: AddressRepository,
     private readonly provinceRepository: ProvinceRepository,
@@ -31,6 +34,8 @@ export class AddressService {
     const { page = 1, limit = 20, scope, userId, organizationId } = options;
     const skip = (page - 1) * limit;
 
+    this.logger.debug(`Finding addresses with options: ${JSON.stringify({ page, limit, scope, userId, organizationId })}`);
+
     const filter: any = { isDeleted: false };
 
     if (scope) {
@@ -43,22 +48,29 @@ export class AddressService {
       filter.organizationId = organizationId;
     }
 
-    return this.addressRepository.findAll(filter, {
+    const result = await this.addressRepository.findAll(filter, {
       skip,
       limit,
       sort: { isDefault: -1, createdAt: -1 },
     });
+
+    this.logger.log(`Found ${result.total} addresses`);
+    return result;
   }
 
   async findById(id: string): Promise<Address> {
+    this.logger.debug(`Finding address by ID: ${id}`);
     const address = await this.addressRepository.findById(id);
     if (!address) {
+      this.logger.warn(`Address not found: ${id}`);
       throw new NotFoundException(`Address with ID ${id} not found`);
     }
     return address;
   }
 
   async create(dto: CreateAddressDto): Promise<Address> {
+    this.logger.log(`Creating address for scope: ${dto.scope}`);
+
     // Validate scope-specific requirements
     if (dto.scope === AddressScope.GLOBAL && !dto.userId) {
       throw new BadRequestException(
@@ -133,10 +145,13 @@ export class AddressService {
       addressData.organizationId = new Types.ObjectId(dto.organizationId);
     }
 
-    return this.addressRepository.create(addressData);
+    const address = await this.addressRepository.create(addressData);
+    this.logger.log(`Created address: ${address._id}`);
+    return address;
   }
 
   async update(id: string, dto: UpdateAddressDto): Promise<Address> {
+    this.logger.log(`Updating address: ${id}`);
     const existingAddress = await this.findById(id);
 
     // Validate province code if provided
@@ -196,15 +211,21 @@ export class AddressService {
 
     const updated = await this.addressRepository.update(id, dto);
     if (!updated) {
+      this.logger.warn(`Address not found after update: ${id}`);
       throw new NotFoundException(`Address with ID ${id} not found`);
     }
+    this.logger.log(`Updated address: ${id}`);
     return updated;
   }
 
   async delete(id: string): Promise<void> {
+    this.logger.log(`Deleting address: ${id}`);
     const address = await this.addressRepository.softDelete(id);
     if (!address) {
+      this.logger.warn(`Address not found for deletion: ${id}`);
       throw new NotFoundException(`Address with ID ${id} not found`);
     }
+    this.logger.log(`Deleted address: ${id}`);
   }
 }
+

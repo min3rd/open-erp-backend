@@ -2,6 +2,7 @@ import {
   Injectable,
   NotFoundException,
   BadRequestException,
+  Logger,
 } from '@nestjs/common';
 import { InjectConnection } from '@nestjs/mongoose';
 import { Connection, Types } from 'mongoose';
@@ -17,6 +18,8 @@ import { InventoryTransactionType, TransactionStatus } from '@shared/constants';
 
 @Injectable()
 export class InventoryService {
+  private readonly logger = new Logger(InventoryService.name);
+
   constructor(
     @InjectConnection() private readonly connection: Connection,
     private readonly stockRepository: InventoryStockRepository,
@@ -127,6 +130,7 @@ export class InventoryService {
   }
 
   async createTransaction(createDto: CreateTransactionDto) {
+    this.logger.log(`Creating transaction type: ${createDto.type} for product: ${createDto.productId}`);
     const session = await this.connection.startSession();
     session.startTransaction();
 
@@ -211,10 +215,12 @@ export class InventoryService {
 
       await session.commitTransaction();
 
+      this.logger.log(`Transaction completed: ${transaction.transactionNumber}`);
       return await this.transactionRepository.findById(
         transaction._id.toString(),
       );
     } catch (error) {
+      this.logger.error(`Transaction failed: ${error.message}`, error.stack);
       await session.abortTransaction();
       throw error;
     } finally {
@@ -266,6 +272,7 @@ export class InventoryService {
   }
 
   async adjustStock(adjustmentDto: StockAdjustmentDto) {
+    this.logger.log(`Adjusting stock for product: ${adjustmentDto.productId} in warehouse: ${adjustmentDto.warehouseId}`);
     const session = await this.connection.startSession();
     session.startTransaction();
 
@@ -339,8 +346,10 @@ export class InventoryService {
 
       await session.commitTransaction();
 
+      this.logger.log(`Stock adjusted: ${adjustmentDto.productId}, new quantity: ${adjustmentDto.newQuantity}`);
       return await this.stockRepository.findById(stock._id.toString());
     } catch (error) {
+      this.logger.error(`Stock adjustment failed: ${error.message}`, error.stack);
       await session.abortTransaction();
       throw error;
     } finally {
@@ -349,6 +358,7 @@ export class InventoryService {
   }
 
   async transferStock(transferDto: TransferStockDto) {
+    this.logger.log(`Transferring stock from ${transferDto.sourceWarehouseId} to ${transferDto.destinationWarehouseId}`);
     // Create transfer transaction
     const createDto: CreateTransactionDto = {
       type: InventoryTransactionType.TRANSFER,

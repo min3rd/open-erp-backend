@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { Types } from 'mongoose';
 import { ProductRepository } from '../repositories/product.repository';
@@ -12,12 +13,15 @@ import { ProductScope } from '@shared/constants';
 
 @Injectable()
 export class ProductService {
+  private readonly logger = new Logger(ProductService.name);
+
   constructor(
     private readonly productRepository: ProductRepository,
     private readonly versionRepository: ProductVersionRepository,
   ) {}
 
   async create(createDto: CreateProductDto) {
+    this.logger.log(`Creating product with SKU: ${createDto.sku}`);
     // Validate scope and organizationId
     if (
       createDto.scope === ProductScope.ORGANIZATION &&
@@ -60,6 +64,7 @@ export class ProductService {
       'Initial version',
     );
 
+    this.logger.log(`Created product: ${product._id} (SKU: ${product.sku})`);
     return product;
   }
 
@@ -120,6 +125,7 @@ export class ProductService {
   }
 
   async update(id: string, updateDto: UpdateProductDto) {
+    this.logger.log(`Updating product: ${id}`);
     const product = await this.productRepository.findById(id);
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -159,10 +165,12 @@ export class ProductService {
       changedFields,
     );
 
+    this.logger.log(`Updated product: ${id} to version ${newVersion}`);
     return updatedProduct;
   }
 
   async softDelete(id: string) {
+    this.logger.log(`Soft deleting product: ${id}`);
     const product = await this.productRepository.findById(id);
     if (!product) {
       throw new NotFoundException('Product not found');
@@ -248,6 +256,7 @@ export class ProductService {
   }
 
   async rollbackToVersion(productId: string, version: number, userId: string) {
+    this.logger.log(`Rolling back product ${productId} to version ${version}`);
     const versionDoc = await this.versionRepository.findByVersion(
       productId,
       version,

@@ -1,4 +1,4 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import * as turf from '@turf/turf';
 import { validate as validateGeoJSON } from 'geojson-validation';
 import { FeatureCollection, Feature } from 'geojson';
@@ -9,6 +9,7 @@ import { AdminGeometry, Centroid, BBox } from '@shared/types/geometry.types';
  */
 @Injectable()
 export class GeometryUtilService {
+  private readonly logger = new Logger(GeometryUtilService.name);
   /**
    * Validate GeoJSON geometry
    */
@@ -139,6 +140,7 @@ export class GeometryUtilService {
     bbox: BBox;
     areaSqKm: number;
   } {
+    this.logger.debug(`Processing geometry of type: ${geometry.type}`);
     // Validate
     this.validateGeometry(geometry);
 
@@ -248,7 +250,10 @@ export class GeometryUtilService {
     const jsonString = JSON.stringify(data);
     const sizeInMB = Buffer.byteLength(jsonString, 'utf8') / (1024 * 1024);
 
+    this.logger.debug(`Validating file size: ${sizeInMB.toFixed(2)}MB (max: ${maxSizeInMB}MB)`);
+
     if (sizeInMB > maxSizeInMB) {
+      this.logger.warn(`File size exceeds maximum: ${sizeInMB.toFixed(2)}MB > ${maxSizeInMB}MB`);
       throw new BadRequestException(
         `File size exceeds maximum allowed size of ${maxSizeInMB}MB. Current size: ${sizeInMB.toFixed(2)}MB`,
       );

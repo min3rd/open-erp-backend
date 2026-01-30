@@ -1,10 +1,12 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, Logger } from '@nestjs/common';
 import { DistrictRepository } from '../repositories/district.repository';
 import { District } from '@shared/schemas';
 import { BBox } from '@shared/types/geometry.types';
 
 @Injectable()
 export class DistrictService {
+  private readonly logger = new Logger(DistrictService.name);
+
   constructor(private readonly districtRepository: DistrictRepository) {}
 
   async findAll(options: {
@@ -24,6 +26,8 @@ export class DistrictService {
       isLegacy,
     } = options;
     const skip = (page - 1) * limit;
+
+    this.logger.debug(`Finding districts with options: ${JSON.stringify({ page, limit, provinceCode, q })}`);
 
     const filter: any = {};
     if (provinceCode) {
@@ -48,40 +52,53 @@ export class DistrictService {
   }
 
   async findByCode(code: string): Promise<District> {
+    this.logger.debug(`Finding district by code: ${code}`);
     const district = await this.districtRepository.findByCode(code);
     if (!district) {
+      this.logger.warn(`District not found: ${code}`);
       throw new NotFoundException(`District with code ${code} not found`);
     }
     return district;
   }
 
   async findByProvinceCode(provinceCode: string): Promise<District[]> {
+    this.logger.debug(`Finding districts by province code: ${provinceCode}`);
     return this.districtRepository.findByProvinceCode(provinceCode);
   }
 
   async create(data: Partial<District>): Promise<District> {
-    return this.districtRepository.create(data);
+    this.logger.log(`Creating district: ${data.code}`);
+    const district = await this.districtRepository.create(data);
+    this.logger.log(`Created district: ${district.code}`);
+    return district;
   }
 
   async update(code: string, data: Partial<District>): Promise<District> {
+    this.logger.log(`Updating district: ${code}`);
     const district = await this.districtRepository.update(code, data);
     if (!district) {
+      this.logger.warn(`District not found for update: ${code}`);
       throw new NotFoundException(`District with code ${code} not found`);
     }
+    this.logger.log(`Updated district: ${code}`);
     return district;
   }
 
   async delete(code: string): Promise<void> {
+    this.logger.log(`Deleting district: ${code}`);
     const district = await this.districtRepository.delete(code);
     if (!district) {
+      this.logger.warn(`District not found for deletion: ${code}`);
       throw new NotFoundException(`District with code ${code} not found`);
     }
+    this.logger.log(`Deleted district: ${code}`);
   }
 
   /**
    * Find districts within bounding box
    */
   async findWithinBBox(bbox: BBox): Promise<District[]> {
+    this.logger.debug(`Finding districts within bbox: ${JSON.stringify(bbox)}`);
     return this.districtRepository.findWithinBBox(bbox);
   }
 
@@ -93,6 +110,7 @@ export class DistrictService {
     latitude: number,
     maxDistanceMeters?: number,
   ): Promise<District[]> {
+    this.logger.debug(`Finding districts near point: [${longitude}, ${latitude}]`);
     return this.districtRepository.findNearPoint(
       longitude,
       latitude,
@@ -100,3 +118,4 @@ export class DistrictService {
     );
   }
 }
+

@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { GeometryVersion, GeometryVersionDocument } from '@shared/schemas';
@@ -9,6 +9,8 @@ import { AdminGeometry, GeometryMeta } from '@shared/types/geometry.types';
  */
 @Injectable()
 export class GeometryVersionService {
+  private readonly logger = new Logger(GeometryVersionService.name);
+
   constructor(
     @InjectModel(GeometryVersion.name)
     private readonly geometryVersionModel: Model<GeometryVersionDocument>,
@@ -26,6 +28,7 @@ export class GeometryVersionService {
     changeDescription?: string,
     geometryMeta?: GeometryMeta,
   ): Promise<GeometryVersion> {
+    this.logger.log(`Creating geometry version ${version} for ${entityType}:${entityCode}`);
     const versionDoc = new this.geometryVersionModel({
       entityType,
       entityCode,
@@ -91,8 +94,10 @@ export class GeometryVersionService {
     entityType: 'province' | 'district' | 'ward',
     entityCode: string,
   ): Promise<void> {
+    this.logger.log(`Deleting all geometry versions for ${entityType}:${entityCode}`);
     await this.geometryVersionModel
       .deleteMany({ entityType, entityCode })
       .exec();
+    this.logger.log(`Deleted geometry versions for ${entityType}:${entityCode}`);
   }
 }

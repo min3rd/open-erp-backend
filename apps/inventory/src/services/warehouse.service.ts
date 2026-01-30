@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  Logger,
 } from '@nestjs/common';
 import { WarehouseRepository } from '../repositories/warehouse.repository';
 import {
@@ -14,6 +15,8 @@ import { WarehouseDocument } from '@shared/schemas';
 
 @Injectable()
 export class WarehouseService {
+  private readonly logger = new Logger(WarehouseService.name);
+
   constructor(private readonly warehouseRepository: WarehouseRepository) {}
 
   /**
@@ -23,6 +26,7 @@ export class WarehouseService {
     createDto: CreateWarehouseDto,
     userId: string,
   ): Promise<WarehouseDocument> {
+    this.logger.log(`Creating warehouse: ${createDto.code}`);
     // Validate province exists
     const provinceExists = await this.warehouseRepository.provinceExists(
       createDto.province.code,
@@ -100,14 +104,18 @@ export class WarehouseService {
     }
 
     try {
-      return await this.warehouseRepository.create(createDto, userId);
+      const warehouse = await this.warehouseRepository.create(createDto, userId);
+      this.logger.log(`Created warehouse: ${warehouse._id} (${warehouse.code})`);
+      return warehouse;
     } catch (error: any) {
       // Handle MongoDB duplicate key error
       if (error.code === 11000) {
+        this.logger.warn(`Duplicate warehouse code: ${createDto.code}`);
         throw new ConflictException(
           `Warehouse with code ${createDto.code} already exists`,
         );
       }
+      this.logger.error(`Failed to create warehouse: ${error.message}`, error.stack);
       throw error;
     }
   }
@@ -157,6 +165,7 @@ export class WarehouseService {
     updateDto: UpdateWarehouseDto,
     userId: string,
   ): Promise<WarehouseDocument> {
+    this.logger.log(`Updating warehouse: ${id}`);
     // Check if warehouse exists
     const existingWarehouse = await this.warehouseRepository.findById(id);
     if (!existingWarehouse) {
@@ -264,10 +273,12 @@ export class WarehouseService {
       if (!updated) {
         throw new NotFoundException(`Warehouse with ID ${id} not found`);
       }
+      this.logger.log(`Updated warehouse: ${id}`);
       return updated;
     } catch (error: any) {
       // Handle MongoDB duplicate key error
       if (error.code === 11000) {
+        this.logger.warn(`Duplicate warehouse code on update: ${updateDto.code}`);
         throw new ConflictException(
           `Warehouse with code ${updateDto.code} already exists`,
         );
@@ -280,10 +291,13 @@ export class WarehouseService {
    * Soft delete warehouse
    */
   async delete(id: string): Promise<void> {
+    this.logger.log(`Deleting warehouse: ${id}`);
     const warehouse = await this.warehouseRepository.softDelete(id);
     if (!warehouse) {
+      this.logger.warn(`Warehouse not found for deletion: ${id}`);
       throw new NotFoundException(`Warehouse with ID ${id} not found`);
     }
+    this.logger.log(`Deleted warehouse: ${id}`);
   }
 
   /**
