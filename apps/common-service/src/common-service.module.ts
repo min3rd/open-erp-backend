@@ -46,6 +46,7 @@ import { WardController } from './controllers/ward.controller';
 import { AddressController } from './controllers/address.controller';
 import { HealthController } from './controllers/health.controller';
 import { RegionController } from './controllers/region.controller';
+import { CommonController } from './controllers/common.controller';
 
 // Import shared modules
 import { AuthorizationService } from '@shared/authz/authorization.service';
@@ -88,6 +89,7 @@ import { PermissionService } from '@shared/services';
     AddressController,
     HealthController,
     RegionController,
+    CommonController,
   ],
   providers: [
     ProvinceService,

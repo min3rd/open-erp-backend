@@ -404,4 +404,243 @@ export class OrgAdminController {
       'Organizations retrieved successfully',
     );
   }
+
+  /**
+   * GET /orgs/roles
+   * Returns all available organization roles
+   */
+  @Get('orgs/roles')
+  @ApiOperation({
+    summary: 'Get all organization roles',
+    description:
+      'Returns a list of all available organization-specific roles (e.g., ORG_OWNER, ORG_MEMBER, etc.)',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization roles retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: {
+          type: 'string',
+          example: 'Organization roles retrieved successfully',
+        },
+        error: { type: 'null' },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              code: { type: 'string', example: 'ORGANIZATION_ADMIN' },
+              name: { type: 'string', example: 'Organization Admin' },
+              description: {
+                type: 'string',
+                example: 'Organization administrator',
+              },
+              scope: { type: 'string', example: 'organization' },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getOrganizationRoles() {
+    // Organization-scoped roles
+    const orgRoles = [
+      {
+        code: 'ORGANIZATION_ADMIN',
+        name: 'Organization Admin',
+        description: 'Organization administrator with full control',
+        scope: 'organization',
+      },
+      {
+        code: 'TENANT_ADMIN',
+        name: 'Tenant Admin',
+        description: 'Tenant administrator (legacy)',
+        scope: 'organization',
+      },
+      {
+        code: 'MANAGER',
+        name: 'Manager',
+        description: 'Department or team manager',
+        scope: 'organization',
+      },
+      {
+        code: 'USER',
+        name: 'User',
+        description: 'Standard organization member',
+        scope: 'organization',
+      },
+    ];
+
+    return ok(orgRoles, 'Organization roles retrieved successfully');
+  }
+
+  /**
+   * GET /orgs/permissions
+   * Returns all available organization permissions
+   */
+  @Get('orgs/permissions')
+  @ApiOperation({
+    summary: 'Get all organization permissions',
+    description:
+      'Returns a list of all available organization-specific permissions',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Organization permissions retrieved successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        success: { type: 'boolean', example: true },
+        message: {
+          type: 'string',
+          example: 'Organization permissions retrieved successfully',
+        },
+        error: { type: 'null' },
+        data: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              code: { type: 'string', example: 'organization.manage_org_users' },
+              resource: { type: 'string', example: 'organization' },
+              action: { type: 'string', example: 'manage_org_users' },
+              name: { type: 'string', example: 'Manage Org Users' },
+              description: {
+                type: 'string',
+                example: 'Manage users within an organization',
+              },
+              scope: { type: 'string', example: 'organization' },
+            },
+          },
+        },
+      },
+    },
+  })
+  @ApiResponse({ status: 401, description: 'Unauthorized' })
+  async getOrganizationPermissions() {
+    // Organization-scoped permissions
+    const orgPermissions = [
+      {
+        code: Permission.ORGANIZATION_CREATE,
+        resource: 'organization',
+        action: 'create',
+        name: 'Create Organization',
+        description: 'Permission to create organizations',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_READ,
+        resource: 'organization',
+        action: 'read',
+        name: 'Read Organization',
+        description: 'Permission to view organization information',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_UPDATE,
+        resource: 'organization',
+        action: 'update',
+        name: 'Update Organization',
+        description: 'Permission to update organization information',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_DELETE,
+        resource: 'organization',
+        action: 'delete',
+        name: 'Delete Organization',
+        description: 'Permission to delete organizations',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_MANAGE,
+        resource: 'organization',
+        action: 'manage',
+        name: 'Manage Organization',
+        description: 'Full organization management permissions',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_INVITE,
+        resource: 'organization',
+        action: 'invite',
+        name: 'Invite Users',
+        description: 'Permission to invite users to organization',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_MEMBER_UPDATE,
+        resource: 'organization',
+        action: 'member.update',
+        name: 'Update Members',
+        description: 'Permission to update member roles and status',
+        scope: 'organization',
+      },
+      {
+        code: Permission.ORGANIZATION_MEMBER_REMOVE,
+        resource: 'organization',
+        action: 'member.remove',
+        name: 'Remove Members',
+        description: 'Permission to remove members from organization',
+        scope: 'organization',
+      },
+      {
+        code: Permission.MANAGE_ORG_USERS,
+        resource: 'organization',
+        action: 'manage_org_users',
+        name: 'Manage Org Users',
+        description: 'Manage users within an organization',
+        scope: 'organization',
+      },
+      {
+        code: Permission.DEPARTMENT_CREATE,
+        resource: 'department',
+        action: 'create',
+        name: 'Create Department',
+        description: 'Permission to create departments',
+        scope: 'organization',
+      },
+      {
+        code: Permission.DEPARTMENT_READ,
+        resource: 'department',
+        action: 'read',
+        name: 'Read Department',
+        description: 'Permission to view department information',
+        scope: 'organization',
+      },
+      {
+        code: Permission.DEPARTMENT_UPDATE,
+        resource: 'department',
+        action: 'update',
+        name: 'Update Department',
+        description: 'Permission to update departments',
+        scope: 'organization',
+      },
+      {
+        code: Permission.DEPARTMENT_DELETE,
+        resource: 'department',
+        action: 'delete',
+        name: 'Delete Department',
+        description: 'Permission to delete departments',
+        scope: 'organization',
+      },
+      {
+        code: Permission.DEPARTMENT_MANAGE,
+        resource: 'department',
+        action: 'manage',
+        name: 'Manage Department',
+        description: 'Full department management permissions',
+        scope: 'organization',
+      },
+    ];
+
+    return ok(
+      orgPermissions,
+      'Organization permissions retrieved successfully',
+    );
+  }
 }
