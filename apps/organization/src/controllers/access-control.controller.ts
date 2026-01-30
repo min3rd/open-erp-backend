@@ -5,7 +5,7 @@ import {
   ApiResponse,
   ApiBearerAuth,
 } from '@nestjs/swagger';
-import { JwtAuthGuard } from '@shared/authz';
+import { JwtAuthGuard } from '../guards/jwt-auth.guard';
 import { ok } from '@shared/response';
 import { getAllRoles, RoleMetadata } from '@shared/types/role.enum';
 import {
@@ -15,44 +15,48 @@ import {
 } from '@shared/types/permission.enum';
 
 /**
- * Common Controller
- * Provides access to system-wide (global) roles and permissions
+ * Access Control Controller
+ * Provides access to organization-scoped roles and permissions
  */
-@ApiTags('common')
+@ApiTags('access-control')
 @ApiBearerAuth()
-@Controller('common')
+@Controller()
 @UseGuards(JwtAuthGuard)
-export class CommonController {
+export class AccessControlController {
   /**
-   * GET /common/roles/global
-   * Returns all system-wide (global) roles
+   * GET /orgs/roles
+   * Returns all available organization roles
    */
-  @Get('roles/global')
+  @Get('orgs/roles')
   @ApiOperation({
-    summary: 'Get all global roles',
+    summary: 'Get all organization roles',
     description:
-      'Returns a list of all system-wide roles available in the system (e.g., SUPER_ADMIN, USER, etc.)',
+      'Returns a list of all available organization-specific roles (e.g., ORGANIZATION_ADMIN, MANAGER, etc.)',
   })
   @ApiResponse({
     status: 200,
-    description: 'Global roles retrieved successfully',
+    description: 'Organization roles retrieved successfully',
     schema: {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'Global roles retrieved successfully' },
+        message: {
+          type: 'string',
+          example: 'Organization roles retrieved successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'array',
           items: {
             type: 'object',
             properties: {
-              code: { type: 'string', example: 'SUPER_ADMIN' },
-              name: { type: 'string', example: 'Super Admin' },
+              code: { type: 'string', example: 'ORGANIZATION_ADMIN' },
+              name: { type: 'string', example: 'Organization Admin' },
               description: {
                 type: 'string',
-                example: 'Full system administrator',
+                example: 'Organization administrator',
               },
+              scope: { type: 'string', example: 'organization' },
             },
           },
         },
@@ -60,14 +64,14 @@ export class CommonController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getGlobalRoles() {
+  async getOrganizationRoles() {
     const roles = getAllRoles();
 
-    // Map enum values using metadata
+    // Map enum values using metadata, filter by organization scope
     const rolesData = roles
       .filter((roleCode) => {
         const meta = RoleMetadata[roleCode];
-        return meta && meta.scope === 'global';
+        return meta && meta.scope === 'organization';
       })
       .map((roleCode) => {
         const meta = RoleMetadata[roleCode];
@@ -75,32 +79,33 @@ export class CommonController {
           code: roleCode,
           name: meta.name,
           description: meta.description,
+          scope: meta.scope,
         };
       });
 
-    return ok(rolesData, 'Global roles retrieved successfully');
+    return ok(rolesData, 'Organization roles retrieved successfully');
   }
 
   /**
-   * GET /common/permissions/global
-   * Returns all system-wide (global) permissions
+   * GET /orgs/permissions
+   * Returns all available organization permissions
    */
-  @Get('permissions/global')
+  @Get('orgs/permissions')
   @ApiOperation({
-    summary: 'Get all global permissions',
+    summary: 'Get all organization permissions',
     description:
-      'Returns a list of all system-wide permissions available in the system (e.g., user.create, organization.read, etc.)',
+      'Returns a list of all available organization-specific permissions',
   })
   @ApiResponse({
     status: 200,
-    description: 'Global permissions retrieved successfully',
+    description: 'Organization permissions retrieved successfully',
     schema: {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
         message: {
           type: 'string',
-          example: 'Global permissions retrieved successfully',
+          example: 'Organization permissions retrieved successfully',
         },
         error: { type: 'null' },
         data: {
@@ -108,14 +113,15 @@ export class CommonController {
           items: {
             type: 'object',
             properties: {
-              code: { type: 'string', example: 'user.create' },
-              resource: { type: 'string', example: 'user' },
-              action: { type: 'string', example: 'create' },
-              name: { type: 'string', example: 'User Create' },
+              code: { type: 'string', example: 'organization.manage_org_users' },
+              resource: { type: 'string', example: 'organization' },
+              action: { type: 'string', example: 'manage_org_users' },
+              name: { type: 'string', example: 'Manage Org Users' },
               description: {
                 type: 'string',
-                example: 'Permission to create users',
+                example: 'Manage users within an organization',
               },
+              scope: { type: 'string', example: 'organization' },
             },
           },
         },
@@ -123,29 +129,35 @@ export class CommonController {
     },
   })
   @ApiResponse({ status: 401, description: 'Unauthorized' })
-  async getGlobalPermissions() {
+  async getOrganizationPermissions() {
     const permissions = getAllPermissions();
 
-    // Map enum values using metadata
+    // Map enum values using metadata, filter by organization scope
     const permissionsData = permissions
       .filter((permissionCode) => {
         const meta = PermissionMetadata[permissionCode];
-        return meta && meta.scope === 'global';
+        return meta && meta.scope === 'organization';
       })
       .map((permissionCode) => {
         const meta = PermissionMetadata[permissionCode];
         const dotIndex = permissionCode.indexOf('.');
-        const resource = dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
-        const action = dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
+        const resource =
+          dotIndex > -1 ? permissionCode.substring(0, dotIndex) : permissionCode;
+        const action =
+          dotIndex > -1 ? permissionCode.substring(dotIndex + 1) : '';
         return {
           code: permissionCode,
           resource,
           action,
           name: formatPermissionName(permissionCode),
           description: meta.description,
+          scope: meta.scope,
         };
       });
 
-    return ok(permissionsData, 'Global permissions retrieved successfully');
+    return ok(
+      permissionsData,
+      'Organization permissions retrieved successfully',
+    );
   }
 }

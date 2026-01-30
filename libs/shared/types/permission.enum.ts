@@ -201,3 +201,339 @@ export const PermissionGroups = {
     Permission.CONFIG_DELETE,
   ],
 };
+
+/**
+ * Permission metadata with descriptions and scope information
+ */
+export const PermissionMetadata: Record<
+  string,
+  { description: string; scope: 'global' | 'organization' }
+> = {
+  // User Management
+  [Permission.USER_CREATE]: {
+    description: 'Permission to create new users',
+    scope: 'global',
+  },
+  [Permission.USER_READ]: {
+    description: 'Permission to view user information',
+    scope: 'global',
+  },
+  [Permission.USER_UPDATE]: {
+    description: 'Permission to update user information',
+    scope: 'global',
+  },
+  [Permission.USER_DELETE]: {
+    description: 'Permission to delete users',
+    scope: 'global',
+  },
+  [Permission.USER_MANAGE]: {
+    description: 'Full user management permissions',
+    scope: 'global',
+  },
+
+  // Tenant Management (Legacy)
+  [Permission.TENANT_CREATE]: {
+    description: 'Permission to create tenants (legacy)',
+    scope: 'organization',
+  },
+  [Permission.TENANT_READ]: {
+    description: 'Permission to view tenant information (legacy)',
+    scope: 'organization',
+  },
+  [Permission.TENANT_UPDATE]: {
+    description: 'Permission to update tenant information (legacy)',
+    scope: 'organization',
+  },
+  [Permission.TENANT_DELETE]: {
+    description: 'Permission to delete tenants (legacy)',
+    scope: 'organization',
+  },
+  [Permission.TENANT_MANAGE]: {
+    description: 'Full tenant management permissions (legacy)',
+    scope: 'organization',
+  },
+
+  // Organization Management
+  [Permission.ORGANIZATION_CREATE]: {
+    description: 'Permission to create organizations',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_READ]: {
+    description: 'Permission to view organization information',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_UPDATE]: {
+    description: 'Permission to update organization information',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_DELETE]: {
+    description: 'Permission to delete organizations',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_MANAGE]: {
+    description: 'Full organization management permissions',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_INVITE]: {
+    description: 'Permission to invite users to organization',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_MEMBER_UPDATE]: {
+    description: 'Permission to update member roles and status',
+    scope: 'organization',
+  },
+  [Permission.ORGANIZATION_MEMBER_REMOVE]: {
+    description: 'Permission to remove members from organization',
+    scope: 'organization',
+  },
+  [Permission.MANAGE_USERS_AND_ORGS]: {
+    description: 'System-wide permission to manage users and organizations',
+    scope: 'global',
+  },
+  [Permission.MANAGE_ORG_USERS]: {
+    description: 'Organization-level permission to manage users within an organization',
+    scope: 'organization',
+  },
+
+  // Role Management
+  [Permission.ROLE_CREATE]: {
+    description: 'Permission to create roles',
+    scope: 'global',
+  },
+  [Permission.ROLE_READ]: {
+    description: 'Permission to view role information',
+    scope: 'global',
+  },
+  [Permission.ROLE_UPDATE]: {
+    description: 'Permission to update roles',
+    scope: 'global',
+  },
+  [Permission.ROLE_DELETE]: {
+    description: 'Permission to delete roles',
+    scope: 'global',
+  },
+  [Permission.ROLE_MANAGE]: {
+    description: 'Full role management permissions',
+    scope: 'global',
+  },
+  [Permission.ROLE_ASSIGN]: {
+    description: 'Permission to assign roles to users',
+    scope: 'global',
+  },
+
+  // Department Management
+  [Permission.DEPARTMENT_CREATE]: {
+    description: 'Permission to create departments',
+    scope: 'organization',
+  },
+  [Permission.DEPARTMENT_READ]: {
+    description: 'Permission to view department information',
+    scope: 'organization',
+  },
+  [Permission.DEPARTMENT_UPDATE]: {
+    description: 'Permission to update departments',
+    scope: 'organization',
+  },
+  [Permission.DEPARTMENT_DELETE]: {
+    description: 'Permission to delete departments',
+    scope: 'organization',
+  },
+  [Permission.DEPARTMENT_MANAGE]: {
+    description: 'Full department management permissions',
+    scope: 'organization',
+  },
+
+  // System Administration
+  [Permission.SYSTEM_ADMIN]: {
+    description: 'Full system access',
+    scope: 'global',
+  },
+  [Permission.SYSTEM_CONFIG]: {
+    description: 'System configuration access',
+    scope: 'global',
+  },
+  [Permission.SYSTEM_LOGS]: {
+    description: 'View system logs',
+    scope: 'global',
+  },
+
+  // Order Management
+  [Permission.ORDER_CREATE]: {
+    description: 'Permission to create orders',
+    scope: 'organization',
+  },
+  [Permission.ORDER_READ]: {
+    description: 'Permission to view order information',
+    scope: 'organization',
+  },
+  [Permission.ORDER_UPDATE]: {
+    description: 'Permission to update orders',
+    scope: 'organization',
+  },
+  [Permission.ORDER_DELETE]: {
+    description: 'Permission to delete orders',
+    scope: 'organization',
+  },
+  [Permission.ORDER_APPROVE]: {
+    description: 'Permission to approve orders',
+    scope: 'organization',
+  },
+  [Permission.ORDER_MANAGE]: {
+    description: 'Full order management permissions',
+    scope: 'organization',
+  },
+
+  // Product Management
+  [Permission.PRODUCT_CREATE]: {
+    description: 'Permission to create products',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_READ]: {
+    description: 'Permission to view product information',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_UPDATE]: {
+    description: 'Permission to update products',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_DELETE]: {
+    description: 'Permission to delete products',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_MANAGE]: {
+    description: 'Full product management permissions',
+    scope: 'organization',
+  },
+
+  // Product Type Management
+  [Permission.PRODUCT_TYPE_CREATE]: {
+    description: 'Permission to create product types',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_TYPE_READ]: {
+    description: 'Permission to view product type information',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_TYPE_UPDATE]: {
+    description: 'Permission to update product types',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_TYPE_DELETE]: {
+    description: 'Permission to delete product types',
+    scope: 'organization',
+  },
+  [Permission.MANAGE_PRODUCT_TYPE]: {
+    description: 'Full product type management permissions',
+    scope: 'organization',
+  },
+
+  // Product Category Management
+  [Permission.PRODUCT_CATEGORY_CREATE]: {
+    description: 'Permission to create product categories',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_CATEGORY_READ]: {
+    description: 'Permission to view product category information',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_CATEGORY_UPDATE]: {
+    description: 'Permission to update product categories',
+    scope: 'organization',
+  },
+  [Permission.PRODUCT_CATEGORY_DELETE]: {
+    description: 'Permission to delete product categories',
+    scope: 'organization',
+  },
+  [Permission.MANAGE_PRODUCT_CATEGORY]: {
+    description: 'Full product category management permissions',
+    scope: 'organization',
+  },
+
+  // Report Access
+  [Permission.REPORT_VIEW]: {
+    description: 'Permission to view reports',
+    scope: 'organization',
+  },
+  [Permission.REPORT_EXPORT]: {
+    description: 'Permission to export reports',
+    scope: 'organization',
+  },
+  [Permission.REPORT_MANAGE]: {
+    description: 'Full report management permissions',
+    scope: 'organization',
+  },
+
+  // Navigation Management
+  [Permission.NAVIGATION_READ]: {
+    description: 'Permission to view navigation items',
+    scope: 'global',
+  },
+  [Permission.NAVIGATION_CREATE]: {
+    description: 'Permission to create navigation items',
+    scope: 'global',
+  },
+  [Permission.NAVIGATION_UPDATE]: {
+    description: 'Permission to update navigation items',
+    scope: 'global',
+  },
+  [Permission.NAVIGATION_DELETE]: {
+    description: 'Permission to delete navigation items',
+    scope: 'global',
+  },
+  [Permission.NAVIGATION_MANAGE]: {
+    description: 'Full navigation management permissions',
+    scope: 'global',
+  },
+
+  // Configuration Management
+  [Permission.CONFIG_READ]: {
+    description: 'Permission to view configuration',
+    scope: 'global',
+  },
+  [Permission.CONFIG_CREATE]: {
+    description: 'Permission to create configuration',
+    scope: 'global',
+  },
+  [Permission.CONFIG_UPDATE]: {
+    description: 'Permission to update configuration',
+    scope: 'global',
+  },
+  [Permission.CONFIG_DELETE]: {
+    description: 'Permission to delete configuration',
+    scope: 'global',
+  },
+  [Permission.CONFIG_MANAGE]: {
+    description: 'Full configuration management permissions',
+    scope: 'global',
+  },
+};
+
+/**
+ * Get permissions by scope
+ */
+export function getPermissionsByScope(
+  scope: 'global' | 'organization',
+): string[] {
+  return Object.entries(PermissionMetadata)
+    .filter(([_, meta]) => meta.scope === scope)
+    .map(([code]) => code);
+}
+
+/**
+ * Format permission name from code
+ * Example: user.create -> User Create
+ */
+export function formatPermissionName(permissionCode: string): string {
+  return permissionCode
+    .split('.')
+    .map((word) =>
+      word
+        .split('_')
+        .map(
+          (subword) =>
+            subword.charAt(0).toUpperCase() + subword.slice(1).toLowerCase(),
+        )
+        .join(' '),
+    )
+    .join(' ');
+}

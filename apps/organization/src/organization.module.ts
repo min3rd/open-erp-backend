@@ -33,6 +33,7 @@ import { MembershipController } from './controllers/membership.controller';
 import { RelationController } from './controllers/relation.controller';
 import { HealthController } from './controllers/health.controller';
 import { OrgAdminController } from './controllers/org-admin.controller';
+import { AccessControlController } from './controllers/access-control.controller';
 import { WarehouseController } from '../../inventory/src/controllers/warehouse.controller';
 
 // Services
@@ -87,6 +88,7 @@ import { WarehouseRepository } from '../../inventory/src/repositories/warehouse.
     RelationController,
     HealthController,
     OrgAdminController,
+    AccessControlController,
     WarehouseController,
   ],
   providers: [

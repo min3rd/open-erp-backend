@@ -1,11 +1,11 @@
 /**
- * Contract tests for Organization Roles and Permissions API endpoints
+ * Contract tests for Access Control API endpoints
  * These tests verify that API responses conform to the standardized envelope format
  */
 
 import { ResponseValidator } from '@shared/response';
 
-describe('Organization Roles and Permissions API Contract Tests', () => {
+describe('Access Control API Contract Tests', () => {
   describe('GET /orgs/roles', () => {
     it('should validate organization roles response format', () => {
       const response = {
