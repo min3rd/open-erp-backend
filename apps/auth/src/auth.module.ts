@@ -24,6 +24,9 @@ import {
 import { VerificationTokenRepository } from './repositories/verification-token.repository';
 import { RefreshTokenRepository } from './repositories/refresh-token.repository';
 import { PasswordResetTokenRepository } from './repositories/password-reset-token.repository';
+import { User, UserSchema } from '@shared/schemas/user.schema';
+import { Role, RoleSchema } from '@shared/schemas/role.schema';
+import { AuthorizationService } from '@shared/authz';
 
 @Module({
   imports: [
@@ -35,6 +38,8 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
       { name: VerificationToken.name, schema: VerificationTokenSchema },
       { name: RefreshToken.name, schema: RefreshTokenSchema },
       { name: PasswordResetToken.name, schema: PasswordResetTokenSchema },
+      { name: User.name, schema: UserSchema },
+      { name: Role.name, schema: RoleSchema },
     ]),
     ThrottlerModule.forRoot([
       {
@@ -46,6 +51,7 @@ import { PasswordResetTokenRepository } from './repositories/password-reset-toke
   controllers: [AuthController, MeController],
   providers: [
     AuthService,
+    AuthorizationService,
     VerificationTokenRepository,
     RefreshTokenRepository,
     PasswordResetTokenRepository,
