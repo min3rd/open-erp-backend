@@ -104,8 +104,13 @@ export class WarehouseService {
     }
 
     try {
-      const warehouse = await this.warehouseRepository.create(createDto, userId);
-      this.logger.log(`Created warehouse: ${warehouse._id} (${warehouse.code})`);
+      const warehouse = await this.warehouseRepository.create(
+        createDto,
+        userId,
+      );
+      this.logger.log(
+        `Created warehouse: ${warehouse._id} (${warehouse.code})`,
+      );
       return warehouse;
     } catch (error: any) {
       // Handle MongoDB duplicate key error
@@ -115,7 +120,10 @@ export class WarehouseService {
           `Warehouse with code ${createDto.code} already exists`,
         );
       }
-      this.logger.error(`Failed to create warehouse: ${error.message}`, error.stack);
+      this.logger.error(
+        `Failed to create warehouse: ${error.message}`,
+        error.stack,
+      );
       throw error;
     }
   }
@@ -278,7 +286,9 @@ export class WarehouseService {
     } catch (error: any) {
       // Handle MongoDB duplicate key error
       if (error.code === 11000) {
-        this.logger.warn(`Duplicate warehouse code on update: ${updateDto.code}`);
+        this.logger.warn(
+          `Duplicate warehouse code on update: ${updateDto.code}`,
+        );
         throw new ConflictException(
           `Warehouse with code ${updateDto.code} already exists`,
         );

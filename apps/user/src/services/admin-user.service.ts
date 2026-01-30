@@ -454,11 +454,11 @@ export class AdminUserService {
 
   /**
    * Revoke all refresh tokens for a user
-   * 
+   *
    * Note: This method uses fire-and-forget messaging to the auth service.
    * The return value (0) does not reflect the actual number of tokens revoked.
    * For production use, consider implementing RPC calls for accurate counts.
-   * 
+   *
    * @param userId - User ID
    * @param adminUserId - Admin user ID
    * @param reason - Reason for revocation
@@ -493,12 +493,12 @@ export class AdminUserService {
 
   /**
    * Send password reset email
-   * 
+   *
    * SECURITY WARNING: This method sends passwords in plaintext via email.
    * While this is for admin-initiated password resets, transmitting passwords
    * through email exposes them to potential interception. For enhanced security,
    * consider using one-time secure links or password reset tokens instead.
-   * 
+   *
    * Only use this method when:
    * - The organization's security policy allows password transmission via email
    * - Email communication is secured with TLS/SSL

@@ -57,7 +57,7 @@ export class ProductTypeService {
     const limit = params.limit || 20;
     const skip = (page - 1) * limit;
 
-    const filter: any = {};
+    const filter: Record<string, any> = {};
     if (params.isActive !== undefined) {
       filter.isActive = params.isActive;
     }

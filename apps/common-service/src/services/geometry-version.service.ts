@@ -28,7 +28,9 @@ export class GeometryVersionService {
     changeDescription?: string,
     geometryMeta?: GeometryMeta,
   ): Promise<GeometryVersion> {
-    this.logger.log(`Creating geometry version ${version} for ${entityType}:${entityCode}`);
+    this.logger.log(
+      `Creating geometry version ${version} for ${entityType}:${entityCode}`,
+    );
     const versionDoc = new this.geometryVersionModel({
       entityType,
       entityCode,
@@ -94,10 +96,14 @@ export class GeometryVersionService {
     entityType: 'province' | 'district' | 'ward',
     entityCode: string,
   ): Promise<void> {
-    this.logger.log(`Deleting all geometry versions for ${entityType}:${entityCode}`);
+    this.logger.log(
+      `Deleting all geometry versions for ${entityType}:${entityCode}`,
+    );
     await this.geometryVersionModel
       .deleteMany({ entityType, entityCode })
       .exec();
-    this.logger.log(`Deleted geometry versions for ${entityType}:${entityCode}`);
+    this.logger.log(
+      `Deleted geometry versions for ${entityType}:${entityCode}`,
+    );
   }
 }

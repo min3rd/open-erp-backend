@@ -104,10 +104,12 @@ export class ProductTypeRepository {
    * Check if code exists
    */
   async existsByCode(code: string, excludeId?: string): Promise<boolean> {
-    const query: FilterQuery<ProductType> = { code };
+    const query: any = { code };
     if (excludeId) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       query._id = { $ne: excludeId };
     }
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const count = await this.model.countDocuments(query).exec();
     return count > 0;
   }

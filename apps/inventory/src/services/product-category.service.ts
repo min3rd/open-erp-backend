@@ -70,7 +70,7 @@ export class ProductCategoryService {
     const limit = params.limit || 100;
     const skip = (page - 1) * limit;
 
-    const filter: any = {};
+    const filter: Record<string, any> = {};
     if (params.isActive !== undefined) {
       filter.isActive = params.isActive;
     }
@@ -200,10 +200,7 @@ export class ProductCategoryService {
         // Check for circular reference
         if (dto.parentId === id) {
           throw new HttpException(
-            error(
-              'CIRCULAR_REFERENCE',
-              'Category cannot be its own parent',
-            ),
+            error('CIRCULAR_REFERENCE', 'Category cannot be its own parent'),
             HttpStatus.BAD_REQUEST,
           );
         }

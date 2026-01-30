@@ -27,7 +27,9 @@ export class DistrictService {
     } = options;
     const skip = (page - 1) * limit;
 
-    this.logger.debug(`Finding districts with options: ${JSON.stringify({ page, limit, provinceCode, q })}`);
+    this.logger.debug(
+      `Finding districts with options: ${JSON.stringify({ page, limit, provinceCode, q })}`,
+    );
 
     const filter: any = {};
     if (provinceCode) {
@@ -110,7 +112,9 @@ export class DistrictService {
     latitude: number,
     maxDistanceMeters?: number,
   ): Promise<District[]> {
-    this.logger.debug(`Finding districts near point: [${longitude}, ${latitude}]`);
+    this.logger.debug(
+      `Finding districts near point: [${longitude}, ${latitude}]`,
+    );
     return this.districtRepository.findNearPoint(
       longitude,
       latitude,
@@ -118,4 +122,3 @@ export class DistrictService {
     );
   }
 }
-

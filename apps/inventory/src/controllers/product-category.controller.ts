@@ -9,13 +9,11 @@ import {
   Query,
   HttpStatus,
   HttpException,
-  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
   ApiOperation,
   ApiResponse,
-  ApiBearerAuth,
   ApiParam,
   ApiQuery,
 } from '@nestjs/swagger';
@@ -32,7 +30,6 @@ import {
   paginated,
   error,
 } from '@shared/response';
-import { Permission } from '@shared/types';
 
 @ApiTags('product-categories')
 @Controller('config/product-categories')
@@ -86,7 +83,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_CREATE_ERROR',
-          err.message || 'Failed to create product category',
+          err instanceof Error
+            ? err.message
+            : 'Failed to create product category',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -96,7 +95,8 @@ export class ProductCategoryController {
   @Get()
   @ApiOperation({
     summary: 'Get all product categories with filters',
-    description: 'Requires PRODUCT_CATEGORY_READ permission. Supports tree view filtering.',
+    description:
+      'Requires PRODUCT_CATEGORY_READ permission. Supports tree view filtering.',
   })
   @ApiQuery({ name: 'page', required: false, type: Number, example: 1 })
   @ApiQuery({ name: 'limit', required: false, type: Number, example: 100 })
@@ -133,7 +133,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_FETCH_ERROR',
-          err.message || 'Failed to fetch product categories',
+          err instanceof Error
+            ? err.message
+            : 'Failed to fetch product categories',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -157,7 +159,7 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_FETCH_ERROR',
-          err.message || 'Failed to fetch category tree',
+          err instanceof Error ? err.message : 'Failed to fetch category tree',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -181,7 +183,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_FETCH_ERROR',
-          err.message || 'Failed to fetch root categories',
+          err instanceof Error
+            ? err.message
+            : 'Failed to fetch root categories',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -210,7 +214,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_FETCH_ERROR',
-          err.message || 'Failed to fetch product category',
+          err instanceof Error
+            ? err.message
+            : 'Failed to fetch product category',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -235,7 +241,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_FETCH_ERROR',
-          err.message || 'Failed to fetch children categories',
+          err instanceof Error
+            ? err.message
+            : 'Failed to fetch children categories',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -245,7 +253,8 @@ export class ProductCategoryController {
   @Get(':id/descendants')
   @ApiOperation({
     summary: 'Get all descendants of a category',
-    description: 'Returns all descendants (recursive) of the specified category',
+    description:
+      'Returns all descendants (recursive) of the specified category',
   })
   @ApiParam({ name: 'id', description: 'Category ID' })
   @ApiResponse({
@@ -263,7 +272,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_FETCH_ERROR',
-          err.message || 'Failed to fetch descendant categories',
+          err instanceof Error
+            ? err.message
+            : 'Failed to fetch descendant categories',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -298,7 +309,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_UPDATE_ERROR',
-          err.message || 'Failed to update product category',
+          err instanceof Error
+            ? err.message
+            : 'Failed to update product category',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
@@ -331,7 +344,9 @@ export class ProductCategoryController {
       throw new HttpException(
         error(
           'PRODUCT_CATEGORY_DELETE_ERROR',
-          err.message || 'Failed to delete product category',
+          err instanceof Error
+            ? err.message
+            : 'Failed to delete product category',
         ),
         HttpStatus.INTERNAL_SERVER_ERROR,
       );
