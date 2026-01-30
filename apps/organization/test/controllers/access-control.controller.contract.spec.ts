@@ -16,7 +16,7 @@ describe('Access Control API Contract Tests', () => {
           {
             code: 'ORGANIZATION_ADMIN',
             name: 'Organization Admin',
-            description: 'Organization administrator with full control',
+            description: 'Organization administrator with full control over the organization',
             scope: 'organization',
           },
           {
@@ -68,15 +68,15 @@ describe('Access Control API Contract Tests', () => {
             code: 'organization.manage_org_users',
             resource: 'organization',
             action: 'manage_org_users',
-            name: 'Manage Org Users',
-            description: 'Manage users within an organization',
+            name: 'Organization Manage Org Users',
+            description: 'Organization-level permission to manage users within an organization',
             scope: 'organization',
           },
           {
             code: 'department.create',
             resource: 'department',
             action: 'create',
-            name: 'Create Department',
+            name: 'Department Create',
             description: 'Permission to create departments',
             scope: 'organization',
           },
