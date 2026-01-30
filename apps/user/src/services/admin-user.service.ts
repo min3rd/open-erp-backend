@@ -60,6 +60,14 @@ export class AdminUserService {
       if (isEmail) {
         // For email, use case-insensitive search
         query = { email: normalizedIdentifier.toLowerCase() };
+      } else if (Types.ObjectId.isValid(normalizedIdentifier)) {
+        // For valid ObjectId, search by _id or username
+        query = {
+          $or: [
+            { _id: new Types.ObjectId(normalizedIdentifier) },
+            { username: normalizedIdentifier },
+          ],
+        };
       } else {
         // For username, use exact match (case-sensitive as per schema)
         query = { username: normalizedIdentifier };
