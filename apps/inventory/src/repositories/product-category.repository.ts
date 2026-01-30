@@ -149,8 +149,10 @@ export class ProductCategoryRepository {
    * Get all descendants of a category using path
    */
   async findDescendants(path: string): Promise<ProductCategoryDocument[]> {
+    // Escape regex special characters in path
+    const escapedPath = path.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     return this.model
-      .find({ path: new RegExp(`^${path}`) })
+      .find({ path: new RegExp(`^${escapedPath}`) })
       .sort({ path: 1, order: 1 })
       .exec();
   }
@@ -200,12 +202,17 @@ export class ProductCategoryRepository {
    * Update children paths when parent path changes
    */
   async updateChildrenPaths(oldPath: string, newPath: string): Promise<void> {
+    // Escape regex special characters in oldPath
+    const escapedOldPath = oldPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const children = await this.model.find({
-      path: new RegExp(`^${oldPath}`),
+      path: new RegExp(`^${escapedOldPath}`),
     });
 
     for (const child of children) {
-      const updatedPath = child.path.replace(oldPath, newPath);
+      // Only replace at the beginning of the path
+      const updatedPath = child.path.startsWith(oldPath)
+        ? newPath + child.path.slice(oldPath.length)
+        : child.path;
       await this.model
         .findByIdAndUpdate(child._id, { path: updatedPath })
         .exec();
