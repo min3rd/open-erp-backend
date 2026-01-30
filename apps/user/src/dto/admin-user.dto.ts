@@ -1,5 +1,32 @@
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
-import { IsString, IsOptional, MinLength, IsBoolean } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  MinLength,
+  IsBoolean,
+  Validate,
+  ValidationArguments,
+  ValidatorConstraint,
+  ValidatorConstraintInterface,
+} from 'class-validator';
+import { isStrongPassword } from '../utils/password-generator.util';
+
+/**
+ * Custom validator for password strength
+ */
+@ValidatorConstraint({ name: 'isStrongPassword', async: false })
+export class IsStrongPasswordConstraint implements ValidatorConstraintInterface {
+  validate(password: string, args: ValidationArguments) {
+    if (!password) {
+      return true; // Let @IsOptional handle empty values
+    }
+    return isStrongPassword(password);
+  }
+
+  defaultMessage(args: ValidationArguments) {
+    return 'Password must contain at least 8 characters including uppercase, lowercase, number, and special character';
+  }
+}
 
 /**
  * DTO for admin password reset operation
@@ -7,13 +34,15 @@ import { IsString, IsOptional, MinLength, IsBoolean } from 'class-validator';
 export class AdminResetPasswordDto {
   @ApiPropertyOptional({
     description:
-      'New password for the user. If not provided, a strong random password will be generated.',
+      'New password for the user. If not provided, a strong random password will be generated. ' +
+      'Must contain at least 8 characters including uppercase, lowercase, number, and special character.',
     example: 'NewSecurePassword123!',
     minLength: 8,
   })
   @IsString()
   @IsOptional()
   @MinLength(8)
+  @Validate(IsStrongPasswordConstraint)
   password?: string;
 
   @ApiPropertyOptional({

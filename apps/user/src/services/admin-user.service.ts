@@ -14,7 +14,6 @@ import {
   USER_NOT_FOUND,
   USER_ALREADY_BLOCKED,
   USER_NOT_BLOCKED,
-  USER_IDENTIFIER_AMBIGUOUS,
 } from '@shared/errors/error-codes';
 import { error } from '@shared/response';
 import {
@@ -53,15 +52,16 @@ export class AdminUserService {
     try {
       const normalizedIdentifier = identifier.trim();
 
-      // Check if identifier is an email (contains @)
-      const isEmail = normalizedIdentifier.includes('@');
+      // Use a more robust email detection (basic email regex)
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      const isEmail = emailRegex.test(normalizedIdentifier);
 
       let query;
       if (isEmail) {
         // For email, use case-insensitive search
         query = { email: normalizedIdentifier.toLowerCase() };
       } else {
-        // For username, also use case-insensitive search
+        // For username, use exact match (case-sensitive as per schema)
         query = { username: normalizedIdentifier };
       }
 
@@ -131,10 +131,10 @@ export class AdminUserService {
         sessionsRevoked = true;
       }
 
-      await this.userModel.findByIdAndUpdate(user._id, updates).exec();
-
-      // Get updated user to retrieve new tokenVersion
-      const updatedUser = await this.userModel.findById(user._id).exec();
+      // Update user and get the updated document in one operation
+      const updatedUser = await this.userModel
+        .findByIdAndUpdate(user._id, updates, { new: true })
+        .exec();
       const tokenVersion = updatedUser?.tokenVersion || 0;
 
       // Revoke refresh tokens if requested
@@ -446,10 +446,15 @@ export class AdminUserService {
 
   /**
    * Revoke all refresh tokens for a user
+   * 
+   * Note: This method uses fire-and-forget messaging to the auth service.
+   * The return value (0) does not reflect the actual number of tokens revoked.
+   * For production use, consider implementing RPC calls for accurate counts.
+   * 
    * @param userId - User ID
    * @param adminUserId - Admin user ID
    * @param reason - Reason for revocation
-   * @returns Number of tokens revoked
+   * @returns Number of tokens revoked (always 0 with current fire-and-forget implementation)
    */
   private async revokeUserRefreshTokens(
     userId: string,
@@ -480,6 +485,16 @@ export class AdminUserService {
 
   /**
    * Send password reset email
+   * 
+   * SECURITY WARNING: This method sends passwords in plaintext via email.
+   * While this is for admin-initiated password resets, transmitting passwords
+   * through email exposes them to potential interception. For enhanced security,
+   * consider using one-time secure links or password reset tokens instead.
+   * 
+   * Only use this method when:
+   * - The organization's security policy allows password transmission via email
+   * - Email communication is secured with TLS/SSL
+   * - The temporary password should be changed on first login (use forcePasswordChange)
    */
   private async sendPasswordResetEmail(
     user: UserDocument,

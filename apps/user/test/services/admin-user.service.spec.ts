@@ -102,6 +102,32 @@ describe('AdminUserService', () => {
       expect(userModel.findOne).toHaveBeenCalledWith({ username: identifier });
     });
 
+    it('should find user by username even if it contains @ (non-email format)', async () => {
+      const identifier = 'user@company'; // Contains @ but not a valid email
+      userModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockUser),
+      } as any);
+
+      const result = await service.findUserByIdentifier(identifier);
+
+      expect(result).toEqual(mockUser);
+      // Should search by username, not email, because it doesn't match email regex
+      expect(userModel.findOne).toHaveBeenCalledWith({ username: identifier });
+    });
+
+    it('should trim whitespace from identifier', async () => {
+      const identifier = '  test@example.com  ';
+      userModel.findOne.mockReturnValue({
+        exec: jest.fn().mockResolvedValue(mockUser),
+      } as any);
+
+      await service.findUserByIdentifier(identifier);
+
+      expect(userModel.findOne).toHaveBeenCalledWith({
+        email: identifier.trim().toLowerCase(),
+      });
+    });
+
     it('should throw USER_NOT_FOUND if user does not exist', async () => {
       const identifier = 'nonexistent@example.com';
       userModel.findOne.mockReturnValue({
