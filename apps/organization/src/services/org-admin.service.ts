@@ -220,6 +220,16 @@ export class OrgAdminService {
         throw new NotFoundException(`Organization not found: ${orgId}`);
       }
 
+      // Validate roles are valid MemberRole enum values
+      const validRoles = Object.values(MemberRole);
+      if (roles && roles.length > 0) {
+        for (const role of roles) {
+          if (!validRoles.includes(role)) {
+            throw new BadRequestException(`Invalid role: ${role}`);
+          }
+        }
+      }
+
       // Validate permissions are valid permission strings
       if (permissions && permissions.length > 0) {
         for (const perm of permissions) {
