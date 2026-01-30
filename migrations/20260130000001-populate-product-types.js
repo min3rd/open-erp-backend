@@ -324,23 +324,24 @@ module.exports = {
       metadata: {},
     }));
 
-    // Check if any product types already exist
-    const existingCount = await db.collection('product_types').countDocuments();
-    if (existingCount > 0) {
-      console.log(`Found ${existingCount} existing product types. Skipping insert to avoid duplicates.`);
-      console.log('If you want to re-populate, please drop the product_types collection first.');
-      return;
-    }
-
-    const result = await db.collection('product_types').insertMany(productTypesWithMetadata);
-    console.log(`Inserted ${result.insertedCount} product types`);
-
-    // Create indexes
+    // Create indexes first (idempotent operation)
     await db.collection('product_types').createIndex({ code: 1 }, { unique: true });
     await db.collection('product_types').createIndex({ isActive: 1 });
     await db.collection('product_types').createIndex({ name: 'text', description: 'text', code: 'text' });
     await db.collection('product_types').createIndex({ deletedAt: 1 });
     console.log('Created indexes for product_types collection');
+
+    // Check if any product types already exist
+    const existingCount = await db.collection('product_types').countDocuments();
+    if (existingCount > 0) {
+      console.log(`Found ${existingCount} existing product types. Skipping insert to avoid duplicates.`);
+      console.log('If you want to re-populate, please drop the product_types collection first.');
+      console.log('Migration completed successfully!');
+      return;
+    }
+
+    const result = await db.collection('product_types').insertMany(productTypesWithMetadata);
+    console.log(`Inserted ${result.insertedCount} product types`);
 
     console.log('Migration completed successfully!');
   },
