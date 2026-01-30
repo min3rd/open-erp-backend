@@ -2,10 +2,16 @@ import * as crypto from 'crypto';
 
 /**
  * Generate a strong random password
- * @param length - Length of the password (default: 16)
+ * @param length - Length of the password (default: 16, minimum: 8)
  * @returns Generated password string
+ * @throws Error if length is less than 8
  */
 export function generateStrongPassword(length: number = 16): string {
+  // Validate minimum length
+  if (length < 8) {
+    throw new Error('Password length must be at least 8 characters');
+  }
+
   // Define character sets
   const uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
   const lowercase = 'abcdefghijklmnopqrstuvwxyz';

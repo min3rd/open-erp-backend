@@ -46,6 +46,30 @@ describe('Password Generator Utility', () => {
       const password = generateStrongPassword();
       expect(isStrongPassword(password)).toBe(true);
     });
+
+    it('should throw error for length less than 8', () => {
+      expect(() => generateStrongPassword(7)).toThrow(
+        'Password length must be at least 8 characters',
+      );
+    });
+
+    it('should throw error for length of 0', () => {
+      expect(() => generateStrongPassword(0)).toThrow(
+        'Password length must be at least 8 characters',
+      );
+    });
+
+    it('should throw error for negative length', () => {
+      expect(() => generateStrongPassword(-5)).toThrow(
+        'Password length must be at least 8 characters',
+      );
+    });
+
+    it('should successfully generate password with minimum length of 8', () => {
+      const password = generateStrongPassword(8);
+      expect(password).toHaveLength(8);
+      expect(isStrongPassword(password)).toBe(true);
+    });
   });
 
   describe('isStrongPassword', () => {
