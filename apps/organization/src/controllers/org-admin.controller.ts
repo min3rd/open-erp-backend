@@ -48,16 +48,20 @@ export class OrgAdminController {
   constructor(private readonly orgAdminService: OrgAdminService) {}
 
   /**
-   * GET /orgs/user/:userId
+   * GET /orgs/user/:identifier
    * Returns organizations the user belongs to along with role(s) per org
+   * Identifier can be userId, email, or username
    */
-  @Get('orgs/user/:userId')
+  @Get('orgs/user/:identifier')
   @ApiOperation({
     summary: 'Get organizations of a user with their roles',
     description:
-      'Returns organizations the user belongs to along with role(s) per org and membership metadata.',
+      'Returns organizations the user belongs to along with role(s) per org and membership metadata. Accepts userId, email, or username as identifier.',
   })
-  @ApiParam({ name: 'userId', description: 'User ID to get organizations for' })
+  @ApiParam({
+    name: 'identifier',
+    description: 'User identifier: userId, email, or username',
+  })
   @ApiQuery({
     name: 'includeRoles',
     required: false,
@@ -117,12 +121,12 @@ export class OrgAdminController {
     { mode: 'any' },
   )
   async getUserOrgs(
-    @Param('userId') userId: string,
+    @Param('identifier') identifier: string,
     @Query() query: UserOrgsQueryDto,
   ) {
     // Permission guard already checked MANAGE_USERS_AND_ORGS or MANAGE_ORG_USERS
 
-    const orgs = await this.orgAdminService.getUserOrgs(userId, {
+    const orgs = await this.orgAdminService.getUserOrgs(identifier, {
       includeRoles: query.includeRoles,
       includeOrgDetails: query.includeOrgDetails,
     });
@@ -131,24 +135,25 @@ export class OrgAdminController {
   }
 
   /**
-   * GET /users/:userId/roles-permissions
+   * GET /users/:identifier/roles-permissions
    * Returns effective roles and permissions for a user (global + per-org)
+   * Identifier can be userId, email, or username
    */
-  @Get('users/:userId/roles-permissions')
+  @Get('users/:identifier/roles-permissions')
   @ApiOperation({
     summary: 'Get roles and permissions for a user',
     description:
-      'Returns effective role and permission sets for user — both global and per org.',
+      'Returns effective role and permission sets for user — both global and per org. Accepts userId, email, or username as identifier.',
   })
   @ApiParam({
-    name: 'userId',
-    description: 'User ID to get roles/permissions for',
+    name: 'identifier',
+    description: 'User identifier: userId, email, or username',
   })
   @ApiQuery({
     name: 'orgId',
     required: false,
     description:
-      'Filter by organization ID - returns permissions scoped to that org plus global',
+      'Filter by organization identifier (orgId or taxId) - returns permissions scoped to that org plus global',
   })
   @ApiResponse({
     status: 200,
@@ -202,13 +207,13 @@ export class OrgAdminController {
     { mode: 'any' },
   )
   async getUserRolesPermissions(
-    @Param('userId') userId: string,
+    @Param('identifier') identifier: string,
     @Query() query: UserRolesPermissionsQueryDto,
   ) {
     // Permission guard already checked MANAGE_USERS_AND_ORGS or MANAGE_ORG_USERS
 
     const result = await this.orgAdminService.getUserRolesPermissions(
-      userId,
+      identifier,
       query.orgId,
     );
 
@@ -216,19 +221,23 @@ export class OrgAdminController {
   }
 
   /**
-   * POST /orgs/:orgId/members/:userId/grant
+   * POST /orgs/:orgIdentifier/members/:userIdentifier/grant
    * Grant roles and/or permissions to a user in an organization
+   * Identifiers can be orgId/taxId and userId/email/username
    */
-  @Post('orgs/:orgId/members/:userId/grant')
+  @Post('orgs/:orgIdentifier/members/:userIdentifier/grant')
   @ApiOperation({
     summary: 'Grant roles/permissions to a user in an org',
     description:
-      'Grant role(s) or permission(s) to a user in an organization. Requires MANAGE_USERS_AND_ORGS or MANAGE_ORG_USERS permission.',
+      'Grant role(s) or permission(s) to a user in an organization. Requires MANAGE_USERS_AND_ORGS or MANAGE_ORG_USERS permission. Accepts orgId/taxId and userId/email/username as identifiers.',
   })
-  @ApiParam({ name: 'orgId', description: 'Organization ID' })
   @ApiParam({
-    name: 'userId',
-    description: 'User ID to grant roles/permissions to',
+    name: 'orgIdentifier',
+    description: 'Organization identifier: orgId or taxId',
+  })
+  @ApiParam({
+    name: 'userIdentifier',
+    description: 'User identifier: userId, email, or username',
   })
   @ApiResponse({
     status: 200,
@@ -270,8 +279,8 @@ export class OrgAdminController {
     { mode: 'any' },
   )
   async grantRolesToUser(
-    @Param('orgId') orgId: string,
-    @Param('userId') userId: string,
+    @Param('orgIdentifier') orgIdentifier: string,
+    @Param('userIdentifier') userIdentifier: string,
     @Body() grantDto: GrantOrgRoleDto,
     @Request() req: AuthenticatedRequest,
   ) {
@@ -290,8 +299,8 @@ export class OrgAdminController {
     // Permission guard already checked MANAGE_USERS_AND_ORGS or MANAGE_ORG_USERS
 
     const membership = await this.orgAdminService.grantRolesToUserInOrg(
-      orgId,
-      userId,
+      orgIdentifier,
+      userIdentifier,
       grantDto.roles || [],
       grantDto.permissions || [],
       actorId,

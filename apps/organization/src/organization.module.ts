@@ -21,6 +21,8 @@ import {
   ProvinceSchema,
   Ward,
   WardSchema,
+  User,
+  UserSchema,
 } from '@shared/schemas';
 
 // Controllers
@@ -73,6 +75,7 @@ import { WarehouseRepository } from '../../inventory/src/repositories/warehouse.
       { name: Warehouse.name, schema: WarehouseSchema },
       { name: Province.name, schema: ProvinceSchema },
       { name: Ward.name, schema: WardSchema },
+      { name: User.name, schema: UserSchema },
     ]),
   ],
   controllers: [
