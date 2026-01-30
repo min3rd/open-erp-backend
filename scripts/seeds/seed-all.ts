@@ -35,6 +35,8 @@ import { seedWarehouseTypes } from './seed-warehouse-types';
 import { seedWarehouses } from './seed-warehouses';
 import { seedRelations } from './seed-relations';
 import { seedNavigation } from './seed-navigation';
+import { seedProductTypes } from './seed-product-types';
+import { seedProductCategories } from './seed-product-categories';
 
 require('dotenv').config();
 
@@ -51,6 +53,8 @@ interface Options {
   skipWarehouses?: boolean;
   skipRelations?: boolean;
   skipNavigation?: boolean;
+  skipProductTypes?: boolean;
+  skipProductCategories?: boolean;
   warehouseCount?: number;
   orgCount?: number;
   userCount?: number;
@@ -99,6 +103,12 @@ function parseArgs(): Options {
         break;
       case '--skip-navigation':
         opts.skipNavigation = true;
+        break;
+      case '--skip-product-types':
+        opts.skipProductTypes = true;
+        break;
+      case '--skip-product-categories':
+        opts.skipProductCategories = true;
         break;
       case '--warehouse-count':
         if (args[i + 1]) {
@@ -385,6 +395,58 @@ async function seedAll() {
     }
   } else {
     console.log('\nSkipping navigation seeding');
+  }
+
+  // 10. Seed Product Types
+  if (!opts.skipProductTypes) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 10: Seeding Product Types');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedProductTypes({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+      });
+      results.push({ name: 'Product Types', success: true, stats });
+      console.log('✓ Product Types seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({ name: 'Product Types', success: false, error: errorMsg });
+      console.error('✗ Product Types seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping product types seeding');
+  }
+
+  // 11. Seed Product Categories
+  if (!opts.skipProductCategories) {
+    console.log('\n' + '='.repeat(60));
+    console.log('STEP 11: Seeding Product Categories');
+    console.log('='.repeat(60));
+    try {
+      const stats = await seedProductCategories({
+        drop: opts.drop,
+        dryRun: opts.dryRun,
+      });
+      results.push({ name: 'Product Categories', success: true, stats });
+      console.log('✓ Product Categories seeding completed successfully');
+    } catch (err: any) {
+      const errorMsg = err.message || String(err);
+      results.push({
+        name: 'Product Categories',
+        success: false,
+        error: errorMsg,
+      });
+      console.error('✗ Product Categories seeding failed:', errorMsg);
+      if (!opts.dryRun) {
+        throw err;
+      }
+    }
+  } else {
+    console.log('\nSkipping product categories seeding');
   }
 
   // Print summary

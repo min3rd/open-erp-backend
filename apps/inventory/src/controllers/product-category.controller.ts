@@ -9,6 +9,7 @@ import {
   Query,
   HttpStatus,
   HttpException,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -16,6 +17,7 @@ import {
   ApiResponse,
   ApiParam,
   ApiQuery,
+  ApiBearerAuth,
 } from '@nestjs/swagger';
 import { ProductCategoryService } from '../services/product-category.service';
 import {
@@ -30,15 +32,24 @@ import {
   paginated,
   error,
 } from '@shared/response';
+import {
+  JwtAuthGuard,
+  PermissionsGuard,
+  CurrentUser,
+  UserContext,
+} from '@shared/authz';
+import { Permissions } from '@shared/authz/decorators';
+import { Permission } from '@shared/types';
 
 @ApiTags('product-categories')
 @Controller('config/product-categories')
-// @UseGuards(AuthGuard, PermissionsGuard) // TODO: Implement auth guard
-// @ApiBearerAuth()
+@UseGuards(JwtAuthGuard, PermissionsGuard)
+@ApiBearerAuth()
 export class ProductCategoryController {
   constructor(private readonly categoryService: ProductCategoryService) {}
 
   @Post()
+  @Permissions([Permission.MANAGE_PRODUCT_CATEGORY])
   @ApiOperation({
     summary: 'Create a new product category',
     description: 'Requires MANAGE_PRODUCT_CATEGORY permission',
@@ -70,11 +81,12 @@ export class ProductCategoryController {
   })
   @ApiResponse({ status: 400, description: 'Bad request - validation error' })
   @ApiResponse({ status: 409, description: 'Conflict - code already exists' })
-  async create(@Body() createDto: CreateProductCategoryDto) {
+  async create(
+    @Body() createDto: CreateProductCategoryDto,
+    @CurrentUser() user: UserContext,
+  ) {
     try {
-      // TODO: Get userId from authenticated user
-      const userId = '000000000000000000000000'; // Placeholder
-      const category = await this.categoryService.create(createDto, userId);
+      const category = await this.categoryService.create(createDto, user.userId);
       return created(category, 'Product category created successfully');
     } catch (err) {
       if (err instanceof HttpException) {
@@ -93,6 +105,7 @@ export class ProductCategoryController {
   }
 
   @Get()
+  @Permissions([Permission.PRODUCT_CATEGORY_READ])
   @ApiOperation({
     summary: 'Get all product categories with filters',
     description:
@@ -143,6 +156,7 @@ export class ProductCategoryController {
   }
 
   @Get('tree')
+  @Permissions([Permission.PRODUCT_CATEGORY_READ])
   @ApiOperation({
     summary: 'Get category tree structure',
     description: 'Returns all active categories in tree structure',
@@ -167,6 +181,7 @@ export class ProductCategoryController {
   }
 
   @Get('roots')
+  @Permissions([Permission.PRODUCT_CATEGORY_READ])
   @ApiOperation({
     summary: 'Get root categories',
     description: 'Returns only root-level categories (no parent)',
@@ -193,6 +208,7 @@ export class ProductCategoryController {
   }
 
   @Get(':id')
+  @Permissions([Permission.PRODUCT_CATEGORY_READ])
   @ApiOperation({
     summary: 'Get product category by ID',
     description: 'Requires PRODUCT_CATEGORY_READ permission',
@@ -224,6 +240,7 @@ export class ProductCategoryController {
   }
 
   @Get(':id/children')
+  @Permissions([Permission.PRODUCT_CATEGORY_READ])
   @ApiOperation({
     summary: 'Get children of a category',
     description: 'Returns direct children of the specified category',
@@ -251,6 +268,7 @@ export class ProductCategoryController {
   }
 
   @Get(':id/descendants')
+  @Permissions([Permission.PRODUCT_CATEGORY_READ])
   @ApiOperation({
     summary: 'Get all descendants of a category',
     description:
@@ -282,6 +300,7 @@ export class ProductCategoryController {
   }
 
   @Put(':id')
+  @Permissions([Permission.MANAGE_PRODUCT_CATEGORY])
   @ApiOperation({
     summary: 'Update product category',
     description: 'Requires MANAGE_PRODUCT_CATEGORY permission',
@@ -296,11 +315,10 @@ export class ProductCategoryController {
   async update(
     @Param('id') id: string,
     @Body() updateDto: UpdateProductCategoryDto,
+    @CurrentUser() user: UserContext,
   ) {
     try {
-      // TODO: Get userId from authenticated user
-      const userId = '000000000000000000000000'; // Placeholder
-      const category = await this.categoryService.update(id, updateDto, userId);
+      const category = await this.categoryService.update(id, updateDto, user.userId);
       return updated(category, 'Product category updated successfully');
     } catch (err) {
       if (err instanceof HttpException) {
@@ -319,6 +337,7 @@ export class ProductCategoryController {
   }
 
   @Delete(':id')
+  @Permissions([Permission.MANAGE_PRODUCT_CATEGORY])
   @ApiOperation({
     summary: 'Delete product category (soft delete)',
     description: 'Requires MANAGE_PRODUCT_CATEGORY permission',

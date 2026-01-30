@@ -45,6 +45,8 @@
     "db:migrate:status": "migrate-mongo status",
     "db:seed:warehouse-types": "ts-node -r tsconfig-paths/register scripts/seeds/seed-warehouse-types.ts",
     "db:seed:navigation": "ts-node -r tsconfig-paths/register scripts/seeds/seed-navigation.ts",
+    "db:seed:product-types": "ts-node -r tsconfig-paths/register scripts/seeds/seed-product-types.ts",
+    "db:seed:product-categories": "ts-node -r tsconfig-paths/register scripts/seeds/seed-product-categories.ts",
     "db:seed:all": "ts-node -r tsconfig-paths/register scripts/seeds/seed-all.ts",
     "db:seed:provinces": "ts-node -r tsconfig-paths/register scripts/seeds/seed-provinces.ts",
     "db:seed:wards": "ts-node -r tsconfig-paths/register scripts/seeds/seed-wards.ts",
