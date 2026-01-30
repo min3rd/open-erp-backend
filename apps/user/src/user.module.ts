@@ -7,10 +7,12 @@ import { UserManagementController } from './controllers/user-management.controll
 import { OrganizationMembershipController } from './controllers/organization-membership.controller';
 import { SystemAdminController } from './controllers/system-admin.controller';
 import { AdminUserController } from './controllers/admin-user.controller';
+import { AuditController } from './controllers/audit.controller';
 import { UserService } from './user.service';
 import { UserManagementService } from './services/user-management.service';
 import { OrganizationMembershipService } from './services/organization-membership.service';
 import { AdminUserService } from './services/admin-user.service';
+import { UserAuditService } from './services/user-audit.service';
 import { RabbitMQClientModule } from '@shared/rabbitmq';
 import { ConfigModule } from '@nestjs/config';
 import { MongooseModule } from '@nestjs/mongoose';
@@ -25,10 +27,13 @@ import {
   OrganizationMemberSchema,
   Role,
   RoleSchema,
+  UserAuditEvent,
+  UserAuditEventSchema,
 } from '@shared/schemas';
 import { UserRepository } from './repositories/user.repository';
 import { OrganizationMemberRepository } from './repositories/organization-member.repository';
 import { RoleRepository } from './repositories/role.repository';
+import { UserAuditEventRepository } from './repositories/user-audit-event.repository';
 
 @Module({
   imports: [
@@ -51,6 +56,7 @@ import { RoleRepository } from './repositories/role.repository';
       { name: User.name, schema: UserSchema },
       { name: OrganizationMember.name, schema: OrganizationMemberSchema },
       { name: Role.name, schema: RoleSchema },
+      { name: UserAuditEvent.name, schema: UserAuditEventSchema },
     ]),
   ],
   controllers: [
@@ -61,15 +67,18 @@ import { RoleRepository } from './repositories/role.repository';
     OrganizationMembershipController,
     SystemAdminController,
     AdminUserController,
+    AuditController,
   ],
   providers: [
     UserService,
     UserManagementService,
     OrganizationMembershipService,
     AdminUserService,
+    UserAuditService,
     UserRepository,
     OrganizationMemberRepository,
     RoleRepository,
+    UserAuditEventRepository,
     AuthorizationService,
     {
       provide: APP_GUARD,
