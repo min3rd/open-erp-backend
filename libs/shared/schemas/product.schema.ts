@@ -216,9 +216,23 @@ export class Product extends Document {
   type: ProductType;
 
   @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'ProductType',
+    index: true,
+  })
+  typeId?: MongooseSchema.Types.ObjectId;
+
+  @Prop({
     type: CategorySnapshot,
   })
   category?: CategorySnapshot;
+
+  @Prop({
+    type: MongooseSchema.Types.ObjectId,
+    ref: 'ProductCategory',
+    index: true,
+  })
+  categoryId?: MongooseSchema.Types.ObjectId;
 
   @Prop({
     type: String,
