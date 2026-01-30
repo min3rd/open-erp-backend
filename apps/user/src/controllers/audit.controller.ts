@@ -22,7 +22,7 @@ import { JwtAuthGuard, PermissionsGuard } from '@shared/authz';
 import { Permissions } from '@shared/authz/decorators';
 import { Permission } from '@shared/types/permission.enum';
 import { paginated, fetched, error } from '@shared/response';
-import { USER_NOT_FOUND } from '@shared/errors/error-codes';
+import { USER_NOT_FOUND, AUDIT_LOG_NOT_FOUND } from '@shared/errors/error-codes';
 
 /**
  * Audit Log Controller
@@ -221,7 +221,7 @@ export class AuditController {
 
     if (!auditLog) {
       throw new HttpException(
-        error('AUDIT_LOG_NOT_FOUND', 'Audit log not found', {
+        error(AUDIT_LOG_NOT_FOUND, 'Audit log not found', {
           id,
         }),
         HttpStatus.NOT_FOUND,

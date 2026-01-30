@@ -32,6 +32,9 @@ export const USER_ALREADY_BLOCKED = 'USER_0005';
 export const USER_NOT_BLOCKED = 'USER_0006';
 export const USER_IDENTIFIER_AMBIGUOUS = 'USER_0007';
 
+// Audit errors
+export const AUDIT_LOG_NOT_FOUND = 'AUDIT_0001';
+
 // Validation errors
 export const VALIDATION_FAILED = 'VALIDATION_0001';
 export const VALIDATION_EMAIL_INVALID = 'VALIDATION_0002';
