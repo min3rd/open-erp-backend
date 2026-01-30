@@ -38,6 +38,69 @@ export function isValidRole(role: string): boolean {
 }
 
 /**
+ * Role metadata with descriptions and scope information
+ */
+export const RoleMetadata: Record<
+  string,
+  { name: string; description: string; scope: 'global' | 'organization' }
+> = {
+  [Role.SUPER_ADMIN]: {
+    name: 'Super Admin',
+    description: 'Full system administrator with unrestricted access',
+    scope: 'global',
+  },
+  [Role.TENANT_ADMIN]: {
+    name: 'Tenant Admin',
+    description: 'Tenant administrator (legacy) - use ORGANIZATION_ADMIN',
+    scope: 'organization',
+  },
+  [Role.ORGANIZATION_ADMIN]: {
+    name: 'Organization Admin',
+    description: 'Organization administrator with full control over the organization',
+    scope: 'organization',
+  },
+  [Role.MANAGER]: {
+    name: 'Manager',
+    description: 'Department or team manager',
+    scope: 'organization',
+  },
+  [Role.NAV_ADMIN]: {
+    name: 'Navigation Admin',
+    description: 'Navigation administrator',
+    scope: 'global',
+  },
+  [Role.CONFIG_ADMIN]: {
+    name: 'Config Admin',
+    description: 'Configuration administrator',
+    scope: 'global',
+  },
+  [Role.USER_ADMIN]: {
+    name: 'User Admin',
+    description: 'User management administrator',
+    scope: 'global',
+  },
+  [Role.USER]: {
+    name: 'User',
+    description: 'Standard user with basic access',
+    scope: 'organization',
+  },
+  [Role.GUEST]: {
+    name: 'Guest',
+    description: 'Guest user with limited access',
+    scope: 'global',
+  },
+};
+
+/**
+ * Get roles by scope
+ */
+export function getRolesByScope(scope: 'global' | 'organization'): string[] {
+  return Object.entries(RoleMetadata)
+    .filter(([_, meta]) => meta.scope === scope)
+    .map(([code]) => code);
+}
+
+/**
  * Role groups for easier permission assignment
  */
 export const RoleGroups = {
