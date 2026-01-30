@@ -12,6 +12,7 @@ export interface CreateMemberDto {
   organizationId: Types.ObjectId;
   userId: Types.ObjectId;
   roles: MemberRole[];
+  permissions?: string[];
   status?: MemberStatus;
   joinedAt?: Date;
   isPrimaryOwner?: boolean;
@@ -307,19 +308,21 @@ export class OrganizationMemberRepository {
         )) as OrganizationMemberDocument;
       }
 
-      // Create new membership
+      // Create new membership with permissions
       return await this.create({
         organizationId: new Types.ObjectId(organizationId),
         userId: new Types.ObjectId(userId),
         roles: roles.length > 0 ? roles : [MemberRole.MEMBER],
+        permissions: permissions || [],
         status: MemberStatus.ACTIVE,
         joinedAt: new Date(),
         createdBy,
       });
     } catch (error) {
+      const err = error as Error;
       this.logger.error(
-        `Error upserting membership: ${error.message}`,
-        error.stack,
+        `Error upserting membership: ${err.message}`,
+        err.stack,
       );
       throw error;
     }

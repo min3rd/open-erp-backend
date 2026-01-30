@@ -7,6 +7,7 @@ import {
   Query,
   UseGuards,
   Request,
+  BadRequestException,
 } from '@nestjs/common';
 import {
   ApiTags,
@@ -274,6 +275,16 @@ export class OrgAdminController {
     @Body() grantDto: GrantOrgRoleDto,
     @Request() req: AuthenticatedRequest,
   ) {
+    // Validate at least one of roles or permissions is provided
+    const hasRoles = grantDto.roles && grantDto.roles.length > 0;
+    const hasPermissions =
+      grantDto.permissions && grantDto.permissions.length > 0;
+    if (!hasRoles && !hasPermissions) {
+      throw new BadRequestException(
+        'At least one of roles or permissions must be provided',
+      );
+    }
+
     const actorId = grantDto.actorId || req.user.userId;
 
     // Permission guard already checked MANAGE_USERS_AND_ORGS or MANAGE_ORG_USERS

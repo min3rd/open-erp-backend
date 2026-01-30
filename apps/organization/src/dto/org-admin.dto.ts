@@ -17,13 +17,15 @@ import { MemberRole, OrganizationType } from '@shared/schemas';
  */
 export class UserOrgsQueryDto {
   @ApiPropertyOptional({
-    description: 'Include roles in the response',
-    default: false,
+    description: 'Include roles in the response (default: true)',
+    default: true,
   })
   @IsOptional()
   @IsBoolean()
-  @Transform(({ value }) => value === 'true' || value === true)
-  includeRoles?: boolean = false;
+  @Transform(
+    ({ value }) => value === 'true' || value === true || value === undefined,
+  )
+  includeRoles?: boolean = true;
 
   @ApiPropertyOptional({
     description: 'Include organization details in the response',
