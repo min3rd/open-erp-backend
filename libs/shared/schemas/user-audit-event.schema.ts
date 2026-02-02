@@ -117,6 +117,9 @@ export class UserAuditEvent extends Document {
     default: {},
   })
   metadata?: Map<string, any>;
+
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export const UserAuditEventSchema =
