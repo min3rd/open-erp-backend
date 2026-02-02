@@ -70,6 +70,7 @@ export class MeController {
                       name: { type: 'string', example: 'System Administrator' },
                       description: { type: 'string', example: 'Full system access' },
                     },
+                    required: ['id', 'code', 'name'],
                   },
                   description: 'Global roles assigned to the user',
                 },
