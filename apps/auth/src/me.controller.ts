@@ -43,7 +43,11 @@ export class MeController {
       type: 'object',
       properties: {
         success: { type: 'boolean', example: true },
-        message: { type: 'string', example: 'User profile retrieved successfully' },
+        message: {
+          type: 'string',
+          nullable: true,
+          example: 'User profile retrieved successfully',
+        },
         error: { type: 'null' },
         data: {
           type: 'object',
